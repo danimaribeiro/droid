@@ -1,0 +1,9 @@
+# Build artifacts
+bin/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Rust common build dir (future)
+target/
