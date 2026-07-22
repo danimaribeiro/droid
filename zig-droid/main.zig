@@ -1,6 +1,5 @@
 const std = @import("std");
 
-pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("droid-zig ok\\n", .{});
+pub fn main() void {
+    std.debug.print("droid-zig ok\\n", .{});
 }

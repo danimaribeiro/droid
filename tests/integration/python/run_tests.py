@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from collections import defaultdict
 
 from stage1.repl_tests import run_suite as run_stage1_suite
 from stage2.parser_tests import run_suite as run_stage2_suite
@@ -16,6 +17,18 @@ STAGE_RUNNERS = {
     "stage2": run_stage2_suite,
     "stage3": run_stage3_suite,
 }
+
+GREEN = "\033[32m"
+RED = "\033[31m"
+RESET = "\033[0m"
+
+
+def colorize(text: str, color: str) -> str:
+    if os.getenv("NO_COLOR") is not None:
+        return text
+    if not sys.stdout.isatty():
+        return text
+    return f"{color}{text}{RESET}"
 
 
 def parse_args() -> argparse.Namespace:
@@ -61,16 +74,35 @@ def main() -> int:
         return 0
 
     failed = 0
+    case_outcomes: dict[str, list[bool]] = defaultdict(list)
     for result in results:
-        print("=" * 80)
-        print(format_result(result))
+        if result.passed:
+            print(
+                colorize(
+                    f"binary: {result.binary} case: {result.case_name} status: PASS",
+                    GREEN,
+                )
+            )
+        else:
+            print(colorize("=" * 80, RED))
+            print(format_result(result))
+        case_outcomes[result.case_name].append(result.passed)
         if not result.passed:
             failed += 1
 
     print("=" * 80)
-    total = len(results)
-    passed = total - failed
-    print(f"summary: passed={passed} failed={failed} total={total}")
+    execution_total = len(results)
+    execution_passed = execution_total - failed
+    print(
+        f"summary-executions: passed={execution_passed} failed={failed} total={execution_total}"
+    )
+
+    scenario_total = len(case_outcomes)
+    scenario_passed = sum(1 for outcomes in case_outcomes.values() if all(outcomes))
+    scenario_failed = scenario_total - scenario_passed
+    print(
+        f"summary-scenarios: passed={scenario_passed} failed={scenario_failed} total={scenario_total}"
+    )
 
     return 1 if failed else 0
 
