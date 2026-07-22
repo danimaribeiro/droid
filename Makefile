@@ -98,5 +98,18 @@ test-stage3: check-bins
 test-all-stages: check-bins
 	@python3 tests/integration/python/run_tests.py --stage all --bins $(BINS)
 
+test-case:
+	@if [ -z "$(CASE)" ] || [ -z "$(BIN)" ]; then \
+		echo "Usage: make test-case CASE=<case-name> BIN=<binary>"; \
+		echo "Example: make test-case CASE=help-command-works BIN=bin/c-db"; \
+		echo ""; \
+		echo "Available cases:"; \
+		cd tests/integration/python && python3 test_single_case.py 2>&1 | grep -A 20 "Available"; \
+		exit 1; \
+	fi
+	@BIN_PATH=$$(cd . && pwd)/$(BIN); \
+	if [ ! -x "$$BIN_PATH" ]; then echo "Missing binary: $$BIN_PATH"; exit 1; fi; \
+	cd tests/integration/python && python3 test_single_case.py "$(CASE)" "$$BIN_PATH"
+
 clean:
 	rm -rf $(BIN_DIR)

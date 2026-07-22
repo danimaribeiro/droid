@@ -60,11 +60,13 @@ Target outcome for future platform integration:
 - focus on integration tests for CLI behavior
 - keep behavior contract explicit and versioned by stage
 - prefer stable output patterns (regex) to reduce brittle failures
+- include one-shot CLI mode contract via `-c` to support automation and web execution
 
 ## Testing Strategy
 - use Python integration tests under tests/integration/python
 - centralize command execution helpers in utils.py
 - keep test cases declarative and language-agnostic
+- keep stage modules separated (stage1, stage2, stage3)
 - each test output should include:
   - mini header (1-2 lines explanation)
   - input
@@ -72,11 +74,15 @@ Target outcome for future platform integration:
   - actual
   - exit code
   - pass/fail and reason
+- output policy:
+  - PASS: compact one-line status (`binary + case + PASS`)
+  - FAIL: full diagnostic block
 
 ## Repository Conventions
 - one main source file per language project at this stage
 - root Makefile orchestrates build/run/test commands
 - default test target should execute the Python Stage 1 suite
+- test targets should not compile automatically; they should validate binary presence first and provide build hints
 
 ## Rules for Future Sessions
 1. Preserve cross-language parity whenever possible.

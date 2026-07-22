@@ -1,8 +1,17 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from dataclasses import dataclass
+from typing import Sequence
+
+
+MAX_OUTPUT_CHARS = int(os.getenv("TEST_MAX_OUTPUT_CHARS", "2000"))
+
+
+def get_default_timeout_seconds() -> float:
+    return float(os.getenv("TEST_TIMEOUT_SECONDS", "1.0"))
 
 
 @dataclass
@@ -10,6 +19,7 @@ class CommandResult:
     stage: str
     stage_title: str
     binary: str
+    cli_args: list[str]
     case_name: str
     case_header: str
     case_description: str
@@ -18,6 +28,7 @@ class CommandResult:
     stdout: str
     stderr: str
     exit_code: int
+    timed_out: bool
     passed: bool
     reason: str
 
@@ -28,16 +39,43 @@ class CommandResult:
         return self.stdout
 
 
-def run_command(binary: str, test_input: str, timeout_seconds: int = 3) -> tuple[int, str, str]:
-    proc = subprocess.run(
-        [binary],
-        input=test_input,
-        text=True,
-        capture_output=True,
-        timeout=timeout_seconds,
-        check=False,
-    )
-    return proc.returncode, proc.stdout, proc.stderr
+def run_command(
+    binary: str,
+    test_input: str,
+    timeout_seconds: float | None = None,
+    cli_args: Sequence[str] | None = None,
+) -> tuple[int, str, str, bool]:
+    effective_timeout = timeout_seconds if timeout_seconds is not None else get_default_timeout_seconds()
+    cmd = [binary] + list(cli_args or [])
+    try:
+        proc = subprocess.run(
+            cmd,
+            input=test_input,
+            text=True,
+            capture_output=True,
+            timeout=effective_timeout,
+            check=False,
+        )
+        return proc.returncode, proc.stdout, proc.stderr, False
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout if isinstance(exc.stdout, str) else (exc.stdout or b"").decode(
+            "utf-8", errors="replace"
+        )
+        stderr = exc.stderr if isinstance(exc.stderr, str) else (exc.stderr or b"").decode(
+            "utf-8", errors="replace"
+        )
+        if len(stdout) > MAX_OUTPUT_CHARS:
+            stdout = (
+                stdout[:MAX_OUTPUT_CHARS]
+                + f"\n[TRUNCATED] stdout exceeded {MAX_OUTPUT_CHARS} characters"
+            )
+        if len(stderr) > MAX_OUTPUT_CHARS:
+            stderr = (
+                stderr[:MAX_OUTPUT_CHARS]
+                + f"\n[TRUNCATED] stderr exceeded {MAX_OUTPUT_CHARS} characters"
+            )
+        stderr = f"{stderr}\n[TIMEOUT] command exceeded {effective_timeout}s".strip()
+        return 124, stdout, stderr, True
 
 
 def check_regex(actual_text: str, regex_pattern: str) -> bool:
@@ -46,7 +84,13 @@ def check_regex(actual_text: str, regex_pattern: str) -> bool:
 
 def format_result(result: CommandResult) -> str:
     input_repr = result.test_input.replace("\n", "\\n")
-    actual = result.actual_output.replace("\n", "\\n")
+    actual_raw = result.actual_output
+    if len(actual_raw) > MAX_OUTPUT_CHARS:
+        actual_raw = (
+            actual_raw[:MAX_OUTPUT_CHARS]
+            + f"\n[TRUNCATED] combined output exceeded {MAX_OUTPUT_CHARS} characters"
+        )
+    actual = actual_raw.replace("\n", "\\n")
 
     lines = [
         f"stage: {result.stage} ({result.stage_title})",
@@ -54,6 +98,7 @@ def format_result(result: CommandResult) -> str:
         f"about: {result.case_description}",
         f"case: {result.case_name}",
         f"binary: {result.binary}",
+        f"args: {' '.join(result.cli_args)}",
         f"status: {'PASS' if result.passed else 'FAIL'}",
         f"input: {input_repr}",
         f"expected: {result.expected}",
