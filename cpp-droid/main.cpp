@@ -25,7 +25,9 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         std::cout << ">";
-        std::getline(std::cin, command);
+        if (!std::getline(std::cin, command)) {
+            break;
+        }
         parse_command(command);
     }
     std::cout << "exiting.. good bye!\n";

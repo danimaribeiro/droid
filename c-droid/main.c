@@ -24,7 +24,9 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         printf(">");
-        fgets(command, sizeof(command), stdin);
+        if (fgets(command, sizeof(command), stdin) == NULL) {
+            break;
+        }
         // Remove newline at the end
         size_t len = strlen(command);
         if (len > 0 && command[len - 1] == '\n') {

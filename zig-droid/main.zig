@@ -2,6 +2,7 @@ const std = @import("std");
 const parse_command = @import("repl.zig").parse_command;
 
 pub fn main(init: std.process.Init) !void {
+    const io = init.io;
     const arena_allocator = init.arena.allocator();
 
     const args = try init.minimal.args.toSlice(arena_allocator);
@@ -21,14 +22,23 @@ pub fn main(init: std.process.Init) !void {
         }
     }
 
-    while (true) {
-        std.debug.print("> ", .{});
-        const line = try std.io.getStdIn().readUntilDelimiterOrEofAlloc(arena_allocator, '\n', 1024);
-        defer arena_allocator.free(line);
+    std.debug.print("Welcome to droid-zig!\n", .{});
 
-        if (line.len == 0) {
-            continue; // Ignore empty lines
-        }
+    const stdin_file = std.Io.File.stdin();
+    var stdin_buf: [4096]u8 = undefined;
+    var stdin_reader = stdin_file.reader(io, &stdin_buf);
+    const stdin = &stdin_reader.interface;
+
+    while (true) {
+        std.debug.print(">", .{});
+        const raw = stdin.takeDelimiterInclusive('\n') catch |err| switch (err) {
+            error.EndOfStream => break,
+            else => return err,
+        };
+        const line = std.mem.trim(u8, raw, " \r\n\t");
+        if (line.len == 0) continue;
+
         parse_command(line);
     }
+    std.debug.print("exiting.. good bye!\n", .{});
 }

@@ -28,7 +28,10 @@ fn main() {
         
         io::stdout().flush().unwrap();
         let mut command = String::new();
-        std::io::stdin().read_line(&mut command).unwrap();
-        repl::parse_command(&command);
+        match std::io::stdin().read_line(&mut command) {
+            Ok(0) | Err(_) => break,
+            Ok(_) => repl::parse_command(&command),
+        }
     }
+    println!("exiting.. good bye!");    
 }
