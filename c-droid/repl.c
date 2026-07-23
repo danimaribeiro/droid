@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include "utils.c"
+#include "lexer.c"
+
 
 void parse_command(char *command) {
     trim_spaces(command);
@@ -13,6 +15,15 @@ void parse_command(char *command) {
         printf(".exit - Exit the program\n");
         printf(".help - Show this help message\n");
     } else {
-        printf("[ERROR:00100] Unknown command: %s\n", command);
+        TokenList list = tokenize(command);
+
+        if (list.has_error) {
+            printf("Syntax error in command\n");
+        } else {
+            for (int i = 0; i < list.count; i++) {
+                printf("[%s - %s]\n", token_type_to_string(list.tokens[i].type), list.tokens[i].token);
+            }
+        }
+        free_tokens(&list);
     }
 }
