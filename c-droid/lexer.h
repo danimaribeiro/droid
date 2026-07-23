@@ -1,3 +1,6 @@
+#ifndef LEXER_H
+#define LEXER_H
+
 
 typedef enum {
     TOKEN_KEYWORD_INSERT,
@@ -30,3 +33,5 @@ typedef struct {
 
 TokenList tokenize(char *input);
 void free_tokens(TokenList *tokens);
+
+#endif
