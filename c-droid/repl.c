@@ -15,15 +15,36 @@ void parse_command(char *command) {
         printf(".exit - Exit the program\n");
         printf(".help - Show this help message\n");
     } else {
-        TokenList list = tokenize(command);
+        bool is_tokenize = false;
+        bool is_ast = false;
+        char *sql = command;
 
-        if (list.has_error) {
-            printf("Syntax error in command\n");
-        } else {
-            for (int i = 0; i < list.count; i++) {
-                printf("[%s - %s]\n", token_type_to_string(list.tokens[i].type), list.tokens[i].token);
-            }
+        if (strncmp(command, "tokenize ", 9) == 0) {
+            is_tokenize = true;
+            sql = command + 9;
+        } else if (strncmp(command, "ast ", 4) == 0) {
+            is_ast = true;
+            sql = command + 4;
         }
-        free_tokens(&list);
+
+        if (is_tokenize) {
+            TokenList list = tokenize(sql);
+
+            if (list.has_error) {
+                printf("Syntax error in command\n");
+                for (int i = 0; i < list.count; i++) {
+                    printf("[%s - %s]\n", token_type_to_string(list.tokens[i].type), list.tokens[i].token);
+                }
+            } else {
+                for (int i = 0; i < list.count; i++) {
+                    printf("[%s - %s]\n", token_type_to_string(list.tokens[i].type), list.tokens[i].token);
+                }
+            }
+            free_tokens(&list);
+        } else if (is_ast) {
+            printf("[ERROR:00100] AST Parser not implemented yet.\n");
+        } else {
+            printf("[ERROR:00100] AST Parser not implemented yet.\n");
+        }
     }
 }

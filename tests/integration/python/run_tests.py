@@ -7,8 +7,8 @@ import sys
 from collections import defaultdict
 
 from stage1.repl_tests import run_suite as run_stage1_suite
-from stage2.parser_tests import run_suite as run_stage2_suite
-from stage3.planner_executor_tests import run_suite as run_stage3_suite
+from stage2.lexer_tests import run_suite as run_stage2_suite
+from stage3.parser_tests import run_suite as run_stage3_suite
 from utils import format_result
 
 

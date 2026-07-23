@@ -7,7 +7,7 @@ from typing import Iterable
 from utils import CommandResult, check_regex, run_command
 
 
-STAGE_ID = "stage2"
+STAGE_ID = "stage3"
 STAGE_TITLE = "SQL Parser"
 ERR_CODE_REGEX = os.getenv("ERR_CODE_REGEX", r"(\[ERROR:\d+\]|ERR_[A-Z_]+:E[0-9]{4}|E[0-9]{4})")
 AST_PREFIX = "[AST]"
@@ -31,62 +31,62 @@ class TestCase:
 
 CASES: list[TestCase] = [
     TestCase(
-        name="explain-insert-valid",
+        name="ast-insert-valid",
         header="Valid INSERT statement is parsed correctly",
-        description="Checks if 'explain insert into users values (1, 'name', 'email');' outputs correct AST.",
-        test_input="explain insert into users values (1, 'danimar', 'danimar@email.com');\n.exit\n",
+        description="Checks if 'ast insert into users values (1, 'name', 'email');' outputs correct AST.",
+        test_input="ast insert into users values (1, 'danimar', 'danimar@email.com');\n.exit\n",
         expected="AST dump with Statement: INSERT, Table: users, Values: [1, 'danimar', 'danimar@email.com']",
         mode="ast_insert_match",
     ),
     TestCase(
-        name="explain-select-valid",
+        name="ast-select-valid",
         header="Valid SELECT statement is parsed correctly",
-        description="Checks if 'explain select * from users;' outputs correct AST.",
-        test_input="explain select * from users;\n.exit\n",
+        description="Checks if 'ast select * from users;' outputs correct AST.",
+        test_input="ast select * from users;\n.exit\n",
         expected="AST dump with Statement: SELECT, Table: users, Columns: [*]",
         mode="ast_select_match",
     ),
     TestCase(
         name="insert-execution-unimplemented",
         header="Standard INSERT returns Unimplemented",
-        description="Checks if standard 'insert' command (without explain) returns execution not implemented.",
+        description="Checks if standard 'insert' command (without ast) returns execution not implemented.",
         test_input="insert into users values (1, 'danimar', 'danimar@email.com');\n.exit\n",
         expected="output contains error code [ERROR:00101]",
         mode="specific_error",
         expected_error_code="[ERROR:00101]"
     ),
     TestCase(
-        name="explain-insert-missing-args",
+        name="ast-insert-missing-args",
         header="Missing arguments in INSERT",
         description="Checks if missing values in INSERT returns syntax error.",
-        test_input="explain insert into users values (1, 'danimar');\n.exit\n",
+        test_input="ast insert into users values (1, 'danimar');\n.exit\n",
         expected="output contains error code [ERROR:00302]",
         mode="specific_error",
         expected_error_code="[ERROR:00302]"
     ),
     TestCase(
-        name="explain-insert-invalid-id",
+        name="ast-insert-invalid-id",
         header="Invalid ID type in INSERT",
         description="Checks if non-numeric ID in INSERT returns syntax error.",
-        test_input="explain insert into users values (abc, 'danimar', 'danimar@email.com');\n.exit\n",
+        test_input="ast insert into users values (abc, 'danimar', 'danimar@email.com');\n.exit\n",
         expected="output contains error code [ERROR:00303]",
         mode="specific_error",
         expected_error_code="[ERROR:00303]"
     ),
     TestCase(
-        name="explain-insert-name-too-long",
+        name="ast-insert-name-too-long",
         header="Name string is too long",
         description="Checks if name exceeding 32 characters in INSERT returns syntax/validation error.",
-        test_input="explain insert into users values (1, 'this_is_a_very_long_name_that_exceeds_32_characters', 'email@test.com');\n.exit\n",
+        test_input="ast insert into users values (1, 'this_is_a_very_long_name_that_exceeds_32_characters', 'email@test.com');\n.exit\n",
         expected="output contains error code [ERROR:00304]",
         mode="specific_error",
         expected_error_code="[ERROR:00304]"
     ),
     TestCase(
-        name="explain-unrecognized-sql",
+        name="ast-unrecognized-sql",
         header="Unrecognized SQL keyword",
         description="Checks if unsupported SQL (e.g. DELETE) returns unrecognized keyword error.",
-        test_input="explain delete from users;\n.exit\n",
+        test_input="ast delete from users;\n.exit\n",
         expected="output contains error code [ERROR:00301]",
         mode="specific_error",
         expected_error_code="[ERROR:00301]"

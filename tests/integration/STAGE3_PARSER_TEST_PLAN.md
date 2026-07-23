@@ -1,16 +1,15 @@
-# Stage 2: SQL Parser Test Plan
+# Stage 3: SQL Parser Test Plan
 
-This document outlines the testing strategy, contracts, and behaviors expected for the SQL Parser (Stage 2) in all language implementations.
+This document outlines the testing strategy, contracts, and behaviors expected for the SQL Parser (Stage 3) in all language implementations.
 
-## Stage 2 Objectives
-1. Implement a tokenizer to break input strings into SQL keywords, identifiers, symbols, and values.
-2. Build a parser to validate syntax against a simple SQL grammar.
-3. Validate values against their column constraints (e.g., maximum string length, numeric types).
-4. Extract the statement into an internal representation (AST/Statement struct).
+## Stage 3 Objectives
+1. Build a parser to validate syntax against a simple SQL grammar using the output of Stage 2 (Lexer).
+2. Validate values against their column constraints (e.g., maximum string length, numeric types).
+3. Extract the statement into an internal representation (AST/Statement struct).
 
 ## Test Cases
 
-All test cases are implemented in `tests/integration/python/stage2/parser_tests.py` and run via `make test-stage2`.
+All test cases are implemented in `tests/integration/python/stage3/parser_tests.py` and run via `make test-stage3`.
 
 ### 1. `explain-insert-valid`
 - **Input**: `explain insert into users values (1, 'danimar', 'danimar@email.com');`
@@ -58,7 +57,7 @@ All test cases are implemented in `tests/integration/python/stage2/parser_tests.
 
 ## Error Codes Reference
 
-While the exact error code digit sequences can be chosen by the implementation, they must match the `ERR_CODE_REGEX` (e.g. `[ERROR:xxxxx]`). A suggested standard for Stage 2 is:
+While the exact error code digit sequences can be chosen by the implementation, they must match the `ERR_CODE_REGEX` (e.g. `[ERROR:xxxxx]`). A suggested standard for Stage 3 is:
 
 - `[ERROR:00101]` - Execution not implemented yet
 - `[ERROR:00301]` - Unrecognized keyword (Syntax Error)

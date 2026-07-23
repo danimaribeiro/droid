@@ -19,20 +19,21 @@ static bool is_symbol(char c) {
         case ',': 
         case ';':
         case '=':
+        case '*':
             return true;
     }
     return false;
 }
 
 static TokenType get_keyword_type(char *token) {
-    if (strcmp(token, "INSERT") == 0) return TOKEN_KEYWORD_INSERT;
-    if (strcmp(token, "UPDATE") == 0) return TOKEN_KEYWORD_UPDATE;
-    if (strcmp(token, "DELETE") == 0) return TOKEN_KEYWORD_DELETE;
-    if (strcmp(token, "SELECT") == 0) return TOKEN_KEYWORD_SELECT;
-    if (strcmp(token, "INTO") == 0) return TOKEN_KEYWORD_INTO;
-    if (strcmp(token, "VALUES") == 0) return TOKEN_KEYWORD_VALUES;
-    if (strcmp(token, "FROM") == 0) return TOKEN_KEYWORD_FROM;
-    if (strcmp(token, "WHERE") == 0) return TOKEN_KEYWORD_WHERE;
+    if (strcasecmp(token, "INSERT") == 0) return TOKEN_KEYWORD_INSERT;
+    if (strcasecmp(token, "UPDATE") == 0) return TOKEN_KEYWORD_UPDATE;
+    if (strcasecmp(token, "DELETE") == 0) return TOKEN_KEYWORD_DELETE;
+    if (strcasecmp(token, "SELECT") == 0) return TOKEN_KEYWORD_SELECT;
+    if (strcasecmp(token, "INTO") == 0) return TOKEN_KEYWORD_INTO;
+    if (strcasecmp(token, "VALUES") == 0) return TOKEN_KEYWORD_VALUES;
+    if (strcasecmp(token, "FROM") == 0) return TOKEN_KEYWORD_FROM;
+    if (strcasecmp(token, "WHERE") == 0) return TOKEN_KEYWORD_WHERE;
     return TOKEN_IDENTIFIER;
 }
 
@@ -40,6 +41,7 @@ TokenList tokenize(char *input) {
     TokenList list;
     list.tokens = malloc(100 * sizeof(Token));
     list.count = 0;
+    list.has_error = false;
 
     int i = 0;
     size_t len = strlen(input);
