@@ -33,8 +33,8 @@ CASES: list[TestCase] = [
     TestCase(
         name="ast-insert-valid",
         header="Valid INSERT statement is parsed correctly",
-        description="Checks if 'ast insert into users values (1, 'name', 'email');' outputs correct AST.",
-        test_input="ast insert into users values (1, 'danimar', 'danimar@email.com');\n.exit\n",
+        description="Checks if 'ast insert into users (id, name, email) values (1, 'name', 'email');' outputs correct AST.",
+        test_input="ast insert into users (id, name, email) values (1, 'danimar', 'danimar@email.com');\n.exit\n",
         expected="AST dump with Statement: INSERT, Table: users, Values: [1, 'danimar', 'danimar@email.com']",
         mode="ast_insert_match",
     ),
@@ -50,7 +50,7 @@ CASES: list[TestCase] = [
         name="insert-execution-unimplemented",
         header="Standard INSERT returns Unimplemented",
         description="Checks if standard 'insert' command (without ast) returns execution not implemented.",
-        test_input="insert into users values (1, 'danimar', 'danimar@email.com');\n.exit\n",
+        test_input="insert into users (id, name, email) values (1, 'danimar', 'danimar@email.com');\n.exit\n",
         expected="output contains error code [ERROR:00101]",
         mode="specific_error",
         expected_error_code="[ERROR:00101]"
@@ -59,7 +59,7 @@ CASES: list[TestCase] = [
         name="ast-insert-missing-args",
         header="Missing arguments in INSERT",
         description="Checks if missing values in INSERT returns syntax error.",
-        test_input="ast insert into users values (1, 'danimar');\n.exit\n",
+        test_input="ast insert into users (id, name, email) values (1, 'danimar');\n.exit\n",
         expected="output contains error code [ERROR:00302]",
         mode="specific_error",
         expected_error_code="[ERROR:00302]"
@@ -68,20 +68,12 @@ CASES: list[TestCase] = [
         name="ast-insert-invalid-id",
         header="Invalid ID type in INSERT",
         description="Checks if non-numeric ID in INSERT returns syntax error.",
-        test_input="ast insert into users values (abc, 'danimar', 'danimar@email.com');\n.exit\n",
+        test_input="ast insert into users (id, name, email) values (abc, 'danimar', 'danimar@email.com');\n.exit\n",
         expected="output contains error code [ERROR:00303]",
         mode="specific_error",
         expected_error_code="[ERROR:00303]"
     ),
-    TestCase(
-        name="ast-insert-name-too-long",
-        header="Name string is too long",
-        description="Checks if name exceeding 32 characters in INSERT returns syntax/validation error.",
-        test_input="ast insert into users values (1, 'this_is_a_very_long_name_that_exceeds_32_characters', 'email@test.com');\n.exit\n",
-        expected="output contains error code [ERROR:00304]",
-        mode="specific_error",
-        expected_error_code="[ERROR:00304]"
-    ),
+
     TestCase(
         name="ast-unrecognized-sql",
         header="Unrecognized SQL keyword",

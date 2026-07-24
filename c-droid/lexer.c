@@ -77,10 +77,10 @@ TokenList tokenize(char *input) {
             tk.type = TOKEN_NUMBER;
             list.tokens[list.count] = tk;
             list.count++;
-        } else if(input[i] == '"') {
-            int start = i;
+        } else if(input[i] == '\'') {
+            int start = i + 1;
             i++;
-            while(i < len && input[i] != '"') {
+            while(i < len && input[i] != '\'') {
                 i++;
             }
             if (i == len) {
