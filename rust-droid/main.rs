@@ -1,5 +1,9 @@
 use std::env;
 use std::io::{self, Write};
+pub mod ast;
+pub mod lexer;
+pub mod parser;
+pub mod engine;
 mod repl;
 
 fn main() {

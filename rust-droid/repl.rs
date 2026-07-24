@@ -1,3 +1,5 @@
+use crate::engine;
+
 pub fn parse_command(command: &str) {
     let command = command.trim();
     if command == ".exit" {
@@ -8,6 +10,6 @@ pub fn parse_command(command: &str) {
         println!(".exit - Exit the program");
         println!(".help - Show this help message");
     } else {
-        println!("[ERROR:00100] Unknown command: {}", command);
+        engine::execute_sql(command);
     }
 }
