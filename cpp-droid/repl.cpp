@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdlib>
 #include <iostream>
+#include "engine.cpp"
 #include "utils.cpp"
 
 void parse_command(std::string &command) {
@@ -14,6 +15,6 @@ void parse_command(std::string &command) {
         std::cout << ".exit - Exit the program\n";
         std::cout << ".help - Show this help message\n";
     } else {
-        std::cout << "[ERROR:00100] Unknown command: " << command << "\n";
+        execute_sql(command);
     }
 }
