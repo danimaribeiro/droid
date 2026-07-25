@@ -1,10 +1,16 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "engine.h"
 #include "ast.h"
 #include "lexer.c"
+#include "pager.h"
 #include "parser.c"
+#include "row.c"
+#include "executor.c"
+
 
 void print_ast(AST_Node root) {
     if (root.has_error) return;
@@ -56,7 +62,7 @@ void print_ast(AST_Node root) {
     }
 }
 
-void execute_sql(char *command) {
+void execute_sql(Table *table, char *command) {
     bool is_tokenize = false;
     bool is_ast = false;
     char *sql = command;
@@ -81,13 +87,31 @@ void execute_sql(char *command) {
             }
         }
         free_tokens(&list);
+        return;
     } else if (is_ast) {
         if (!root.has_error) {
             print_ast(root);
         }
-    } else {
-        if (!root.has_error) {
-            printf("[ERROR:00101] Execution not implemented\n");
-        }
+        return;
     }
+
+    ExecuteResult result = execute_statement(table, &root);
+    printf("%s\n", result.message);
+}
+
+
+Table db_open(const char* filename) {
+    Table *users = malloc(sizeof(Table));
+    users->name = (char*)filename;
+    users->pager = malloc(sizeof(Pager));
+    users->pager->file_descriptor = open(filename, O_RDWR | O_CREAT, 0644);
+    users->pager->file_length = lseek(users->pager->file_descriptor, 0, SEEK_END);
+    users->pager->num_pages = users->pager->file_length / PAGE_SIZE;
+    users->root_page = 0;
+    return *users;
+}
+
+void db_close(Table *table) {
+    fsync(table->pager->file_descriptor);
+    close(table->pager->file_descriptor);
 }

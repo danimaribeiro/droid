@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "repl.c"
+#include "table.h"
 
 int main(int argc, char *argv[]) {
     char command[512];
+
+    Table table = db_open("droid.db");
 
     if (argc > 1) {
         if (strcmp(argv[1], "-c") == 0) {
@@ -12,7 +15,8 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
             strcpy(command, argv[2]);
-            parse_command(command);
+            parse_command(&table, command);
+            db_close(&table);
             return 0;
         } else {
             printf("[ERROR:00200] Unknown option: %s\n", argv[1]);
@@ -25,6 +29,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         printf(">");
         if (fgets(command, sizeof(command), stdin) == NULL) {
+            db_close(&table);
             break;
         }
         // Remove newline at the end
@@ -32,7 +37,7 @@ int main(int argc, char *argv[]) {
         if (len > 0 && command[len - 1] == '\n') {
             command[len - 1] = '\0';
         }
-        parse_command(command);
+        parse_command(&table, command);
     }
     printf("exiting.. good bye!\n");
     return 0;

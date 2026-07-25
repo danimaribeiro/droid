@@ -16,7 +16,6 @@ Token* peek(ParserState *state) {
     return &state->tokens->tokens[state->current_index];
 }
 
-tokenize insert into users(id, name) values (1, 'danimar');
 Token* consume(ParserState *state, TokenType expected_type) {
     if (state->current_index >= state->tokens->count) {
         printf("[ERROR:00302] Unexpected end of command\n");
