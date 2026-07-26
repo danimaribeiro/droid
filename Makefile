@@ -1,4 +1,4 @@
-.PHONY: all build-c build-cpp build-rust build-zig run-c run-cpp run-rust run-zig run-all test test-smoke check-bins test-stage1 test-stage2 test-stage3 test-all-stages test-c-stage1 test-cpp-stage1 test-rust-stage1 test-zig-stage1 clean
+.PHONY: all build-c build-cpp build-rust build-zig run-c run-cpp run-rust run-zig run-all test test-smoke check-bins test-stage1 test-stage2 test-stage3 test-stage4 test-stage5 test-stage6 test-stage7 test-stage8 test-stage9 test-stage10 test-stage11 test-stage12 test-stage13 test-stage14 test-stage15 test-stage16 test-stage17 test-stage18 test-all-stages test-c-stage1 test-cpp-stage1 test-rust-stage1 test-zig-stage1 clean
 
 CC := gcc
 CXX := g++
@@ -126,6 +126,195 @@ test-rust-stage3:
 test-zig-stage3:
 	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
 	@python3 tests/integration/python/run_tests.py --stage stage3 --bins $(ZIG_BIN)
+
+test-stage4: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage4 --bins $(BINS)
+
+test-c-stage4:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage4 --bins $(C_BIN)
+
+test-cpp-stage4:
+	@if [ ! -x "$(CPP_BIN)" ]; then echo "Missing binary: $(CPP_BIN)"; echo "Build it with: make build-cpp"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage4 --bins $(CPP_BIN)
+
+test-rust-stage4:
+	@if [ ! -x "$(RUST_BIN)" ]; then echo "Missing binary: $(RUST_BIN)"; echo "Build it with: make build-rust"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage4 --bins $(RUST_BIN)
+
+test-zig-stage4:
+	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage4 --bins $(ZIG_BIN)
+
+test-stage5: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage5 --bins $(BINS)
+
+test-c-stage5:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage5 --bins $(C_BIN)
+
+test-cpp-stage5:
+	@if [ ! -x "$(CPP_BIN)" ]; then echo "Missing binary: $(CPP_BIN)"; echo "Build it with: make build-cpp"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage5 --bins $(CPP_BIN)
+
+test-rust-stage5:
+	@if [ ! -x "$(RUST_BIN)" ]; then echo "Missing binary: $(RUST_BIN)"; echo "Build it with: make build-rust"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage5 --bins $(RUST_BIN)
+
+test-zig-stage5:
+	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage5 --bins $(ZIG_BIN)
+
+test-stage6: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage6 --bins $(BINS)
+
+test-c-stage6:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage6 --bins $(C_BIN)
+
+test-cpp-stage6:
+	@if [ ! -x "$(CPP_BIN)" ]; then echo "Missing binary: $(CPP_BIN)"; echo "Build it with: make build-cpp"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage6 --bins $(CPP_BIN)
+
+test-rust-stage6:
+	@if [ ! -x "$(RUST_BIN)" ]; then echo "Missing binary: $(RUST_BIN)"; echo "Build it with: make build-rust"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage6 --bins $(RUST_BIN)
+
+test-zig-stage6:
+	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage6 --bins $(ZIG_BIN)
+
+test-stage7: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage7 --bins $(BINS)
+
+test-c-stage7:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage7 --bins $(C_BIN)
+
+test-cpp-stage7:
+	@if [ ! -x "$(CPP_BIN)" ]; then echo "Missing binary: $(CPP_BIN)"; echo "Build it with: make build-cpp"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage7 --bins $(CPP_BIN)
+
+test-rust-stage7:
+	@if [ ! -x "$(RUST_BIN)" ]; then echo "Missing binary: $(RUST_BIN)"; echo "Build it with: make build-rust"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage7 --bins $(RUST_BIN)
+
+test-zig-stage7:
+	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage7 --bins $(ZIG_BIN)
+
+test-stage8: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage8 --bins $(BINS)
+
+test-c-stage8:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage8 --bins $(C_BIN)
+
+test-cpp-stage8:
+	@if [ ! -x "$(CPP_BIN)" ]; then echo "Missing binary: $(CPP_BIN)"; echo "Build it with: make build-cpp"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage8 --bins $(CPP_BIN)
+
+test-rust-stage8:
+	@if [ ! -x "$(RUST_BIN)" ]; then echo "Missing binary: $(RUST_BIN)"; echo "Build it with: make build-rust"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage8 --bins $(RUST_BIN)
+
+test-zig-stage8:
+	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage8 --bins $(ZIG_BIN)
+
+test-stage9: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage9 --bins $(BINS)
+
+test-c-stage9:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage9 --bins $(C_BIN)
+
+test-cpp-stage9:
+	@if [ ! -x "$(CPP_BIN)" ]; then echo "Missing binary: $(CPP_BIN)"; echo "Build it with: make build-cpp"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage9 --bins $(CPP_BIN)
+
+test-rust-stage9:
+	@if [ ! -x "$(RUST_BIN)" ]; then echo "Missing binary: $(RUST_BIN)"; echo "Build it with: make build-rust"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage9 --bins $(RUST_BIN)
+
+test-zig-stage9:
+	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage9 --bins $(ZIG_BIN)
+
+test-stage10: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage10 --bins $(BINS)
+
+test-c-stage10:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage10 --bins $(C_BIN)
+
+test-cpp-stage10:
+	@if [ ! -x "$(CPP_BIN)" ]; then echo "Missing binary: $(CPP_BIN)"; echo "Build it with: make build-cpp"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage10 --bins $(CPP_BIN)
+
+test-rust-stage10:
+	@if [ ! -x "$(RUST_BIN)" ]; then echo "Missing binary: $(RUST_BIN)"; echo "Build it with: make build-rust"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage10 --bins $(RUST_BIN)
+
+test-zig-stage10:
+	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage10 --bins $(ZIG_BIN)
+
+test-stage11: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage11 --bins $(BINS)
+
+test-c-stage11:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage11 --bins $(C_BIN)
+
+test-stage12: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage12 --bins $(BINS)
+
+test-c-stage12:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage12 --bins $(C_BIN)
+
+test-stage13: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage13 --bins $(BINS)
+
+test-c-stage13:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage13 --bins $(C_BIN)
+
+test-stage14: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage14 --bins $(BINS)
+
+test-c-stage14:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage14 --bins $(C_BIN)
+
+test-stage15: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage15 --bins $(BINS)
+
+test-c-stage15:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage15 --bins $(C_BIN)
+
+test-stage16: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage16 --bins $(BINS)
+
+test-c-stage16:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage16 --bins $(C_BIN)
+
+test-stage17: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage17 --bins $(BINS)
+
+test-c-stage17:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage17 --bins $(C_BIN)
+
+test-stage18: check-bins
+	@python3 tests/integration/python/run_tests.py --stage stage18 --bins $(BINS)
+
+test-c-stage18:
+	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
+	@python3 tests/integration/python/run_tests.py --stage stage18 --bins $(C_BIN)
 
 test-all-stages: check-bins
 	@python3 tests/integration/python/run_tests.py --stage all --bins $(BINS)

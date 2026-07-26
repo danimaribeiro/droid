@@ -15,33 +15,59 @@ Tutorial reference:
 
 ## Tutorial Pipeline (Source of Truth)
 The tutorial models the full journey of a query from user input to durable storage.
+Implementation order is bottom-up (dependencies first), not conceptual top-down.
 
-1. User REPL
+1. User REPL ✅
 - Goal: loop input/output, parse dot commands, route SQL/meta commands.
 - Test focus: CLI behavior, .exit, error reporting, non-crash guarantees.
 
-2. SQL Parser
-- Goal: tokenize input, validate syntax, build AST/statement representation.
-- Test focus: valid/invalid syntax, token boundaries, parser error messages.
+2. SQL Lexer ✅
+- Goal: tokenize input into keywords, identifiers, symbols, and values.
+- Test focus: valid/invalid tokens, error on unexpected characters, bracket output format.
+- Debug command: `tokenize <sql>`
 
-3. Planner and Executor
-- Goal: transform AST into executable plan and process rows through plan nodes.
-- Test focus: plan correctness, simple scans/inserts, WHERE evaluation behavior.
+3. SQL Parser ✅
+- Goal: validate syntax, build AST/statement representation.
+- Test focus: valid/invalid syntax, AST dump format, error codes.
+- Debug command: `ast <sql>`
 
 4. Row Serialization
-- Goal: map logical rows to byte layout and back.
-- Test focus: serialize/deserialize round-trip, offsets, fixed/variable field limits.
+- Goal: map logical rows (id, name, email) to a fixed 508-byte buffer and back.
+- Test focus: serialize/deserialize round-trip, field offsets, edge cases (zero id, empty strings).
+- Debug command: `serialize <insert_sql>`
 
-5. B-Tree Engine
-- Goal: sorted key storage, efficient lookup, split and rebalance behavior.
-- Test focus: insert order invariants, search correctness, leaf/internal split cases.
+5. The Pager & Buffer Pool
+- Goal: manage 4KB pages as the unit of disk I/O, in-memory cache.
+- Test focus: page allocation, cache hit/miss, out-of-bounds errors.
+- Debug commands: `pager status`, `pager alloc`, `pager get <N>`
 
-6. Pager Cache
-- Goal: manage in-memory pages, dirty tracking, and eviction policy.
-- Test focus: cache hit/miss behavior, dirty page lifecycle, eviction correctness.
+6. B-Tree Leaf Node & INSERT Execution
+- Goal: define leaf node byte layout, insert cells, wire INSERT end-to-end.
+- Test focus: dump empty/populated nodes, cell count, key presence, no errors on INSERT.
+- Debug command: `btree dump [page]`
 
-7. Disk and WAL
-- Goal: durability and crash recovery with write-ahead logging.
+7. B-Tree Search & SELECT Execution
+- Goal: binary search in leaf, sorted insertion, cursor scan for SELECT.
+- Test focus: find existing/missing keys, sorted cell order, SELECT output with headers/count.
+- Debug command: `btree find <key>`
+
+8. B-Tree Splits & Internal Nodes
+- Goal: handle leaf overflow, split into two halves, create internal nodes.
+- Test focus: split triggers, tree depth increase, find/select after split, multi-split.
+- Debug command: `btree structure`
+
+9. Persistence & WHERE Clause
+- Goal: data survives across sessions, WHERE filtering, --db flag for file control.
+- Test focus: cross-session persistence, WHERE equals on int/string, db file isolation.
+- New CLI flag: `--db <path>`
+
+10. Query Planner & Executor (Volcano Model)
+- Goal: transform AST into execution plan, choose IndexScan vs SeqScan, pull-based row iteration.
+- Test focus: explain plan output, IndexScan on primary key, SeqScan on non-key, correct results.
+- Debug command: `explain <sql>`
+
+11. WAL & Crash Recovery (future)
+- Goal: write-ahead logging for durability and crash recovery.
 - Test focus: WAL-before-data guarantees, checkpoint flow, restart recovery.
 
 Stage progression rule:
@@ -56,17 +82,20 @@ Target outcome for future platform integration:
 - tests run automatically against submissions
 - output is clear and educational (input, expected, actual, exit code, reason)
 
-## Current Scope (Stage 1: REPL)
-- focus on integration tests for CLI behavior
-- keep behavior contract explicit and versioned by stage
-- prefer stable output patterns (regex) to reduce brittle failures
-- include one-shot CLI mode contract via `-c` to support automation and web execution
+## Current Scope
+- Stages 1-3 (REPL, Lexer, Parser) are implemented and tested.
+- Stages 4-10 have test infrastructure ready; C implementation is in progress.
+- Stage 11 (WAL) is a future evolution.
+- Each stage has a test plan document under `tests/integration/STAGE<N>_*_TEST_PLAN.md`.
+- Each stage has a Python test module under `tests/integration/python/stage<N>/`.
 
 ## Testing Strategy
 - use Python integration tests under tests/integration/python
 - centralize command execution helpers in utils.py
 - keep test cases declarative and language-agnostic
-- keep stage modules separated (stage1, stage2, stage3)
+- keep stage modules separated (stage1 through stage10)
+- stages 5+ clean up droid.db before each test case for isolation
+- stage 9 uses tempfile-based --db paths for multi-session tests
 - each test output should include:
   - mini header (1-2 lines explanation)
   - input
@@ -77,6 +106,7 @@ Target outcome for future platform integration:
 - output policy:
   - PASS: compact one-line status (`binary + case + PASS`)
   - FAIL: full diagnostic block
+- stages 4-9 use `must_contain` / `must_not_contain` substring matching
 
 ## Repository Conventions
 - one main source file per language project at this stage
@@ -89,11 +119,11 @@ Target outcome for future platform integration:
 2. Update tests first when stage contracts change.
 3. Prefer additive changes; avoid unnecessary refactors.
 4. Keep outputs deterministic to support CI and web rendering.
-5. Document contract changes in tests/integration/STAGE1_REPL_TEST_PLAN.md (or next stage plan file).
+5. Document contract changes in the corresponding `tests/integration/STAGE<N>_*_TEST_PLAN.md`.
 
 ## Next Planned Evolutions
 1. Add JSON output mode to the Python test runner for web consumption.
-2. Introduce stage-specific test modules (stage1, stage2, ...).
-3. Add per-language allowlist/skip rules when a toolchain is missing.
-4. Expand from REPL to parser/planner/storage tests as stages progress.
-5. Keep each stage tied to tutorial sections: Stage Objective, Conceptual Algorithms, and Implementation Checklist.
+2. Add per-language allowlist/skip rules when a toolchain is missing.
+3. Implement C code for stages 4-10 to pass all tests.
+4. Keep each stage tied to tutorial sections: Stage Objective, Conceptual Algorithms, and Implementation Checklist.
+5. Stage 11: WAL & crash recovery.

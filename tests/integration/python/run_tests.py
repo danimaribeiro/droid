@@ -9,6 +9,21 @@ from collections import defaultdict
 from stage1.repl_tests import run_suite as run_stage1_suite
 from stage2.lexer_tests import run_suite as run_stage2_suite
 from stage3.parser_tests import run_suite as run_stage3_suite
+from stage4.serialization_tests import run_suite as run_stage4_suite
+from stage5.pager_tests import run_suite as run_stage5_suite
+from stage6.btree_leaf_tests import run_suite as run_stage6_suite
+from stage7.btree_search_tests import run_suite as run_stage7_suite
+from stage8.btree_split_tests import run_suite as run_stage8_suite
+from stage9.persistence_tests import run_suite as run_stage9_suite
+from stage10.planner_tests import run_suite as run_stage10_suite
+from stage11.varlen_serialization_tests import run_suite as run_stage11_suite
+from stage12.slotted_page_tests import run_suite as run_stage12_suite
+from stage13.varlen_btree_tests import run_suite as run_stage13_suite
+from stage14.create_table_tests import run_suite as run_stage14_suite
+from stage15.schema_validation_tests import run_suite as run_stage15_suite
+from stage16.transaction_commit_tests import run_suite as run_stage16_suite
+from stage17.transaction_rollback_tests import run_suite as run_stage17_suite
+from stage18.wal_tests import run_suite as run_stage18_suite
 from utils import format_result
 
 
@@ -16,6 +31,21 @@ STAGE_RUNNERS = {
     "stage1": run_stage1_suite,
     "stage2": run_stage2_suite,
     "stage3": run_stage3_suite,
+    "stage4": run_stage4_suite,
+    "stage5": run_stage5_suite,
+    "stage6": run_stage6_suite,
+    "stage7": run_stage7_suite,
+    "stage8": run_stage8_suite,
+    "stage9": run_stage9_suite,
+    "stage10": run_stage10_suite,
+    "stage11": run_stage11_suite,
+    "stage12": run_stage12_suite,
+    "stage13": run_stage13_suite,
+    "stage14": run_stage14_suite,
+    "stage15": run_stage15_suite,
+    "stage16": run_stage16_suite,
+    "stage17": run_stage17_suite,
+    "stage18": run_stage18_suite,
 }
 
 GREEN = "\033[32m"
@@ -43,7 +73,10 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--stage",
-        choices=["stage1", "stage2", "stage3", "all"],
+        choices=["stage1", "stage2", "stage3", "stage4", "stage5",
+                 "stage6", "stage7", "stage8", "stage9", "stage10",
+                 "stage11", "stage12", "stage13", "stage14", "stage15",
+                 "stage16", "stage17", "stage18", "all"],
         default="stage1",
         help="Choose which stage to run (default: stage1)",
     )
@@ -60,7 +93,8 @@ def main() -> int:
             print(f"- {item}")
         return 2
 
-    selected_stages = [args.stage] if args.stage != "all" else ["stage1", "stage2", "stage3"]
+    all_stages = list(STAGE_RUNNERS.keys())
+    selected_stages = [args.stage] if args.stage != "all" else all_stages
 
     results = []
     for stage in selected_stages:

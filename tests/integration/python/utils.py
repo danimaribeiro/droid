@@ -9,6 +9,18 @@ from typing import Sequence
 
 MAX_OUTPUT_CHARS = int(os.getenv("TEST_MAX_OUTPUT_CHARS", "2000"))
 
+DEFAULT_DB_FILE = "droid.db"
+
+
+def clean_db_files(*filenames: str) -> None:
+    """Remove database files for test isolation between cases."""
+    targets = filenames if filenames else (DEFAULT_DB_FILE,)
+    for f in targets:
+        try:
+            os.remove(f)
+        except FileNotFoundError:
+            pass
+
 
 def get_default_timeout_seconds() -> float:
     return float(os.getenv("TEST_TIMEOUT_SECONDS", "1.0"))
