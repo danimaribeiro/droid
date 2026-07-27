@@ -1,10 +1,19 @@
 import fs from "fs";
 import path from "path";
+import matter from "gray-matter";
 
+const CONTENT_DIR = path.join(process.cwd(), "content");
 const STAGES_DIR = path.join(process.cwd(), "..", "tests", "integration");
 
+// Tutorial content slugs (with frontmatter)
+const TUTORIAL_SLUGS = [
+  "stage1-repl",
+  "stage2-lexer",
+  "stage3-parser",
+  "stage4-serialization",
+];
+
 const STAGE_ORDER = [
-  // Part 1
   { file: "STAGE1_REPL_TEST_PLAN.md", num: 1, part: 1 },
   { file: "STAGE2_LEXER_TEST_PLAN.md", num: 2, part: 1 },
   { file: "STAGE3_PARSER_TEST_PLAN.md", num: 3, part: 1 },
@@ -15,7 +24,6 @@ const STAGE_ORDER = [
   { file: "STAGE8_BTREE_SPLIT_TEST_PLAN.md", num: 8, part: 1 },
   { file: "STAGE9_PERSISTENCE_TEST_PLAN.md", num: 9, part: 1 },
   { file: "STAGE10_PLANNER_TEST_PLAN.md", num: 10, part: 1 },
-  // Part 2
   { file: "STAGE11_VARLEN_SERIALIZATION_TEST_PLAN.md", num: 11, part: 2 },
   { file: "STAGE12_SLOTTED_PAGE_TEST_PLAN.md", num: 12, part: 2 },
   { file: "STAGE13_VARLEN_BTREE_TEST_PLAN.md", num: 13, part: 2 },
@@ -24,22 +32,18 @@ const STAGE_ORDER = [
   { file: "STAGE16_TRANSACTION_COMMIT_TEST_PLAN.md", num: 16, part: 2 },
   { file: "STAGE17_TRANSACTION_ROLLBACK_TEST_PLAN.md", num: 17, part: 2 },
   { file: "STAGE18_WAL_TEST_PLAN.md", num: 18, part: 2 },
-  // Part 3
   { file: "STAGE19_DELETE_UPDATE_TEST_PLAN.md", num: 19, part: 3 },
   { file: "STAGE20_ADVANCED_WHERE_TEST_PLAN.md", num: 20, part: 3 },
   { file: "STAGE21_ORDER_BY_TEST_PLAN.md", num: 21, part: 3 },
   { file: "STAGE22_LIMIT_OFFSET_TEST_PLAN.md", num: 22, part: 3 },
   { file: "STAGE23_AGGREGATIONS_TEST_PLAN.md", num: 23, part: 3 },
-  // Part 4
   { file: "STAGE24_SECONDARY_INDEXES_TEST_PLAN.md", num: 24, part: 4 },
   { file: "STAGE25_COST_OPTIMIZER_TEST_PLAN.md", num: 25, part: 4 },
   { file: "STAGE26_VACUUM_TEST_PLAN.md", num: 26, part: 4 },
-  // Part 5
   { file: "STAGE27_JOINS_NESTED_LOOP_TEST_PLAN.md", num: 27, part: 5 },
   { file: "STAGE28_HASH_JOIN_TEST_PLAN.md", num: 28, part: 5 },
   { file: "STAGE29_FOREIGN_KEYS_TEST_PLAN.md", num: 29, part: 5 },
   { file: "STAGE30_SUBQUERIES_TEST_PLAN.md", num: 30, part: 5 },
-  // Part 6
   { file: "STAGE31_LOCK_MANAGER_TEST_PLAN.md", num: 31, part: 6 },
   { file: "STAGE32_MVCC_TEST_PLAN.md", num: 32, part: 6 },
   { file: "STAGE33_DEADLOCK_DETECTION_TEST_PLAN.md", num: 33, part: 6 },
@@ -92,7 +96,6 @@ function extractSlug(filename) {
 }
 
 function extractFirstSection(content) {
-  // Get the first ## section's content (usually Concept or Objectives)
   const lines = content.split("\n");
   let collecting = false;
   let result = [];
@@ -101,14 +104,22 @@ function extractFirstSection(content) {
       collecting = true;
       continue;
     }
-    if (line.startsWith("## ") && collecting) {
-      break;
-    }
-    if (collecting) {
-      result.push(line);
-    }
+    if (line.startsWith("## ") && collecting) break;
+    if (collecting) result.push(line);
   }
   return result.join("\n").trim();
+}
+
+/**
+ * Load tutorial content from content/ directory (with frontmatter).
+ * Returns null if the file doesn't exist.
+ */
+export function getTutorialContent(slug) {
+  const filePath = path.join(CONTENT_DIR, `${slug}.md`);
+  if (!fs.existsSync(filePath)) return null;
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const { data, content } = matter(raw);
+  return { ...data, bodyContent: content };
 }
 
 export function getStages() {
@@ -116,13 +127,17 @@ export function getStages() {
     const filePath = path.join(STAGES_DIR, entry.file);
     if (!fs.existsSync(filePath)) return null;
     const content = fs.readFileSync(filePath, "utf-8");
+    // Build slug: try tutorial slug first, else derive from filename
+    const tutorialSlug = `stage${entry.num}-${extractSlug(entry.file).replace(`stage${entry.num}-`, "")}`;
+    const slug = TUTORIAL_SLUGS.includes(tutorialSlug) ? tutorialSlug : extractSlug(entry.file);
     return {
-      slug: extractSlug(entry.file),
+      slug,
       num: entry.num,
       part: entry.part,
       title: extractTitle(content),
       summary: extractFirstSection(content),
       content,
+      hasTutorial: TUTORIAL_SLUGS.includes(tutorialSlug),
     };
   }).filter(Boolean);
 }

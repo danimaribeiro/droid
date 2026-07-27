@@ -81,114 +81,12 @@ a:hover {
 }
 
 /* ========== SIDEBAR ========== */
-
-.sidebar {
-  width: var(--sidebar-width);
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  overflow-y: auto;
-  z-index: 100;
-  transition: transform 0.3s ease;
-}
-
-.sidebar-header {
-  padding: 24px 20px;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--bg-sidebar);
-  z-index: 10;
-}
-
-.sidebar-logo {
-  font-size: 20px;
-  font-weight: 800;
-  background: var(--gradient-1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
-}
-
-.sidebar-subtitle {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 4px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.sidebar-nav {
-  padding: 12px 0;
-}
-
-.sidebar-section {
-  margin-bottom: 8px;
-}
-
-.sidebar-section-title {
-  padding: 8px 20px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-}
-
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 20px;
-  font-size: 13.5px;
-  color: var(--text-secondary);
-  transition: all 0.2s;
-  border-left: 3px solid transparent;
-  text-decoration: none;
-}
-
-.sidebar-link:hover {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border-left-color: var(--accent-1);
-}
-
-.sidebar-link.active {
-  background: var(--accent-1-dim);
-  color: var(--accent-1);
-  border-left-color: var(--accent-1);
-  font-weight: 500;
-}
-
-.sidebar-link-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-code);
-  font-size: 11px;
-  font-weight: 600;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.sidebar-link:hover .sidebar-link-num,
-.sidebar-link.active .sidebar-link-num {
-  background: var(--accent-1-dim);
-  color: var(--accent-1);
-}
+/* Sidebar styles are defined in the TUTORIAL LAYOUT section below */
 
 /* ========== MAIN CONTENT ========== */
 
 .main-content {
-  margin-left: var(--sidebar-width);
+  margin-left: 280px;
   flex: 1;
   min-height: 100vh;
 }
@@ -627,11 +525,11 @@ a:hover {
 }
 
 @media (max-width: 900px) {
-  .sidebar {
+  .tutorial-sidebar {
     transform: translateX(-100%);
   }
 
-  .sidebar.open {
+  .tutorial-sidebar.open {
     transform: translateX(0);
   }
 
@@ -693,3 +591,437 @@ a:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-hover);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   TUTORIAL LAYOUT — Sidebar + Main Content
+   ═══════════════════════════════════════════════════════════════ */
+
+.tutorial-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+
+.tutorial-sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo-icon {
+  font-size: 24px;
+}
+
+.sidebar-logo-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sidebar-logo-subtitle {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 0;
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  margin-bottom: 8px;
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 12px 20px 6px;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-stage-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 20px;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-stage-link:hover {
+  background: var(--bg-card);
+}
+
+.sidebar-stage-link.active {
+  background: var(--accent-1-dim);
+  border-left-color: var(--accent-1);
+}
+
+.sidebar-stage-link.coming-soon {
+  opacity: 0.5;
+}
+
+.sidebar-stage-indicator {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.sidebar-stage-indicator.done {
+  color: var(--accent-4);
+  font-weight: 700;
+}
+
+.sidebar-stage-title {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.sidebar-stage-link.active .sidebar-stage-title {
+  color: var(--accent-1);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-progress {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── Tutorial Main ── */
+
+.tutorial-main {
+  flex: 1;
+  max-width: 860px;
+  padding: 40px 48px 80px;
+}
+
+.tutorial-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.tutorial-breadcrumb a {
+  color: var(--accent-3);
+  text-decoration: none;
+}
+
+.tutorial-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-sep {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.tutorial-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.tutorial-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+/* ── Stage Objective ── */
+
+.stage-objective {
+  background: var(--bg-card);
+  border-left: 4px solid #f97316;
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 32px;
+}
+
+.stage-objective-badge {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f97316;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stage-objective-text {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* ── Tutorial Sections ── */
+
+.tutorial-section {
+  margin-bottom: 36px;
+}
+
+.tutorial-section h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.tutorial-concepts-list {
+  list-style: none;
+  padding: 0;
+}
+
+.tutorial-concepts-list li {
+  font-size: 15px;
+  color: var(--text-secondary);
+  padding: 6px 0 6px 24px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.tutorial-concepts-list li::before {
+  content: "💡";
+  position: absolute;
+  left: 0;
+  font-size: 14px;
+}
+
+/* ── Algorithm Cards ── */
+
+.algorithm-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+
+.algorithm-card:hover {
+  border-color: var(--border-hover);
+}
+
+.algorithm-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.algorithm-card-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--accent-1-dim);
+  color: var(--accent-1);
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.algorithm-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.algorithm-card-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.algorithm-card-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.algorithm-card-step {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.algorithm-card-step:first-child {
+  border-top: none;
+}
+
+.step-number {
+  color: var(--accent-3);
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 24px;
+}
+
+.step-text {
+  color: var(--text-secondary);
+}
+
+/* ── Implementation Checklist ── */
+
+.tutorial-checklist {
+  list-style: none;
+  padding: 0;
+}
+
+.tutorial-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.tutorial-checklist input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: var(--accent-4);
+}
+
+/* ── Tutorial Body (markdown) ── */
+
+.tutorial-body h2 {
+  font-size: 20px;
+  margin-top: 8px;
+}
+
+.tutorial-body p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.tutorial-body code {
+  background: var(--bg-code);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent-3);
+}
+
+.tutorial-body pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.tutorial-body pre code {
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.tutorial-body ul, .tutorial-body ol {
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.tutorial-body li {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+.tutorial-body strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tutorial-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.tutorial-body th, .tutorial-body td {
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.tutorial-body th {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tutorial-body td {
+  color: var(--text-secondary);
+}
+
+.tutorial-body td code {
+  font-size: 12px;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .tutorial-sidebar {
+    display: none;
+  }
+
+  .tutorial-main {
+    padding: 24px 20px 60px;
+  }
+
+  .tutorial-title {
+    font-size: 28px;
+  }
+}
+
