@@ -23,13 +23,13 @@ All test cases are implemented in `tests/integration/python/stage2/lexer_tests.p
 
 ### 1b. Outras Queries Suportadas e Validadas
 Os testes também incluem validação para:
-- `UPDATE`: `tokenize UPDATE users SET name = "danimar" WHERE id = 1;`
+- `UPDATE`: `tokenize UPDATE users SET name = 'danimar' WHERE id = 1;`
 - `DELETE`: `tokenize delete from users where id = 1;`
 - `SELECT com WHERE`: `tokenize select * from users where id = 1;`
 - Suporte a maiúsculas: `tokenize SELECT * FROM users;`
 
 ### 2. `tokenize-insert-valid`
-- **Input**: `tokenize insert into users (id, name) values (1, "danimar");`
+- **Input**: `tokenize insert into users (id, name) values (1, 'danimar');`
 - **Expected Output**:
   ```
   [KEYWORD_INSERT - insert]
@@ -44,13 +44,13 @@ Os testes também incluem validação para:
   [SYMBOL - (]
   [NUMBER - 1]
   [SYMBOL - ,]
-  [STRING - "danimar]
+  [STRING - danimar]
   [SYMBOL - )]
   [SYMBOL - ;]
   ```
 
 ### 3. `tokenize-missing-quote`
-- **Input**: `tokenize insert into users values (1, "danimar`
+- **Input**: `tokenize insert into users values (1, 'danimar`
 - **Expected Output**: Syntax error indicating missing closing quote.
   - Matches regex: `(\[ERROR:\d+\]|ERR_.*)`
   - Should print `Syntax error in command`

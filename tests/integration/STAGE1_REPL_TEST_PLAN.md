@@ -1,95 +1,67 @@
-# Stage 1 REPL Integration Test Plan
+# Stage 1: User REPL Test Plan
 
-Scope now:
-- SQL is still not implemented.
-- Any command not implemented must return an error with code.
-- .exit must terminate cleanly.
+This document outlines the testing strategy, contracts, and behaviors expected for the User REPL (Stage 1) in all language implementations.
 
-Current test cases:
-1. help-unimplemented-error-code
-- Input: .help
-- Expect: error code marker in output
-- Default regex: (ERR_[A-Z_]+:E[0-9]{4}|E[0-9]{4})
+## Stage 1 Objectives
+1. Implement an interactive Command-Line Interface (REPL) loop that displays a prompt (e.g. `droid> `) and accepts user input.
+2. Parse dot/meta commands (`.help`, `.exit`) and route non-dot inputs to the SQL engine.
+3. Support non-interactive execution via the `-c "<sql>"` CLI flag.
+4. Ensure non-crash guarantees (no segfaults / exit code 139) on empty lines, long lines, or unexpected EOF.
 
-2. exit-command-status
-- Input: .foo, then .exit
-- Expect: process exits with status 0, output includes error code for .foo, and prompt marker
+## Test Cases
 
-3. invalid-meta-command-error-code
-- Input: .foo
-- Expect: error code marker in output
+All test cases are implemented in `tests/integration/python/stage1/repl_tests.py` and run via `make test-stage1`.
 
-4. empty-line-no-crash
-- Input: empty line
-- Expect: no crash (at least no segfault status 139) and prompt marker in output
+### 1. `help-command-works`
+- **Input**: `.help`
+- **Expected Output**: Displays available meta commands. Must contain `Available commands:` header and list `.exit` and `.help`.
 
-5. trimmed-help-unimplemented-error-code
-- Input: spaces + .help + spaces
-- Expect: error code marker in output
+### 2. `exit-command-status`
+- **Input**: `.foo` then `.exit`
+- **Expected Output**: Returns an error code for `.foo`, displays prompt, and terminates cleanly with exit code 0.
 
-6. sql-select-unimplemented-error-code
-- Input: select 1;
-- Expect: error code marker in output
+### 3. `invalid-meta-command-error-code`
+- **Input**: `.foo`
+- **Expected Output**: Rejects unknown meta command with an error code matching `ERR_CODE_REGEX` (e.g. `[ERROR:00102]`).
 
-7. mixed-session-order
-- Input: .foo, select 1;, .exit
-- Expect: contains error code marker in the session output
+### 4. `empty-line-no-crash`
+- **Input**: Empty line `\n` followed by `.exit`
+- **Expected Output**: Ignores empty input, displays prompt, and exits without crashing.
 
-8. eof-no-crash
-- Input: EOF directly on stdin
-- Expect: no crash (at least no segfault status 139) and prompt marker in output
+### 5. `trimmed-help-with-spaces`
+- **Input**: Leading/trailing spaces `   .help   `
+- **Expected Output**: Trims whitespace and executes `.help` correctly.
 
-9. long-line-no-crash
-- Input: very long line
-- Expect: no crash (at least no segfault status 139) and prompt marker in output
+### 6. `sql-select-unimplemented-error-code`
+- **Input**: `select 1;`
+- **Expected Output**: While SQL execution is unimplemented in Stage 1, returns error code matching `ERR_CODE_REGEX` (e.g. `[ERROR:00101]`).
 
-10. cli-c-help-unimplemented-error-code
-- Input: CLI args `-c ".help"`
-- Expect: error code marker in output
+### 7. `mixed-session-order`
+- **Input**: `.foo` -> `select 1;` -> `.exit`
+- **Expected Output**: Evaluates commands sequentially without state corruption.
 
-11. cli-c-select-unimplemented-error-code
-- Input: CLI args `-c "select 1;"`
-- Expect: error code marker in output
+### 8. `eof-no-crash`
+- **Input**: EOF (ctrl+d / empty stream) on stdin
+- **Expected Output**: Handles EOF gracefully without crashing.
 
-12. cli-c-missing-argument-fails
-- Input: CLI args `-c` (without command)
-- Expect: non-zero exit code
+### 9. `long-line-no-crash`
+- **Input**: 4096-character input string
+- **Expected Output**: Buffer safety check: handles long lines without stack/heap buffer overflow or segfault.
 
-How to run:
-- make test
-- make test-stage1
-- make test-c-stage1
-- make test-cpp-stage1
-- make test-rust-stage1
-- make test-zig-stage1
-- make test-stage2
-- make test-stage3
-- make test-all-stages
+### 10. `cli-c-select-unimplemented-error-code`
+- **Input**: CLI invocation with `-c "select 1;"`
+- **Expected Output**: Executes SQL command in one-shot mode and returns expected output.
 
-Python test architecture:
-- tests/integration/python/utils.py
-- tests/integration/python/stage1/repl_tests.py
-- tests/integration/python/stage2/parser_tests.py
-- tests/integration/python/stage3/planner_executor_tests.py
-- tests/integration/python/run_tests.py
+### 11. `cli-c-missing-argument-fails`
+- **Input**: CLI invocation with `-c` without an argument
+- **Expected Output**: Returns non-zero exit code indicating CLI usage error.
 
-Detailed output format (per case):
-- PASS: compact one-line status (`binary + case + PASS`)
-- FAIL: detailed block with:
-	- case
-	- binary
-	- args
-	- status
-	- input
-	- expected
-	- actual
-	- exit_code
-	- reason
+## Error Codes Reference
 
-Optional customization:
-- ERR_CODE_REGEX="your_regex" make test-stage1
-- PROMPT_REGEX="your_regex" make test-stage1
+A suggested standard for Stage 1 error codes:
+- `[ERROR:00101]` - SQL execution not implemented yet
+- `[ERROR:00102]` - Unrecognized dot/meta command
 
-Evolution path:
-- As features are implemented, move each command from error expectations to success expectations.
-- Keep the same runner and only update/add cases.
+## Repository Rules Followed
+- All test cases run against binary builds (`bin/c-db`, `bin/cpp-db`, `bin/rust-db`, `bin/zig-db`).
+- Prompt customization can be passed via environment variable `PROMPT_REGEX`.

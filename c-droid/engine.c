@@ -95,23 +95,12 @@ void print_ast(AST_Node root) {
     }
 }
 
-void execute_sql(Table *table, char *command) {
-    bool is_tokenize = false;
-    bool is_ast = false;
-    char *sql = command;
+bool handle_debug_command(Table *table, char *command) {
 
+    // ── Stage 2: Lexer debug ──
     if (strncmp(command, "tokenize ", 9) == 0) {
-        is_tokenize = true;
-        sql = command + 9;
-    } else if (strncmp(command, "ast ", 4) == 0) {
-        is_ast = true;
-        sql = command + 4;
-    }
-
-    TokenList list = tokenize(sql);
-    AST_Node root = parse_statement(&list);
-
-    if (is_tokenize) {
+        char *sql = command + 9;
+        TokenList list = tokenize(sql);
         if (list.has_error) {
             printf("Syntax error in command\n");
         } else {
@@ -120,16 +109,60 @@ void execute_sql(Table *table, char *command) {
             }
         }
         free_tokens(&list);
-        return;
-    } else if (is_ast) {
+        return true;
+    }
+
+    // ── Stage 3: Parser debug ──
+    if (strncmp(command, "ast ", 4) == 0) {
+        char *sql = command + 4;
+        TokenList list = tokenize(sql);
+        AST_Node root = parse_statement(&list);
         if (!root.has_error) {
             print_ast(root);
         }
+        free_tokens(&list);
+        return true;
+    }
+
+    // ── Stage 4: Serialization debug ──
+    if (strncmp(command, "serialize ", 10) == 0) {
+        char *sql = command + 10;
+        TokenList list = tokenize(sql);
+        AST_Node root = parse_statement(&list);
+        if (root.has_error || root.type != STATEMENT_INSERT) {
+            printf("[ERROR:00400] serialize requires a valid INSERT statement\n");
+        } else {
+            handle_serialize(&root.statement.insert);
+        }
+        free_tokens(&list);
+        return true;
+    }
+
+    // ── Stage 4: Deserialization debug ──
+    if (strncmp(command, "deserialize ", 12) == 0) {
+        char *hex_input = command + 12;
+        handle_deserialize(hex_input);
+        return true;
+    }
+
+    // Futuro:
+    // Stage 5: if (strncmp(command, "pager ", 6) == 0) { ... return true; }
+    // Stage 6-8: if (strncmp(command, "btree ", 6) == 0) { ... return true; }
+
+    return false;
+}
+
+void execute_sql(Table *table, char *command) {
+    if (handle_debug_command(table, command)) {
         return;
     }
 
+    // ── Pipeline normal de execução (Stage 9+) ──
+    TokenList list = tokenize(command);
+    AST_Node root = parse_statement(&list);
     ExecuteResult result = execute_statement(table, &root);
     printf("%s\n", result.message);
+    free_tokens(&list);
 }
 
 

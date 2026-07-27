@@ -11,49 +11,83 @@ This document outlines the testing strategy, contracts, and behaviors expected f
 
 All test cases are implemented in `tests/integration/python/stage3/parser_tests.py` and run via `make test-stage3`.
 
-### 1. `explain-insert-valid`
-- **Input**: `explain insert into users values (1, 'danimar', 'danimar@email.com');`
-- **Expected Output**: The parser must successfully parse the statement and output the AST representation:
-  ```
-  [AST] Statement: INSERT
-  [AST] Table: users
-  [AST] Values: [1, 'danimar', 'danimar@email.com']
-  ```
-- **Why `explain`?**: Since execution (Stage 3) is not yet implemented, `explain` acts as a debug flag to prove the parser extracted the correct arguments.
-
-### 2. `explain-select-valid`
-- **Input**: `explain select * from users;`
+### 1. `ast-insert-valid`
+- **Input**: `ast insert into users (id, name, email) values (1, 'danimar', 'danimar@email.com');`
 - **Expected Output**:
   ```
-  [AST] Statement: SELECT
-  [AST] Table: users
-  [AST] Columns: [*]
+  Statement: INSERT
+  Table: users
+  Values: [1, 'danimar', 'danimar@email.com']
   ```
 
-### 3. `insert-execution-unimplemented`
-- **Input**: `insert into users values (1, 'danimar', 'danimar@email.com');` (without `explain`)
-- **Expected Output**: The parser succeeds, but execution fails.
-  - Matches regex: `(\[ERROR:00101\]|ERR_.*E0101)` (Execution not implemented)
+### 2. `ast-select-valid`
+- **Input**: `ast select * from users;`
+- **Expected Output**:
+  ```
+  Statement: SELECT
+  Table: users
+  Columns: [*]
+  ```
 
-### 4. `explain-insert-missing-args`
-- **Input**: `explain insert into users values (1, 'danimar');`
-- **Expected Output**: Syntax error indicating missing arguments.
-  - Matches regex: `(\[ERROR:\d+\]|ERR_.*)`
+### 3. `ast-select-where`
+- **Input**: `ast select name, email from users where name = 'alice';`
+- **Expected Output**:
+  ```
+  Statement: SELECT
+  Table: users
+  Columns: [name, email]
+  Where: name = 'alice'
+  ```
 
-### 5. `explain-insert-invalid-id`
-- **Input**: `explain insert into users values (abc, 'danimar', 'danimar@email.com');`
-- **Expected Output**: Syntax error indicating invalid ID type.
-  - Matches regex: `(\[ERROR:\d+\]|ERR_.*)`
+### 4. `ast-update-where`
+- **Input**: `ast update users set name = 'bob' where id = 1;`
+- **Expected Output**:
+  ```
+  Statement: UPDATE
+  Table: users
+  Columns: [name]
+  Values: ['bob']
+  Where: id = 1
+  ```
 
-### 6. `explain-insert-name-too-long`
-- **Input**: `explain insert into users values (1, 'this_is_a_very_long_name_that_exceeds_32_characters', 'email@test.com');`
-- **Expected Output**: Syntax/Validation error indicating the string exceeds constraints.
-  - Matches regex: `(\[ERROR:\d+\]|ERR_.*)`
+### 5. `ast-update-no-where`
+- **Input**: `ast update users set email = 'bulk@test.com';`
+- **Expected Output**:
+  ```
+  Statement: UPDATE
+  Table: users
+  Columns: [email]
+  Values: ['bulk@test.com']
+  ```
 
-### 7. `explain-unrecognized-sql`
-- **Input**: `explain delete from users;`
-- **Expected Output**: Unrecognized keyword error.
-  - Matches regex: `(\[ERROR:\d+\]|ERR_.*)`
+### 6. `ast-delete-where`
+- **Input**: `ast delete from users where id = 1;`
+- **Expected Output**:
+  ```
+  Statement: DELETE
+  Table: users
+  Where: id = 1
+  ```
+
+### 7. `ast-delete-no-where`
+- **Input**: `ast delete from users;`
+- **Expected Output**:
+  ```
+  Statement: DELETE
+  Table: users
+  ```
+
+### 8. `ast-insert-missing-args`
+- **Input**: `ast insert into users (id, name, email) values (1, 'danimar');`
+- **Expected Output**: Syntax error code `[ERROR:00302]`.
+
+### 9. `ast-insert-invalid-id`
+- **Input**: `ast insert into users (id, name, email) values (abc, 'danimar', 'danimar@email.com');`
+- **Expected Output**: Syntax error code `[ERROR:00302]`.
+
+### 10. `ast-unrecognized-sql`
+- **Input**: `ast truncate from users;`
+- **Expected Output**: Unrecognized keyword error code `[ERROR:00301]`.
 
 ## Error Codes Reference
 

@@ -9,16 +9,16 @@ void btree_insert(Table *table, int key, char *row_buffer) {
     void *page = pager_get_page(table->pager, page_num);
 
     uint32_t *num_cells = (uint32_t *)page;
-    if (*num_cells >= 8) {
+    if (*num_cells >= 64) {
         page_num++;
         page = pager_get_page(table->pager, page_num);
         num_cells = (uint32_t*)page;
         (*num_cells) = 0;
     }
 
-    uint32_t offset = sizeof(uint32_t) + ((*num_cells) * 508);
+    uint32_t offset = sizeof(uint32_t) + ((*num_cells) * ROW_SIZE);
 
-    memcpy(page + offset, row_buffer, 508);
+    memcpy(page + offset, row_buffer, ROW_SIZE);
 
     (*num_cells)++;
     pager_flush(table->pager, page_num);

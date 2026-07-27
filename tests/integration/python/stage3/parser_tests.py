@@ -23,10 +23,13 @@ class TestCase:
     mode: str
     cli_args: list[str] | None = None
     expected_error_code: str | None = None
+    must_contain: list[str] | None = None
 
     def __post_init__(self) -> None:
         if self.cli_args is None:
             self.cli_args = []
+        if self.must_contain is None:
+            self.must_contain = []
 
 
 CASES: list[TestCase] = [
@@ -47,13 +50,49 @@ CASES: list[TestCase] = [
         mode="ast_select_match",
     ),
     TestCase(
-        name="insert-execution-unimplemented",
-        header="Standard INSERT returns Unimplemented",
-        description="Checks if standard 'insert' command (without ast) returns execution not implemented.",
-        test_input="insert into users (id, name, email) values (1, 'danimar', 'danimar@email.com');\n.exit\n",
-        expected="output contains error code [ERROR:00101]",
-        mode="specific_error",
-        expected_error_code="[ERROR:00101]"
+        name="ast-select-where",
+        header="SELECT with WHERE clause is parsed correctly",
+        description="Checks if 'ast select name, email from users where name = 'alice';' outputs correct AST.",
+        test_input="ast select name, email from users where name = 'alice';\n.exit\n",
+        expected="AST dump with SELECT, Table, Columns, and Where",
+        mode="must_contain",
+        must_contain=["Statement: SELECT", "Table: users", "Columns: [name, email]", "Where: name = 'alice'"],
+    ),
+    TestCase(
+        name="ast-update-where",
+        header="UPDATE with WHERE clause is parsed correctly",
+        description="Checks if 'ast update users set name = 'bob' where id = 1;' outputs correct AST.",
+        test_input="ast update users set name = 'bob' where id = 1;\n.exit\n",
+        expected="AST dump with UPDATE, Table, Columns, Values, and Where",
+        mode="must_contain",
+        must_contain=["Statement: UPDATE", "Table: users", "Columns: [name]", "Values: ['bob']", "Where: id = 1"],
+    ),
+    TestCase(
+        name="ast-update-no-where",
+        header="UPDATE without WHERE clause is parsed correctly",
+        description="Checks if 'ast update users set email = 'bulk@test.com';' outputs correct AST.",
+        test_input="ast update users set email = 'bulk@test.com';\n.exit\n",
+        expected="AST dump with UPDATE, Table, Columns, and Values",
+        mode="must_contain",
+        must_contain=["Statement: UPDATE", "Table: users", "Columns: [email]", "Values: ['bulk@test.com']"],
+    ),
+    TestCase(
+        name="ast-delete-where",
+        header="DELETE with WHERE clause is parsed correctly",
+        description="Checks if 'ast delete from users where id = 1;' outputs correct AST.",
+        test_input="ast delete from users where id = 1;\n.exit\n",
+        expected="AST dump with DELETE, Table, and Where",
+        mode="must_contain",
+        must_contain=["Statement: DELETE", "Table: users", "Where: id = 1"],
+    ),
+    TestCase(
+        name="ast-delete-no-where",
+        header="DELETE without WHERE clause is parsed correctly",
+        description="Checks if 'ast delete from users;' outputs correct AST.",
+        test_input="ast delete from users;\n.exit\n",
+        expected="AST dump with DELETE and Table",
+        mode="must_contain",
+        must_contain=["Statement: DELETE", "Table: users"],
     ),
     TestCase(
         name="ast-insert-missing-args",
@@ -69,16 +108,15 @@ CASES: list[TestCase] = [
         header="Invalid ID type in INSERT",
         description="Checks if non-numeric ID in INSERT returns syntax error.",
         test_input="ast insert into users (id, name, email) values (abc, 'danimar', 'danimar@email.com');\n.exit\n",
-        expected="output contains error code [ERROR:00303]",
+        expected="output contains error code [ERROR:00302]",
         mode="specific_error",
-        expected_error_code="[ERROR:00303]"
+        expected_error_code="[ERROR:00302]"
     ),
-
     TestCase(
         name="ast-unrecognized-sql",
         header="Unrecognized SQL keyword",
-        description="Checks if unsupported SQL (e.g. DELETE) returns unrecognized keyword error.",
-        test_input="ast delete from users;\n.exit\n",
+        description="Checks if unsupported SQL (e.g. TRUNCATE) returns unrecognized keyword error.",
+        test_input="ast truncate from users;\n.exit\n",
         expected="output contains error code [ERROR:00301]",
         mode="specific_error",
         expected_error_code="[ERROR:00301]"
@@ -113,7 +151,11 @@ def run_case(binary: str, case: TestCase) -> CommandResult:
             reason="Command timed out while waiting for program output/termination",
         )
 
-    if case.mode == "regex_error":
+    if case.mode == "must_contain":
+        missing = [s for s in (case.must_contain or []) if s not in actual_text]
+        passed = len(missing) == 0
+        reason = "" if passed else "; ".join([f"Missing in output: '{s}'" for s in missing])
+    elif case.mode == "regex_error":
         passed = check_regex(actual_text, ERR_CODE_REGEX)
         reason = "" if passed else "No error code found in output"
     elif case.mode == "specific_error":

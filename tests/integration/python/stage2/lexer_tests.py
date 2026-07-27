@@ -48,8 +48,8 @@ CASES: list[TestCase] = [
     TestCase(
         name="tokenize-insert-valid",
         header="Valid INSERT statement is tokenized correctly",
-        description="Checks if 'tokenize insert into users (id, name) values (1, \"danimar\");' outputs correct tokens.",
-        test_input="tokenize insert into users (id, name) values (1, \"danimar\");\n.exit\n",
+        description="Checks if 'tokenize insert into users (id, name) values (1, \'danimar\');' outputs correct tokens.",
+        test_input="tokenize insert into users (id, name) values (1, 'danimar');\n.exit\n",
         expected="output contains the exact token sequence",
         mode="token_match",
         expected_tokens=[
@@ -65,7 +65,7 @@ CASES: list[TestCase] = [
             "[SYMBOL - (]",
             "[NUMBER - 1]",
             "[SYMBOL - ,]",
-            "[STRING - \"danimar]",
+            "[STRING - danimar]",
             "[SYMBOL - )]",
             "[SYMBOL - ;]"
         ]
@@ -73,17 +73,17 @@ CASES: list[TestCase] = [
     TestCase(
         name="tokenize-update-valid",
         header="Valid UPDATE statement is tokenized correctly",
-        description="Checks if 'tokenize UPDATE users SET name = \"danimar\" WHERE id = 1;' outputs correct tokens.",
-        test_input="tokenize UPDATE users SET name = \"danimar\" WHERE id = 1;\n.exit\n",
+        description="Checks if 'tokenize UPDATE users SET name = \'danimar\' WHERE id = 1;' outputs correct tokens.",
+        test_input="tokenize UPDATE users SET name = 'danimar' WHERE id = 1;\n.exit\n",
         expected="output contains the exact token sequence",
         mode="token_match",
         expected_tokens=[
             "[KEYWORD_UPDATE - UPDATE]",
             "[IDENTIFIER - users]",
-            "[IDENTIFIER - SET]",
+            "[KEYWORD_SET - SET]",
             "[IDENTIFIER - name]",
             "[SYMBOL - =]",
-            "[STRING - \"danimar]",
+            "[STRING - danimar]",
             "[KEYWORD_WHERE - WHERE]",
             "[IDENTIFIER - id]",
             "[SYMBOL - =]",
@@ -147,7 +147,7 @@ CASES: list[TestCase] = [
         name="tokenize-missing-quote",
         header="Missing quote returns error",
         description="Checks if missing closing quote returns syntax error.",
-        test_input="tokenize insert into users values (1, \"danimar);\n.exit\n",
+        test_input="tokenize insert into users values (1, 'danimar);\n.exit\n",
         expected="output contains error message and syntax error",
         mode="regex_error",
     ),

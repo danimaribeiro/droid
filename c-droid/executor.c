@@ -45,23 +45,16 @@ ExecuteResult execute_insert(Table *table, InsertStatement *stmt){
         };
     }
 
-    Row row;
+    Row row = {0};
     row.id = stmt->values[0].data.int_value;
-    memset(row.name, 0, 252);
-    memset(row.email, 0, 252);
-    strncpy(row.name, stmt->values[1].data.string_value, 251);
-    strncpy(row.email, stmt->values[2].data.string_value, 251);
+    strncpy(row.name, stmt->values[1].data.string_value, ROW_NAME_SIZE - 1);
+    strncpy(row.email, stmt->values[2].data.string_value, ROW_EMAIL_SIZE - 1);
 
-    char *buffer = malloc(508 * sizeof(char));
+    char *buffer = malloc(ROW_SIZE);
+    memset(buffer, 0, ROW_SIZE);
     serialize_row(&row, buffer);
 
     btree_insert(table, row.id, buffer);
-
-    printf("Buffer Bytes (Hex): ");
-    for (int i = 0; i < 508; i++) {
-        printf("%02x ", (unsigned char)buffer[i]);
-    }
-    printf("\n");
 
     return (ExecuteResult){
         .status = EXECUTE_OK,

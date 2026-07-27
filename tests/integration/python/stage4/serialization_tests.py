@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+import struct
 from dataclasses import dataclass, field
 from typing import Iterable
 
@@ -9,6 +9,25 @@ from utils import CommandResult, run_command
 
 STAGE_ID = "stage4"
 STAGE_TITLE = "Row Serialization"
+
+ROW_ID_SIZE = 4
+ROW_NAME_SIZE = 28
+ROW_EMAIL_SIZE = 28
+ROW_SIZE = ROW_ID_SIZE + ROW_NAME_SIZE + ROW_EMAIL_SIZE  # 60
+
+
+def build_expected_hex(id_val: int, name: str, email: str) -> str:
+    """Build the expected hex string for a serialized row."""
+    buf = bytearray(ROW_SIZE)
+    # id: little-endian int32 at offset 0
+    struct.pack_into("<i", buf, 0, id_val)
+    # name: at offset 4, zero-padded
+    name_bytes = name.encode("utf-8")[:ROW_NAME_SIZE]
+    buf[ROW_ID_SIZE : ROW_ID_SIZE + len(name_bytes)] = name_bytes
+    # email: at offset 32, zero-padded
+    email_bytes = email.encode("utf-8")[:ROW_EMAIL_SIZE]
+    buf[ROW_ID_SIZE + ROW_NAME_SIZE : ROW_ID_SIZE + ROW_NAME_SIZE + len(email_bytes)] = email_bytes
+    return " ".join(f"{b:02x}" for b in buf)
 
 
 @dataclass
@@ -23,63 +42,54 @@ class TestCase:
     cli_args: list[str] = field(default_factory=list)
 
 
+# Pre-compute expected hex strings
+HEX_DAN = build_expected_hex(1, "dan", "dan@test.com")
+HEX_DANIMAR = build_expected_hex(1, "danimar", "danimar@email.com")
+HEX_ZERO_ID = build_expected_hex(0, "test", "test@test.com")
+HEX_LARGE_ID = build_expected_hex(65535, "test", "test@test.com")
+HEX_EMPTY = build_expected_hex(1, "", "")
+
 CASES: list[TestCase] = [
+    # ── Serialize tests ──
     TestCase(
         name="serialize-valid-insert",
-        header="Valid INSERT produces serialized row output",
-        description="Checks that 'serialize insert into users ...' outputs [SERIALIZE] block with Row Size, fields, and Round-trip OK.",
+        header="Serialize produces correct hex dump",
+        description="Checks that 'serialize insert into users ...' outputs the exact hex bytes for the serialized row.",
         test_input="serialize insert into users (id, name, email) values (1, 'danimar', 'danimar@email.com');\n.exit\n",
-        expected="[SERIALIZE] block with Row Size: 508, field lines, Round-trip: OK",
-        must_contain=[
-            "[SERIALIZE] Row Size: 508",
-            "[SERIALIZE] Round-trip: OK",
-        ],
-    ),
-    TestCase(
-        name="serialize-fields-present",
-        header="Serialized output shows all field values",
-        description="Checks that id, name, and email field lines appear in the serialize output.",
-        test_input="serialize insert into users (id, name, email) values (1, 'danimar', 'danimar@email.com');\n.exit\n",
-        expected="All three [SERIALIZE] Field lines with correct values",
-        must_contain=[
-            "[SERIALIZE] Field id = 1",
-            "[SERIALIZE] Field name =",
-            "danimar",
-            "[SERIALIZE] Field email =",
-            "danimar@email.com",
-        ],
+        expected=f"[SERIALIZE] {HEX_DANIMAR}",
+        must_contain=[f"[SERIALIZE] {HEX_DANIMAR}"],
     ),
     TestCase(
         name="serialize-zero-id",
-        header="Serialization handles id=0",
-        description="Checks that id=0 serializes and round-trips correctly.",
+        header="Serialize handles id=0",
+        description="Checks that id=0 serializes correctly (first 4 bytes are 00 00 00 00).",
         test_input="serialize insert into users (id, name, email) values (0, 'test', 'test@test.com');\n.exit\n",
-        expected="Field id = 0 and Round-trip: OK",
-        must_contain=["[SERIALIZE] Field id = 0", "[SERIALIZE] Round-trip: OK"],
+        expected=f"[SERIALIZE] {HEX_ZERO_ID}",
+        must_contain=["[SERIALIZE] 00 00 00 00"],
     ),
     TestCase(
         name="serialize-large-id",
-        header="Serialization handles large id",
-        description="Checks that a large integer id (65535) serializes and round-trips correctly.",
+        header="Serialize handles large id (65535)",
+        description="Checks that a large integer id serializes correctly in little-endian.",
         test_input="serialize insert into users (id, name, email) values (65535, 'test', 'test@test.com');\n.exit\n",
-        expected="Field id = 65535 and Round-trip: OK",
-        must_contain=["[SERIALIZE] Field id = 65535", "[SERIALIZE] Round-trip: OK"],
+        expected=f"[SERIALIZE] {HEX_LARGE_ID}",
+        must_contain=["[SERIALIZE] ff ff 00 00"],
     ),
     TestCase(
         name="serialize-empty-strings",
-        header="Serialization handles empty strings",
-        description="Checks that empty name and email fields serialize and round-trip correctly.",
+        header="Serialize handles empty strings",
+        description="Checks that empty name and email produce zero-padded fields.",
         test_input="serialize insert into users (id, name, email) values (1, '', '');\n.exit\n",
-        expected="Round-trip: OK with empty string fields",
-        must_contain=["[SERIALIZE] Round-trip: OK", "[SERIALIZE] Row Size: 508"],
+        expected=f"[SERIALIZE] {HEX_EMPTY}",
+        must_contain=[f"[SERIALIZE] {HEX_EMPTY}"],
     ),
     TestCase(
-        name="serialize-layout-offsets",
-        header="Serialization shows layout with byte offsets",
-        description="Checks that the layout line displays field byte offsets.",
-        test_input="serialize insert into users (id, name, email) values (1, 'a', 'b');\n.exit\n",
-        expected="Layout line with byte offsets",
-        must_contain=["[SERIALIZE] Layout:"],
+        name="serialize-full-hex-match",
+        header="Serialize full hex matches expected bytes",
+        description="Validates the complete 60-byte hex output byte-by-byte.",
+        test_input="serialize insert into users (id, name, email) values (1, 'dan', 'dan@test.com');\n.exit\n",
+        expected=f"[SERIALIZE] {HEX_DAN}",
+        must_contain=[f"[SERIALIZE] {HEX_DAN}"],
     ),
     TestCase(
         name="serialize-syntax-error",
@@ -94,9 +104,43 @@ CASES: list[TestCase] = [
         header="Serialize works in -c CLI mode",
         description="Checks that the serialize command works when invoked via the -c flag.",
         test_input="",
-        expected="[SERIALIZE] output via CLI -c mode",
-        must_contain=["[SERIALIZE]", "Round-trip: OK"],
+        expected="[SERIALIZE] hex output via CLI -c mode",
+        must_contain=["[SERIALIZE]"],
         cli_args=["-c", "serialize insert into users (id, name, email) values (1, 'test', 'test@test.com');"],
+    ),
+    # ── Deserialize tests ──
+    TestCase(
+        name="deserialize-valid",
+        header="Deserialize produces correct field values",
+        description="Sends a known hex buffer and checks that all fields are correctly deserialized.",
+        test_input=f"deserialize {HEX_DANIMAR}\n.exit\n",
+        expected="[DESERIALIZE] fields for id=1, name=danimar, email=danimar@email.com",
+        must_contain=[
+            "[DESERIALIZE] Field id = 1",
+            "[DESERIALIZE] Field name = danimar",
+            "[DESERIALIZE] Field email = danimar@email.com",
+        ],
+    ),
+    TestCase(
+        name="deserialize-zero-id",
+        header="Deserialize handles id=0",
+        description="Sends a hex buffer with id=0 and checks deserialization.",
+        test_input=f"deserialize {HEX_ZERO_ID}\n.exit\n",
+        expected="[DESERIALIZE] Field id = 0",
+        must_contain=["[DESERIALIZE] Field id = 0"],
+    ),
+    TestCase(
+        name="deserialize-round-trip",
+        header="Serialize then deserialize produces matching fields",
+        description="Serializes a row and feeds the hex output into deserialize to verify round-trip.",
+        test_input=f"serialize insert into users (id, name, email) values (1, 'dan', 'dan@test.com');\ndeserialize {HEX_DAN}\n.exit\n",
+        expected="Both [SERIALIZE] and [DESERIALIZE] output present with matching data",
+        must_contain=[
+            "[SERIALIZE]",
+            "[DESERIALIZE] Field id = 1",
+            "[DESERIALIZE] Field name = dan",
+            "[DESERIALIZE] Field email = dan@test.com",
+        ],
     ),
 ]
 

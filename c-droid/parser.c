@@ -85,10 +85,8 @@ SelectStatement parse_select(ParserState *state) {
     Token *t = peek(state);
 
     if(t != NULL && t->type == TOKEN_SYMBOL && strcmp(t->token, "*") == 0) {
-        statement.column_count = 3;
-        statement.column_names[0] = strdup("id");
-        statement.column_names[1] = strdup("name");
-        statement.column_names[2] = strdup("email");
+        statement.column_count = 1;
+        statement.column_names[0] = strdup("*");
         consume(state, TOKEN_SYMBOL);
         if(state->has_error) return statement;
     } else {
@@ -198,7 +196,7 @@ UpdateStatement parse_update(ParserState *state) {
     }
 
     if (statement.set_count != statement.column_count) {
-        printf("[ERROR:00303] Column count and value count must match\n");
+        printf("[ERROR:00302] Column count and value count must match\n");
         state->has_error = true;
         return statement;
     }
@@ -317,7 +315,7 @@ InsertStatement parse_insert(ParserState *state) {
     }
 
     if (statement.column_count != statement.value_count) {
-        printf("[ERROR:00303] Column count and value count must match\n");
+        printf("[ERROR:00302] Column count and value count must match\n");
         state->has_error = true;
         return statement;
     }
