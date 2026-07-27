@@ -3,53 +3,177 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const SECTIONS = [
+const ALL_PARTS = [
   {
-    title: "Command Loop & The REPL",
-    stages: [
-      { num: 1, slug: "stage1-repl", title: "Building the CLI Interface" },
+    part: 1,
+    name: "Fixed-Layout Database",
+    sections: [
+      {
+        title: "Command Loop & The REPL",
+        stages: [
+          { num: 1, slug: "stage1-repl", title: "Building the CLI Interface" },
+        ],
+      },
+      {
+        title: "SQL Statement Compiler",
+        stages: [
+          { num: 2, slug: "stage2-lexer", title: "Lexical Analysis (Tokenizer)" },
+          { num: 3, slug: "stage3-parser", title: "SQL Parser (Recursive Descent)" },
+        ],
+      },
+      {
+        title: "Data Row Serialization",
+        stages: [
+          { num: 4, slug: "stage4-serialization", title: "Compact Row Memory Packing" },
+        ],
+      },
+      {
+        title: "The Pager & Buffer Pool",
+        stages: [
+          { num: 5, slug: "stage5-pager", title: "Memory Caching & File Paging" },
+        ],
+      },
+      {
+        title: "The B-Tree Storage Engine",
+        stages: [
+          { num: 6, slug: "stage6-btree-leaf", title: "B-Tree Node Byte Layout" },
+          { num: 7, slug: "stage7-btree-search", title: "Leaf Node Search & Insertion" },
+          { num: 8, slug: "stage8-btree-split", title: "B-Tree Node Splits & Internal Nodes" },
+        ],
+      },
+      {
+        title: "Persistence & Query Execution",
+        stages: [
+          { num: 9, slug: "stage9-persistence", title: "Persistence & WHERE Clause" },
+          { num: 10, slug: "stage10-planner", title: "Query Planner & Executor (Volcano)" },
+        ],
+      },
     ],
   },
   {
-    title: "SQL Statement Compiler",
-    stages: [
-      { num: 2, slug: "stage2-lexer", title: "Lexical Analysis (Tokenizer)" },
-      { num: 3, slug: "stage3-parser", title: "SQL Parser (Recursive Descent)" },
+    part: 2,
+    name: "Advanced Storage & Transactions",
+    sections: [
+      {
+        title: "Variable-Length Storage",
+        stages: [
+          { num: 11, slug: "stage11-varlen-serialization", title: "Variable-Length Row Serialization" },
+          { num: 12, slug: "stage12-slotted-page", title: "Slotted Page Layout" },
+          { num: 13, slug: "stage13-varlen-btree", title: "Variable-Length B-Tree" },
+        ],
+      },
+      {
+        title: "Schema & Catalog",
+        stages: [
+          { num: 14, slug: "stage14-create-table", title: "CREATE TABLE & Schema Catalog" },
+          { num: 15, slug: "stage15-schema-validation", title: "Schema Validation" },
+        ],
+      },
+      {
+        title: "Transactions & Durability",
+        stages: [
+          { num: 16, slug: "stage16-transaction-commit", title: "Transaction COMMIT" },
+          { num: 17, slug: "stage17-transaction-rollback", title: "Transaction ROLLBACK" },
+          { num: 18, slug: "stage18-wal", title: "Write-Ahead Logging (WAL)" },
+        ],
+      },
     ],
   },
   {
-    title: "Data Row Serialization",
-    stages: [
-      { num: 4, slug: "stage4-serialization", title: "Compact Row Memory Packing" },
+    part: 3,
+    name: "Complete SQL",
+    sections: [
+      {
+        title: "DML Operations",
+        stages: [
+          { num: 19, slug: "stage19-delete-update", title: "DELETE & UPDATE Execution" },
+          { num: 20, slug: "stage20-advanced-where", title: "Advanced WHERE Expressions" },
+        ],
+      },
+      {
+        title: "Result Processing",
+        stages: [
+          { num: 21, slug: "stage21-order-by", title: "ORDER BY" },
+          { num: 22, slug: "stage22-limit-offset", title: "LIMIT & OFFSET" },
+          { num: 23, slug: "stage23-aggregations", title: "Aggregate Functions" },
+        ],
+      },
     ],
   },
   {
-    title: "The Pager & Buffer Pool",
-    stages: [
-      { num: 5, slug: "stage5-pager", title: "Memory Caching & File Paging" },
+    part: 4,
+    name: "Advanced Indexing",
+    sections: [
+      {
+        title: "Indexes & Optimization",
+        stages: [
+          { num: 24, slug: "stage24-secondary-indexes", title: "Secondary Indexes" },
+          { num: 25, slug: "stage25-cost-optimizer", title: "Cost-Based Query Optimizer" },
+          { num: 26, slug: "stage26-vacuum", title: "VACUUM & Space Reclamation" },
+        ],
+      },
     ],
   },
   {
-    title: "The B-Tree Storage Engine",
-    stages: [
-      { num: 6, slug: "stage6-btree-leaf", title: "B-Tree Node Byte Layout" },
-      { num: 7, slug: "stage7-btree-search", title: "Leaf Node Search & Insertion" },
-      { num: 8, slug: "stage8-btree-split", title: "B-Tree Node Splits & Internal Nodes" },
+    part: 5,
+    name: "Multi-Table & Relational",
+    sections: [
+      {
+        title: "Joins & Relations",
+        stages: [
+          { num: 27, slug: "stage27-joins-nested-loop", title: "Nested Loop JOIN" },
+          { num: 28, slug: "stage28-hash-join", title: "Hash JOIN" },
+          { num: 29, slug: "stage29-foreign-keys", title: "Foreign Key Constraints" },
+          { num: 30, slug: "stage30-subqueries", title: "Subqueries" },
+        ],
+      },
     ],
   },
   {
-    title: "Persistence & Query Execution",
-    stages: [
-      { num: 9, slug: "stage9-persistence", title: "Persistence & WHERE Clause" },
-      { num: 10, slug: "stage10-planner", title: "Query Planner & Executor (Volcano)" },
+    part: 6,
+    name: "Concurrency",
+    sections: [
+      {
+        title: "Concurrent Access",
+        stages: [
+          { num: 31, slug: "stage31-lock-manager", title: "Lock Manager" },
+          { num: 32, slug: "stage32-mvcc", title: "Multi-Version Concurrency (MVCC)" },
+          { num: 33, slug: "stage33-deadlock-detection", title: "Deadlock Detection" },
+        ],
+      },
     ],
   },
 ];
 
+// Stages with tutorial content ready
 const IMPLEMENTED_STAGES = [1, 2, 3, 4];
+
+/**
+ * Find which part a given slug belongs to.
+ */
+function findPartForSlug(slug) {
+  for (const part of ALL_PARTS) {
+    for (const section of part.sections) {
+      if (section.stages.some((s) => s.slug === slug)) {
+        return part;
+      }
+    }
+  }
+  return ALL_PARTS[0]; // fallback
+}
+
+/**
+ * Get the slug from a pathname like /stages/stage2-lexer
+ */
+function getSlugFromPathname(pathname) {
+  const match = pathname.match(/\/stages\/(.+)/);
+  return match ? match[1] : null;
+}
 
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
+  const currentSlug = getSlugFromPathname(pathname);
+  const currentPart = currentSlug ? findPartForSlug(currentSlug) : ALL_PARTS[0];
 
   return (
     <aside className={`tutorial-sidebar ${isOpen ? "open" : ""}`}>
@@ -61,11 +185,17 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
       </Link>
 
+      {/* Part selector */}
+      <div className="sidebar-part-header">
+        <span className="sidebar-part-badge">Part {currentPart.part}</span>
+        <span className="sidebar-part-name">{currentPart.name}</span>
+      </div>
+
       <nav className="sidebar-nav">
-        {SECTIONS.map((section, sIdx) => (
+        {currentPart.sections.map((section, sIdx) => (
           <div key={sIdx} className="sidebar-section">
             <div className="sidebar-section-title">
-              {sIdx + 1}. {section.title.toUpperCase()}
+              {section.title.toUpperCase()}
             </div>
             {section.stages.map((stage) => {
               const isActive = pathname === `/stages/${stage.slug}`;
@@ -75,6 +205,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   key={stage.slug}
                   href={`/stages/${stage.slug}`}
                   className={`sidebar-stage-link ${isActive ? "active" : ""} ${!isImplemented ? "coming-soon" : ""}`}
+                  onClick={onClose}
                 >
                   <span className={`sidebar-stage-indicator ${isImplemented ? "done" : ""}`}>
                     {isImplemented ? "✓" : "○"}
@@ -89,11 +220,26 @@ export default function Sidebar({ isOpen, onClose }) {
         ))}
       </nav>
 
+      {/* Part navigation */}
       <div className="sidebar-footer">
+        <div className="sidebar-part-nav">
+          {ALL_PARTS.map((p) => (
+            <Link
+              key={p.part}
+              href={`/stages/${p.sections[0].stages[0].slug}`}
+              className={`sidebar-part-dot ${p.part === currentPart.part ? "active" : ""}`}
+              title={`Part ${p.part}: ${p.name}`}
+            >
+              {p.part}
+            </Link>
+          ))}
+        </div>
         <div className="sidebar-progress">
-          Stages Cleared: {IMPLEMENTED_STAGES.length} / {SECTIONS.reduce((acc, s) => acc + s.stages.length, 0)}
+          Stages: {IMPLEMENTED_STAGES.length} / 33
         </div>
       </div>
     </aside>
   );
 }
+
+export { ALL_PARTS, IMPLEMENTED_STAGES };

@@ -2,6 +2,8 @@
 
 Multi-language database internals playground following the Database Internals tutorial pipeline.
 
+📚 **Tutorial**: [https://danimaribeiro.github.io/droid/](https://danimaribeiro.github.io/droid/)
+
 ## Languages
 - c-droid
 - cpp-droid

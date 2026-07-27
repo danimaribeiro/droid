@@ -1,115 +1,131 @@
 import Link from "next/link";
-import { getStages, getExtras, getPartInfo, PART_NAMES } from "@/lib/stages";
+import { getPartInfo } from "@/lib/stages";
+
+const PART_ICONS = {
+  1: "🏗️",
+  2: "📦",
+  3: "🔍",
+  4: "⚡",
+  5: "🔗",
+  6: "🔒",
+};
+
+const PART_STAGE_RANGES = {
+  1: "Stages 1–10",
+  2: "Stages 11–18",
+  3: "Stages 19–23",
+  4: "Stages 24–26",
+  5: "Stages 27–30",
+  6: "Stages 31–33",
+};
+
+const PART_FIRST_SLUG = {
+  1: "stage1-repl",
+  2: "stage11-varlen-serialization",
+  3: "stage19-delete-update",
+  4: "stage24-secondary-indexes",
+  5: "stage27-joins-nested-loop",
+  6: "stage31-lock-manager",
+};
+
+const HIGHLIGHTS = [
+  { icon: "⌨️", title: "SQL Parser", desc: "Lexer, recursive descent, AST" },
+  { icon: "🌳", title: "B-Tree Engine", desc: "Leaf nodes, splits, search" },
+  { icon: "💾", title: "Persistence", desc: "Pager, buffer pool, disk I/O" },
+  { icon: "📝", title: "WAL & Transactions", desc: "Crash recovery, ACID" },
+  { icon: "🧠", title: "Query Optimizer", desc: "Cost-based planning, indexes" },
+  { icon: "🔄", title: "Concurrency", desc: "Locks, MVCC, deadlock detection" },
+];
 
 export default function HomePage() {
-  const stages = getStages();
-  const extras = getExtras();
   const parts = getPartInfo();
-
-  const partColors = {
-    1: "part-1",
-    2: "part-2",
-    3: "part-3",
-    4: "part-4",
-    5: "part-5",
-    6: "part-6",
-  };
-
-  // Group stages by part
-  const stagesByPart = {};
-  for (const stage of stages) {
-    if (!stagesByPart[stage.part]) stagesByPart[stage.part] = [];
-    stagesByPart[stage.part].push(stage);
-  }
 
   return (
     <>
       {/* Hero */}
-      <section className="hero">
-        <h1>
-          Build a <span>Database Engine</span>
-          <br />
-          From Scratch
-        </h1>
-        <p className="hero-subtitle">
-          A hands-on tutorial where you implement a complete database in C, Rust, Zig, or C++ —
-          from a REPL and SQL parser to B-trees, transactions, WAL crash recovery,
-          query optimization, and beyond.
-        </p>
-        <div className="hero-stats">
-          <div className="hero-stat">
-            <div className="hero-stat-value">33</div>
-            <div className="hero-stat-label">Stages</div>
+      <section className="landing-hero">
+        <div className="landing-hero-inner">
+          <div className="landing-hero-label">Hands-on Tutorial</div>
+          <h1 className="landing-hero-title">
+            Build a <span>Database Engine</span>
+            <br />
+            From Scratch
+          </h1>
+          <p className="landing-hero-subtitle">
+            Implement a complete database from the ground up — 
+            SQL parser, B-tree storage, transactions, query optimization,
+            and more. Choose your language: C, C++, Rust, or Zig.
+          </p>
+          <div className="landing-hero-actions">
+            <Link href="/stages/stage1-repl" className="landing-btn-primary">
+              Start Building →
+            </Link>
           </div>
-          <div className="hero-stat">
-            <div className="hero-stat-value">6</div>
-            <div className="hero-stat-label">Parts</div>
-          </div>
-          <div className="hero-stat">
-            <div className="hero-stat-value">13</div>
-            <div className="hero-stat-label">Extras</div>
-          </div>
-          <div className="hero-stat">
-            <div className="hero-stat-value">4</div>
-            <div className="hero-stat-label">Languages</div>
+          <div className="landing-hero-stats">
+            <div className="landing-stat">
+              <span className="landing-stat-value">33</span>
+              <span className="landing-stat-label">Stages</span>
+            </div>
+            <div className="landing-stat-sep" />
+            <div className="landing-stat">
+              <span className="landing-stat-value">6</span>
+              <span className="landing-stat-label">Parts</span>
+            </div>
+            <div className="landing-stat-sep" />
+            <div className="landing-stat">
+              <span className="landing-stat-value">4</span>
+              <span className="landing-stat-label">Languages</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Parts */}
-      <div className="parts-grid">
-        {parts.map((part) => (
-          <section key={part.num} className={`part-section ${partColors[part.num]}`}>
-            <div className="part-header">
-              <span className={`part-badge ${partColors[part.num]}`}>Part {part.num}</span>
-              <h2 className="part-title">{part.name}</h2>
+      {/* What you'll build */}
+      <section className="landing-section">
+        <h2 className="landing-section-title">What You'll Build</h2>
+        <p className="landing-section-subtitle">
+          Every component of a real database — from scratch, in your language.
+        </p>
+        <div className="landing-highlights">
+          {HIGHLIGHTS.map((h, i) => (
+            <div key={i} className="landing-highlight-card">
+              <span className="landing-highlight-icon">{h.icon}</span>
+              <div className="landing-highlight-title">{h.title}</div>
+              <div className="landing-highlight-desc">{h.desc}</div>
             </div>
-            <p className="part-description">{part.description}</p>
-            <div className="stages-grid">
-              {(stagesByPart[part.num] || []).map((stage) => (
-                <Link
-                  key={stage.slug}
-                  href={`/stages/${stage.slug}`}
-                  className="stage-card"
-                >
-                  <div className="stage-card-header">
-                    <span className="stage-card-num">{stage.num}</span>
-                    <span className="stage-card-title">{stage.title}</span>
-                  </div>
-                  <p className="stage-card-summary">{stage.summary}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ))}
+          ))}
+        </div>
+      </section>
 
-        {/* Extras */}
-        <section className="part-section extra">
-          <div className="part-header">
-            <span className="part-badge extra">Extras</span>
-            <h2 className="part-title">Independent Topics</h2>
-          </div>
-          <p className="part-description">
-            Standalone modules that can be implemented at any point. Each covers an important
-            database concept that enriches the learning experience.
-          </p>
-          <div className="stages-grid">
-            {extras.map((extra) => (
-              <Link
-                key={extra.slug}
-                href={`/stages/${extra.slug}`}
-                className="stage-card"
-              >
-                <div className="stage-card-header">
-                  <span className="stage-card-num">✦</span>
-                  <span className="stage-card-title">{extra.title}</span>
+      {/* The Journey */}
+      <section className="landing-section">
+        <h2 className="landing-section-title">The Journey</h2>
+        <p className="landing-section-subtitle">
+          6 parts, 33 stages. Each part builds on the previous one.
+        </p>
+        <div className="landing-parts">
+          {parts.map((part) => (
+            <Link
+              key={part.num}
+              href={`/stages/${PART_FIRST_SLUG[part.num]}`}
+              className="landing-part-card"
+            >
+              <div className="landing-part-card-header">
+                <span className="landing-part-icon">{PART_ICONS[part.num]}</span>
+                <div>
+                  <div className="landing-part-label">Part {part.num}</div>
+                  <div className="landing-part-name">{part.name}</div>
                 </div>
-                <p className="stage-card-summary">{extra.summary}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      </div>
+              </div>
+              <p className="landing-part-desc">{part.description}</p>
+              <div className="landing-part-footer">
+                <span className="landing-part-stages">{PART_STAGE_RANGES[part.num]}</span>
+                <span className="landing-part-arrow">→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

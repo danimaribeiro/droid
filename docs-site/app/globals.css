@@ -93,73 +93,104 @@ a:hover {
 
 /* ========== HERO ========== */
 
-.hero {
-  padding: 80px 60px;
+/* ========== LANDING PAGE ========== */
+
+.landing-hero {
+  padding: 100px 60px 80px;
   background: var(--gradient-hero);
   border-bottom: 1px solid var(--border);
   position: relative;
   overflow: hidden;
 }
 
-.hero::before {
+.landing-hero::before {
   content: '';
   position: absolute;
-  top: -50%;
-  right: -20%;
+  top: -40%;
+  right: -15%;
   width: 600px;
   height: 600px;
   background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -10%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.06) 0%, transparent 70%);
-  pointer-events: none;
+.landing-hero-inner {
+  max-width: 720px;
 }
 
-.hero h1 {
-  font-size: 48px;
+.landing-hero-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent-1);
+  background: var(--accent-1-dim);
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 24px;
+}
+
+.landing-hero-title {
+  font-size: 52px;
   font-weight: 900;
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
   line-height: 1.1;
-  margin-bottom: 16px;
-  position: relative;
+  margin-bottom: 20px;
 }
 
-.hero h1 span {
+.landing-hero-title span {
   background: var(--gradient-1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.hero-subtitle {
+.landing-hero-subtitle {
   font-size: 18px;
   color: var(--text-secondary);
-  max-width: 640px;
-  line-height: 1.6;
-  position: relative;
+  line-height: 1.7;
+  margin-bottom: 32px;
 }
 
-.hero-stats {
+.landing-hero-actions {
+  margin-bottom: 48px;
+}
+
+.landing-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--gradient-1);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.landing-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  color: white;
+}
+
+.landing-hero-stats {
   display: flex;
-  gap: 32px;
-  margin-top: 40px;
-  position: relative;
+  align-items: center;
+  gap: 24px;
 }
 
-.hero-stat {
-  text-align: center;
+.landing-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.hero-stat-value {
-  font-size: 32px;
+.landing-stat-value {
+  font-size: 28px;
   font-weight: 800;
   background: var(--gradient-1);
   -webkit-background-clip: text;
@@ -167,154 +198,157 @@ a:hover {
   background-clip: text;
 }
 
-.hero-stat-label {
-  font-size: 12px;
+.landing-stat-label {
+  font-size: 11px;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
-/* ========== PART SECTIONS ========== */
-
-.parts-grid {
-  padding: 60px;
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
+.landing-stat-sep {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
 }
 
-.part-section {
-  animation: fadeIn 0.6s ease;
+/* ── Landing Sections ── */
+
+.landing-section {
+  padding: 64px 60px;
 }
 
-.part-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.part-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 14px;
-  border-radius: 100px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.part-badge.part-1 { background: var(--accent-1-dim); color: var(--accent-1); }
-.part-badge.part-2 { background: rgba(139, 92, 246, 0.15); color: var(--accent-2); }
-.part-badge.part-3 { background: rgba(6, 182, 212, 0.15); color: var(--accent-3); }
-.part-badge.part-4 { background: rgba(16, 185, 129, 0.15); color: var(--accent-4); }
-.part-badge.part-5 { background: rgba(245, 158, 11, 0.15); color: var(--accent-5); }
-.part-badge.part-6 { background: rgba(239, 68, 68, 0.15); color: var(--accent-6); }
-.part-badge.extra { background: rgba(136, 136, 168, 0.15); color: var(--text-secondary); }
-
-.part-title {
-  font-size: 24px;
-  font-weight: 700;
+.landing-section-title {
+  font-size: 28px;
+  font-weight: 800;
   letter-spacing: -0.5px;
+  margin-bottom: 8px;
 }
 
-.part-description {
+.landing-section-subtitle {
+  font-size: 16px;
   color: var(--text-secondary);
-  font-size: 15px;
-  margin-bottom: 20px;
-  max-width: 720px;
+  margin-bottom: 36px;
 }
 
-.stages-grid {
+/* ── Highlights Grid ── */
+
+.landing-highlights {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
-/* ========== STAGE CARD ========== */
-
-.stage-card {
+.landing-highlight-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 24px;
-  transition: all 0.25s ease;
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  position: relative;
-  overflow: hidden;
+  transition: border-color 0.2s;
 }
 
-.stage-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--gradient-1);
-  opacity: 0;
-  transition: opacity 0.25s;
-}
-
-.stage-card:hover {
-  background: var(--bg-card-hover);
+.landing-highlight-card:hover {
   border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
-.stage-card:hover::before {
-  opacity: 1;
-}
-
-.stage-card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.landing-highlight-icon {
+  font-size: 28px;
+  display: block;
   margin-bottom: 12px;
 }
 
-.stage-card-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  flex-shrink: 0;
-}
-
-.part-1 .stage-card-num { background: var(--accent-1-dim); color: var(--accent-1); }
-.part-2 .stage-card-num { background: rgba(139, 92, 246, 0.15); color: var(--accent-2); }
-.part-3 .stage-card-num { background: rgba(6, 182, 212, 0.15); color: var(--accent-3); }
-.part-4 .stage-card-num { background: rgba(16, 185, 129, 0.15); color: var(--accent-4); }
-.part-5 .stage-card-num { background: rgba(245, 158, 11, 0.15); color: var(--accent-5); }
-.part-6 .stage-card-num { background: rgba(239, 68, 68, 0.15); color: var(--accent-6); }
-.extra .stage-card-num { background: rgba(136, 136, 168, 0.15); color: var(--text-secondary); }
-
-.stage-card-title {
+.landing-highlight-title {
   font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
 }
 
-.stage-card-summary {
-  font-size: 13.5px;
+.landing-highlight-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Part Cards ── */
+
+.landing-parts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.landing-part-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-part-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.landing-part-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.landing-part-icon {
+  font-size: 28px;
+}
+
+.landing-part-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-1);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.landing-part-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.landing-part-desc {
+  font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.landing-part-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.landing-part-stages {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.landing-part-arrow {
+  color: var(--accent-1);
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.landing-part-card:hover .landing-part-arrow {
+  transform: translateX(4px);
 }
 
 /* ========== STAGE PAGE ========== */
@@ -541,19 +575,23 @@ a:hover {
     display: block;
   }
 
-  .hero {
+  .landing-hero {
     padding: 60px 24px;
   }
 
-  .hero h1 {
+  .landing-hero-title {
     font-size: 32px;
   }
 
-  .parts-grid {
-    padding: 24px;
+  .landing-section {
+    padding: 40px 24px;
   }
 
-  .stages-grid {
+  .landing-highlights {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-parts {
     grid-template-columns: 1fr;
   }
 
@@ -644,6 +682,32 @@ a:hover {
   letter-spacing: 1.5px;
 }
 
+/* Part header */
+.sidebar-part-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.sidebar-part-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-1);
+  background: var(--accent-1-dim);
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.sidebar-part-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .sidebar-nav {
   flex: 1;
   padding: 12px 0;
@@ -709,8 +773,41 @@ a:hover {
 }
 
 .sidebar-footer {
-  padding: 16px 20px;
+  padding: 12px 20px;
   border-top: 1px solid var(--border);
+}
+
+.sidebar-part-nav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.sidebar-part-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.sidebar-part-dot:hover {
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+}
+
+.sidebar-part-dot.active {
+  background: var(--accent-1-dim);
+  border-color: var(--accent-1);
+  color: var(--accent-1);
 }
 
 .sidebar-progress {
