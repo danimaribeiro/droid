@@ -43,6 +43,34 @@ bool consume_symbol(ParserState *state, const char *expected_symbol) {
     return false;
 }
 
+WhereClause parse_condition(ParserState *state) {
+    WhereClause clause;
+
+    clause.column_name = strdup(peek(state)->token);
+    consume(state, TOKEN_IDENTIFIER);
+    if(state->has_error) return clause;
+    
+    clause.operator = strdup(peek(state)->token);
+    consume_symbol(state, "=");
+    if(state->has_error) return clause;
+
+    Token *t = peek(state);
+    if(t != NULL && t->type == TOKEN_NUMBER){
+        clause.value.type = VALUE_INT;
+        clause.value.data.int_value = atoi(t->token);
+    } else if (t != NULL && t->type == TOKEN_STRING){
+        clause.value.type = VALUE_STRING;
+        clause.value.data.string_value = strdup(t->token);
+    } else {
+        printf("[ERROR:00302] Expected value for column '%s'\n", clause.column_name);
+        state->has_error = true;
+        return clause;
+    }
+    consume(state, t->type);
+
+    return clause;
+}
+
 
 SelectStatement parse_select(ParserState *state) {
     SelectStatement statement = { .table_name = NULL, .column_names = NULL, .column_count = 0, .has_where = false };
@@ -50,7 +78,92 @@ SelectStatement parse_select(ParserState *state) {
 }
 
 UpdateStatement parse_update(ParserState *state) {
-    UpdateStatement statement = { .table_name = NULL, .column_names = NULL, .column_count = 0, .new_values = NULL, .set_count = 0, .has_where = false };
+    UpdateStatement statement = {
+        .table_name = NULL, 
+        .column_names = malloc(16 * sizeof(char*)),
+        .column_count = 0,
+        .new_values = malloc(16 * sizeof(Value)), 
+        .set_count = 0, 
+        .has_where = false
+    };
+    consume(state, TOKEN_KEYWORD_UPDATE);
+    if(state->has_error) return statement;
+
+    statement.table_name = strdup(peek(state)->token);
+    consume(state, TOKEN_IDENTIFIER);
+    if(state->has_error) return statement;
+
+    consume(state, TOKEN_KEYWORD_SET);
+    if(state->has_error) return statement;
+
+    statement.column_count = 0;
+    statement.set_count = 0;
+
+    Token *t = peek(state);
+
+    while(t != NULL && (t->type == TOKEN_IDENTIFIER)) {
+        statement.column_names[statement.column_count] = strdup(t->token);
+        statement.column_count++;
+        consume(state, TOKEN_IDENTIFIER);
+        if(state->has_error) return statement;
+        
+        consume_symbol(state, "=");
+        if(state->has_error) return statement;
+
+        t = peek(state);
+        if(t == NULL) {
+            printf("[ERROR:00302] Expected value for column '%s'\n", statement.column_names[statement.column_count - 1]);
+            state->has_error = true;
+            return statement;
+        }
+
+        if (t->type == TOKEN_NUMBER) {
+            if (strchr(t->token, '.') != NULL) {
+                statement.new_values[statement.set_count].type = VALUE_FLOAT;
+                statement.new_values[statement.set_count].data.float_value = atof(t->token);
+            } else {
+                statement.new_values[statement.set_count].type = VALUE_INT;
+                statement.new_values[statement.set_count].data.int_value = atoi(t->token);
+            }
+            statement.set_count++;
+        } else if (t->type == TOKEN_STRING) {
+            statement.new_values[statement.set_count].type = VALUE_STRING;
+            statement.new_values[statement.set_count].data.string_value = strdup(t->token);
+            statement.set_count++;
+        } else {
+            printf("[ERROR:00302] Expected value for column '%s'\n", statement.column_names[statement.set_count - 1]);
+            state->has_error = true;
+            return statement;
+        }
+        consume(state, t->type);
+        if (state->has_error) return statement;
+
+        if (peek(state) != NULL && peek(state)->type == TOKEN_SYMBOL && strcmp(peek(state)->token, ",") == 0) {
+            consume_symbol(state, ",");
+            if (state->has_error) return statement;
+        }
+        t = peek(state); 
+    }
+
+    if (statement.set_count != statement.column_count) {
+        printf("[ERROR:00303] Column count and value count must match\n");
+        state->has_error = true;
+        return statement;
+    }
+
+    t = peek(state);
+    if (t != NULL && t->type == TOKEN_KEYWORD_WHERE) {
+        statement.has_where = true;
+        consume(state, TOKEN_KEYWORD_WHERE);
+        if (state->has_error) return statement;
+        
+        statement.where = parse_condition(state);
+        if (state->has_error) return statement;
+    }
+    
+    consume_symbol(state, ";");
+    if (state->has_error) return statement;
+
     return statement;
 }
 

@@ -54,6 +54,38 @@ void print_ast(AST_Node root) {
         case STATEMENT_UPDATE:
             printf("Statement: UPDATE\n");
             printf("Table: %s\n", root.statement.update.table_name ? root.statement.update.table_name : "");
+            if (root.statement.update.column_count > 0) {
+                printf("Columns: [");
+                for (int i = 0; i < root.statement.update.column_count; i++) {
+                    printf("%s%s", root.statement.update.column_names[i], (i < root.statement.update.column_count - 1) ? ", " : "");
+                }
+                printf("]\n");
+            }
+            printf("Values: [");
+            for (int i = 0; i < root.statement.update.set_count; i++) {
+                Value val = root.statement.update.new_values[i];
+                if (val.type == VALUE_INT) {
+                    printf("%d", val.data.int_value);
+                } else if (val.type == VALUE_STRING) {
+                    printf("'%s'", val.data.string_value ? val.data.string_value : "");
+                } else if (val.type == VALUE_FLOAT) {
+                    printf("%g", val.data.float_value);
+                }
+                if (i < root.statement.update.set_count - 1) {
+                    printf(", ");
+                }
+            }
+            printf("]\n");
+            if (root.statement.update.has_where) {
+                printf("Where: %s %s ", root.statement.update.where.column_name ? root.statement.update.where.column_name : "", root.statement.update.where.operator ? root.statement.update.where.operator : "");
+                if (root.statement.update.where.value.type == VALUE_INT) {
+                    printf("%d\n", root.statement.update.where.value.data.int_value);
+                } else if (root.statement.update.where.value.type == VALUE_STRING) {
+                    printf("'%s'\n", root.statement.update.where.value.data.string_value ? root.statement.update.where.value.data.string_value : "");
+                } else if (root.statement.update.where.value.type == VALUE_FLOAT) {
+                    printf("%g\n", root.statement.update.where.value.data.float_value);
+                }
+            }
             break;
         case STATEMENT_DELETE:
             printf("Statement: DELETE\n");

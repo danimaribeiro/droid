@@ -5,5 +5,9 @@ bin/
 __pycache__/
 *.py[cod]
 
+# Database test artifacts
+*.db
+*.wal
+
 # Rust common build dir (future)
 target/

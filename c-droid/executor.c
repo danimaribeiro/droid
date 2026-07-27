@@ -15,7 +15,7 @@ ExecuteResult execute_select(Table *table, SelectStatement *stmt){
     };
 }
 
-bool validate_schema(InsertStatement *stmt) {
+bool validate_schema_insert(InsertStatement *stmt) {
     if (strcmp(stmt->table_name, "users") != 0) {
         printf("[ERROR:00401] Table '%s' does not exist.\n", stmt->table_name);
         return false;
@@ -37,7 +37,7 @@ bool validate_schema(InsertStatement *stmt) {
 
 ExecuteResult execute_insert(Table *table, InsertStatement *stmt){
 
-    if (!validate_schema(stmt)) {
+    if (!validate_schema_insert(stmt)) {
         return (ExecuteResult){
             .status = EXECUTE_ERROR,
             .affected_rows = 0,

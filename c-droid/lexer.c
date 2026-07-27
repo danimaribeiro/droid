@@ -31,6 +31,7 @@ static TokenType get_keyword_type(char *token) {
     if (strcasecmp(token, "DELETE") == 0) return TOKEN_KEYWORD_DELETE;
     if (strcasecmp(token, "SELECT") == 0) return TOKEN_KEYWORD_SELECT;
     if (strcasecmp(token, "INTO") == 0) return TOKEN_KEYWORD_INTO;
+    if (strcasecmp(token, "SET") == 0) return TOKEN_KEYWORD_SET;
     if (strcasecmp(token, "VALUES") == 0) return TOKEN_KEYWORD_VALUES;
     if (strcasecmp(token, "FROM") == 0) return TOKEN_KEYWORD_FROM;
     if (strcasecmp(token, "WHERE") == 0) return TOKEN_KEYWORD_WHERE;
@@ -126,6 +127,7 @@ const char* token_type_to_string(TokenType type) {
         case TOKEN_KEYWORD_DELETE: return "KEYWORD_DELETE";
         case TOKEN_KEYWORD_SELECT: return "KEYWORD_SELECT";
         case TOKEN_KEYWORD_INTO:   return "KEYWORD_INTO";
+        case TOKEN_KEYWORD_SET:    return "KEYWORD_SET";
         case TOKEN_KEYWORD_VALUES: return "KEYWORD_VALUES";
         case TOKEN_KEYWORD_FROM:   return "KEYWORD_FROM";
         case TOKEN_KEYWORD_WHERE:  return "KEYWORD_WHERE";
