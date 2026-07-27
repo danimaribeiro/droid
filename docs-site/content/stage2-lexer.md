@@ -43,47 +43,33 @@ checklist:
 
 ## What is a Lexer?
 
-A **Lexer** (also called Tokenizer or Scanner) is the first stage of any language processor. It takes a raw string of characters and breaks it into meaningful chunks called **tokens**.
+A **Lexer** (also called Tokenizer or Scanner) is the architectural front door of any database syntax compiler. It takes a raw string of ASCII characters and groups them into sequential, structured computational units called **tokens**.
 
-Think of it like reading a sentence in a foreign language: before you can understand the grammar, you first need to identify where each word starts and ends, and what type of word it is (noun, verb, number, punctuation).
+When a human inputs a query, the computer initially only sees a generic array of bytes. Before we can validate semantic correctness or execution logic, we must isolate where individual terms begin and end, stripping out extraneous whitespace and identifying grammatical intent.
 
-For the SQL statement:
+For example, given the raw input statement:
 
 ```sql
 SELECT * FROM users WHERE id = 1;
 ```
 
-The lexer produces:
+Your lexical analysis stage converts this string byte-by-byte into a clean stream:
 
 ```
-[KEYWORD - select]
+[KEYWORD_SELECT - select]
 [SYMBOL - *]
-[KEYWORD - from]
+[KEYWORD_FROM - from]
 [IDENTIFIER - users]
-[KEYWORD - where]
+[KEYWORD_WHERE - where]
 [IDENTIFIER - id]
 [SYMBOL - =]
 [NUMBER - 1]
 [SYMBOL - ;]
 ```
 
-Each token has a **type** (KEYWORD, IDENTIFIER, NUMBER, STRING, SYMBOL) and a **value** (the actual text).
+Each emitted token is paired with a strict **type classification** (`KEYWORD`, `IDENTIFIER`, `NUMBER`, `STRING`, `SYMBOL`) and its preserved ASCII **value**.
 
 ## Why Tokenize First?
 
-Without tokenization, every subsequent stage (parser, executor) would have to deal with raw characters — handling whitespace, distinguishing between `SELECT` (keyword) and `selectivity` (identifier), parsing numbers digit by digit. The lexer solves all of this once, so every stage after it works with clean, classified tokens.
+Separation of concerns is critical in systems engineering. Without an isolated tokenization pass, every downstream pipeline stage (syntax parsing, query planning, B-Tree execution) would carry the enormous technical burden of raw character inspection—handling variable spacing, distinguishing between `SELECT` (keyword) and `selectivity` (table column identifier), and converting digit char sequences into numeric types. The Lexer resolves all character-level chaos once at the boundary.
 
-## Debug Command
-
-The `tokenize` debug command lets you inspect the token stream for any SQL input:
-
-```
-droid > tokenize select * from users;
-[KEYWORD - select]
-[SYMBOL - *]
-[KEYWORD - from]
-[IDENTIFIER - users]
-[SYMBOL - ;]
-```
-
-This is essential for debugging — if the parser produces wrong results, you can check if the lexer is generating the right tokens first.

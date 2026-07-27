@@ -4,6 +4,7 @@ import { getStageBySlug, getAllSlugs, getStages, getExtras, getTutorialContent }
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
 import AlgorithmCard from "@/app/components/AlgorithmCard";
 import StageObjective from "@/app/components/StageObjective";
+import CodeSubmitRunner from "@/app/components/CodeSubmitRunner";
 
 export async function generateStaticParams() {
   const slugs = getAllSlugs();
@@ -64,6 +65,13 @@ export default async function StagePage({ params }) {
             </section>
           )}
 
+          {/* Body content (markdown comes before conceptual execution!) */}
+          {tutorial.bodyContent && (
+            <section className="tutorial-section tutorial-body">
+              <MarkdownRenderer content={tutorial.bodyContent} />
+            </section>
+          )}
+
           {/* Algorithm Cards */}
           {tutorial.algorithms && tutorial.algorithms.length > 0 && (
             <section className="tutorial-section">
@@ -80,17 +88,10 @@ export default async function StagePage({ params }) {
             </section>
           )}
 
-          {/* Body content (markdown) */}
-          {tutorial.bodyContent && (
-            <section className="tutorial-section tutorial-body">
-              <MarkdownRenderer content={tutorial.bodyContent} />
-            </section>
-          )}
-
           {/* Implementation Checklist */}
           {tutorial.checklist && tutorial.checklist.length > 0 && (
             <section className="tutorial-section">
-              <h2>✅ Implementation Checklist</h2>
+              <h2>✅ Implementation Checklist (Matches Test Harness)</h2>
               <ul className="tutorial-checklist">
                 {tutorial.checklist.map((item, i) => (
                   <li key={i}>
@@ -101,6 +102,9 @@ export default async function StagePage({ params }) {
               </ul>
             </section>
           )}
+
+          {/* Interactive Submission Workspace and Test Harness */}
+          <CodeSubmitRunner slug={slug} />
 
           {/* Prev / Next navigation */}
           <div className="stage-page-nav">

@@ -40,31 +40,16 @@ checklist:
 
 ## What is a REPL?
 
-A **Read-Eval-Print Loop** (REPL) is the standard interface for interactive database systems. Every major database — SQLite, PostgreSQL, MySQL — starts with a REPL that reads user input, evaluates it, and prints the result.
+A **Read-Eval-Print Loop** (REPL) is the interactive Command-Line Interface for relational databases. Whether you invoke `sqlite3`, `psql`, or `mysql` from your shell, you are greeted by an infinite prompt loop that reads user queries, parses and executes them, and formats the table output back to stdout.
 
-The REPL is the first thing a user sees when they launch your database, so it needs to be robust: it should never crash on unexpected input, handle edge cases like empty lines and EOF signals, and provide helpful error messages.
+The REPL is the gateway to your storage engine. Because human input is unpredictable, a systems-level REPL must enforce strict resiliency guarantees:
+- It must **never crash** or segfault on long queries, empty newlines, or unusual formatting.
+- It must gracefully clean up dynamic heap buffers when encountering an **End-of-File (EOF)** signal (such as `Ctrl+D` or piped input streams).
 
 ## The Two Types of Commands
 
-Your REPL needs to handle two fundamentally different types of input:
+When designing the evaluator routing loop, user input is divided into two distinct architectural tracks:
 
-1. **Meta-commands** (starting with `.`) — These are internal commands like `.exit` and `.help` that control the REPL itself. They don't go through the SQL pipeline.
+1. **Meta-Commands (Dot Commands)**: Any query beginning with a '.' character (such as `.exit` or `.help`) represents an internal administrative instruction. These are parsed directly by the REPL interface layer and never touch the SQL compiler pipeline.
+2. **SQL Statements**: All other valid queries (such as `SELECT`, `INSERT`, or `CREATE`) represent logical relational data operations and are delegated to the Lexer and Syntax Parser stages.
 
-2. **SQL statements** — Everything else gets routed to the SQL processing pipeline (tokenizer → parser → executor), which you'll build in the next stages.
-
-## Debug Command
-
-This stage introduces the first debug command pattern:
-
-```
-droid > .help
-Available commands: .exit, .help
-droid > .exit
-exiting.. good bye!
-```
-
-The `-c` flag allows running a single command without entering the interactive loop:
-
-```bash
-./db -c ".help"
-```

@@ -49,50 +49,32 @@ checklist:
   - "Wire the 'ast' debug command to print the parsed AST structure"
 ---
 
-## From Tokens to Structure
+## From Tokens to Structure (Why Parse?)
 
-The lexer gave us tokens — but tokens alone don't tell us *what the statement means*. The string `INSERT INTO users (id, name) VALUES (1, 'dan')` is just 14 tokens. The **parser** transforms those tokens into a structured tree — an **Abstract Syntax Tree (AST)** — that captures the intent.
+The Lexer gave us a linear stream of tokens, but tokens alone carry zero semantic awareness. A sequence like `INSERT INTO users (id) VALUES (1)` is simply an array of 10 individual symbols and strings to the computer. The **SQL Parser** validates whether those tokens appear in a grammatically legal sequence and converts them into a hierarchical representation called an **Abstract Syntax Tree (AST)**.
 
-## What is Recursive Descent?
+## Understanding Recursive Descent Parsing
 
-It's a parsing technique where **each grammar rule is implemented as a function**. The parser "descends" through the rules by calling functions recursively. It's the same technique used in production compilers (GCC, Clang, V8).
+In industrial database engineering, you do not need heavy third-party generator tools like Yacc or Bison. Instead, you will build a clean, blazing-fast **Recursive Descent Parser** from scratch. 
 
-Here's the mental model:
+Recursive Descent is a directional parsing technique where **every formal grammar rule in your specification translates directly into a concrete programming function**. The parser "descends" through the syntax hierarchy by having functions call one another recursively. This exact architectural strategy powers the modern parsers inside GCC, Clang, and V8!
 
-```
-Grammar Rule                    →  Parse Function
-─────────────────────────────────────────────────
-<Statement>  ::= INSERT | SELECT  →  parse_statement()
-<InsertStmt> ::= INSERT INTO ...  →  parse_insert()
-<SelectStmt> ::= SELECT ... FROM  →  parse_select()
-<WhereClause>::= WHERE col = val  →  parse_condition()
-```
+### How Grammar Rules Connect to Your Code
 
-Each function knows what tokens to expect. If `parse_insert()` calls `consume(KEYWORD_INTO)` and the next token is `FROM`, the parser knows there's a syntax error and reports it.
-
-## Grammar Rules (BNF)
-
-These rules define the valid syntax your parser must accept:
+Formal SQL syntax is documented using Backus-Naur Form (BNF) grammar rules. Think of a BNF rule as a strict architectural blueprint:
 
 ```
 <Statement>    ::= <InsertStmt> | <SelectStmt> | <UpdateStmt> | <DeleteStmt>
-<InsertStmt>   ::= "INSERT" "INTO" <Identifier> "(" <ColumnList> ")" "VALUES" "(" <ValueList> ")" ";"
-<SelectStmt>   ::= "SELECT" <ColumnList> "FROM" <Identifier> [<WhereClause>] ";"
-<UpdateStmt>   ::= "UPDATE" <Identifier> "SET" <AssignList> [<WhereClause>] ";"
-<DeleteStmt>   ::= "DELETE" "FROM" <Identifier> [<WhereClause>] ";"
-<WhereClause>  ::= "WHERE" <Identifier> "=" <Value>
+<InsertStmt>   ::= "INSERT" "INTO" <Table> "(" <Cols> ")" "VALUES" "(" <Vals> ")" ";"
+<SelectStmt>   ::= "SELECT" <Cols> "FROM" <Table> [ <WhereClause> ] ";"
+<WhereClause>  ::= "WHERE" <Column> "=" <LiteralValue>
 ```
 
-You don't need to build a grammar engine — these rules are just a **specification**. You implement them directly as functions.
+When implementing your Recursive Descent algorithm, **you literally write one dedicated bare-metal function per BNF rule**:
 
-## Debug Command
+1. **`parse_statement()`** — Peeks at token 0. If it sees `INSERT`, it routes execution directly to `parse_insert()`. If it sees `SELECT`, it calls `parse_select()`.
+2. **`parse_insert()`** — Executes a linear chain of expectations using `consume()`: it demands `KEYWORD_INTO`, saves the `<Table>` identifier, checks for symbol `(`, collects column names, demands `VALUES`, and populates an internal AST `Statement` struct.
+3. **`parse_where_clause()`** — If an optional `WHERE` keyword is detected, this function cleanly extracts the predicate column, equality operator, and comparative value literal.
 
-The `ast` debug command lets you inspect the parsed tree:
+If at any point a `consume(EXPECTED_TYPE)` check encounters an incompatible token (for instance, finding keyword `FROM` where a table identifier was expected), the parser abruptly short-circuits, halts AST evaluation, and outputs an informative syntax error with exact diagnostic codes!
 
-```
-droid > ast insert into users (id, name, email) values (1, 'danimar', 'danimar@email.com');
-Statement: INSERT
-Table: users
-Columns: [id, name, email]
-Values: [1, 'danimar', 'danimar@email.com']
-```

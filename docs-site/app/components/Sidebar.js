@@ -211,7 +211,14 @@ export default function Sidebar({ isOpen, onClose }) {
                     {isImplemented ? "✓" : "○"}
                   </span>
                   <div>
-                    <div className="sidebar-stage-title">{stage.title}</div>
+                    <div className="sidebar-stage-title">
+                      {stage.title}
+                      {!isImplemented && (
+                        <span style={{ marginLeft: "6px", fontSize: "10px", color: "#f59e0b", background: "rgba(245,158,11,0.1)", padding: "2px 6px", borderRadius: "4px" }}>
+                          🚧 SOON
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </Link>
               );
