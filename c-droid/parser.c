@@ -24,7 +24,7 @@ Token* consume(ParserState *state, TokenType expected_type) {
     }
     Token *token = &state->tokens->tokens[state->current_index];
     if (token->type != expected_type) {
-        printf("[ERROR:00302] Expected token type %d, found '%s'\n", expected_type, token->token);
+        printf("[ERROR:00302] Expected token type %s, found '%s'\n", token_type_to_string(expected_type), token->token);
         state->has_error = true;
         return NULL;
     }
@@ -73,7 +73,59 @@ WhereClause parse_condition(ParserState *state) {
 
 
 SelectStatement parse_select(ParserState *state) {
-    SelectStatement statement = { .table_name = NULL, .column_names = NULL, .column_count = 0, .has_where = false };
+    SelectStatement statement = {
+        .table_name = NULL, 
+        .column_names = malloc(16 * sizeof(char*)), 
+        .column_count = 0, 
+        .has_where = false
+    };
+    consume(state, TOKEN_KEYWORD_SELECT);
+    if(state->has_error) return statement;
+
+    Token *t = peek(state);
+
+    if(t != NULL && t->type == TOKEN_SYMBOL && strcmp(t->token, "*") == 0) {
+        statement.column_count = 3;
+        statement.column_names[0] = strdup("id");
+        statement.column_names[1] = strdup("name");
+        statement.column_names[2] = strdup("email");
+        consume(state, TOKEN_SYMBOL);
+        if(state->has_error) return statement;
+    } else {
+        while(t != NULL && t->type == TOKEN_IDENTIFIER) {
+            statement.column_names[statement.column_count] = strdup(t->token);
+            statement.column_count++;
+            consume(state, TOKEN_IDENTIFIER);
+            if(state->has_error) return statement;
+        
+            if (peek(state) != NULL && peek(state)->type == TOKEN_SYMBOL && strcmp(peek(state)->token, ",") == 0) {
+                consume_symbol(state, ",");
+                if (state->has_error) return statement;
+            } else {
+                break;
+            }
+            t = peek(state);
+        }
+    }
+
+    consume(state, TOKEN_KEYWORD_FROM);
+    if(state->has_error) return statement;
+
+    statement.table_name = strdup(peek(state)->token);
+    consume(state, TOKEN_IDENTIFIER);
+    if(state->has_error) return statement;
+
+    t = peek(state);
+    if (t != NULL && t->type == TOKEN_KEYWORD_WHERE) {
+        statement.has_where = true;
+        consume(state, TOKEN_KEYWORD_WHERE);
+        if (state->has_error) return statement;
+        
+        statement.where = parse_condition(state);
+        if (state->has_error) return statement;
+    }
+
+    consume_symbol(state, ";");
     return statement;
 }
 
@@ -162,13 +214,34 @@ UpdateStatement parse_update(ParserState *state) {
     }
     
     consume_symbol(state, ";");
-    if (state->has_error) return statement;
-
     return statement;
 }
 
 DeleteStatement parse_delete(ParserState *state) {
-    DeleteStatement statement = { .table_name = NULL, .has_where = false };
+    DeleteStatement statement = { 
+        .table_name = NULL,
+        .has_where = false
+    };
+    consume(state, TOKEN_KEYWORD_DELETE);
+    if(state->has_error) return statement;
+
+    consume(state, TOKEN_KEYWORD_FROM);
+    if(state->has_error) return statement;
+
+    statement.table_name = strdup(peek(state)->token);
+    consume(state, TOKEN_IDENTIFIER);
+
+    Token *t = peek(state);
+    if (t != NULL && t->type == TOKEN_KEYWORD_WHERE) {
+        statement.has_where = true;
+        consume(state, TOKEN_KEYWORD_WHERE);
+        if (state->has_error) return statement;
+        
+        statement.where = parse_condition(state);
+        if (state->has_error) return statement;
+    }
+    
+    consume_symbol(state, ";");
     return statement;
 }
 
@@ -253,8 +326,6 @@ InsertStatement parse_insert(ParserState *state) {
     if (state->has_error) return statement;
 
     consume_symbol(state, ";");
-    if (state->has_error) return statement;
-
     return statement;
 
 }

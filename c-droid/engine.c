@@ -12,6 +12,22 @@
 #include "executor.c"
 
 
+void print_value(Value val) {
+    if (val.type == VALUE_INT) {
+        printf("%d", val.data.int_value);
+    } else if (val.type == VALUE_STRING) {
+        printf("'%s'", val.data.string_value ? val.data.string_value : "");
+    } else if (val.type == VALUE_FLOAT) {
+        printf("%g", val.data.float_value);
+    }
+}
+
+void print_where_clause(WhereClause where) {
+    printf("Where: %s %s ", where.column_name ? where.column_name : "", where.operator ? where.operator : "");
+    print_value(where.value);
+    printf("\n");
+}
+
 void print_ast(AST_Node root) {
     if (root.has_error) return;
 
@@ -24,6 +40,9 @@ void print_ast(AST_Node root) {
                 printf("%s%s", root.statement.select.column_names[i], (i < root.statement.select.column_count - 1) ? ", " : "");
             }
             printf("]\n");
+            if (root.statement.select.has_where) {
+                print_where_clause(root.statement.select.where);
+            }
             break;
         case STATEMENT_INSERT:
             printf("Statement: INSERT\n");
@@ -37,14 +56,7 @@ void print_ast(AST_Node root) {
             }
             printf("Values: [");
             for (int i = 0; i < root.statement.insert.value_count; i++) {
-                Value val = root.statement.insert.values[i];
-                if (val.type == VALUE_INT) {
-                    printf("%d", val.data.int_value);
-                } else if (val.type == VALUE_STRING) {
-                    printf("'%s'", val.data.string_value ? val.data.string_value : "");
-                } else if (val.type == VALUE_FLOAT) {
-                    printf("%g", val.data.float_value);
-                }
+                print_value(root.statement.insert.values[i]);
                 if (i < root.statement.insert.value_count - 1) {
                     printf(", ");
                 }
@@ -63,33 +75,22 @@ void print_ast(AST_Node root) {
             }
             printf("Values: [");
             for (int i = 0; i < root.statement.update.set_count; i++) {
-                Value val = root.statement.update.new_values[i];
-                if (val.type == VALUE_INT) {
-                    printf("%d", val.data.int_value);
-                } else if (val.type == VALUE_STRING) {
-                    printf("'%s'", val.data.string_value ? val.data.string_value : "");
-                } else if (val.type == VALUE_FLOAT) {
-                    printf("%g", val.data.float_value);
-                }
+                print_value(root.statement.update.new_values[i]);
                 if (i < root.statement.update.set_count - 1) {
                     printf(", ");
                 }
             }
             printf("]\n");
             if (root.statement.update.has_where) {
-                printf("Where: %s %s ", root.statement.update.where.column_name ? root.statement.update.where.column_name : "", root.statement.update.where.operator ? root.statement.update.where.operator : "");
-                if (root.statement.update.where.value.type == VALUE_INT) {
-                    printf("%d\n", root.statement.update.where.value.data.int_value);
-                } else if (root.statement.update.where.value.type == VALUE_STRING) {
-                    printf("'%s'\n", root.statement.update.where.value.data.string_value ? root.statement.update.where.value.data.string_value : "");
-                } else if (root.statement.update.where.value.type == VALUE_FLOAT) {
-                    printf("%g\n", root.statement.update.where.value.data.float_value);
-                }
+                print_where_clause(root.statement.update.where);
             }
             break;
         case STATEMENT_DELETE:
             printf("Statement: DELETE\n");
             printf("Table: %s\n", root.statement.delete.table_name ? root.statement.delete.table_name : "");
+            if (root.statement.delete.has_where) {
+                print_where_clause(root.statement.delete.where);
+            }
             break;
     }
 }
