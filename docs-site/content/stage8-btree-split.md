@@ -78,17 +78,16 @@ NEW TREE HIERARCHY (Depth: 2):
 #### Declarative Mermaid Tree Hierarchy
 ```mermaid
 graph TD
-    classDef internal fill:#1e1b4b,stroke:#a855f7,stroke-width:2px,color:#d8b4fe,rx:8px,ry:8px;
-    classDef leaf fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#a7f3d0,rx:6px,ry:6px;
+    Root["🗂️ INTERNAL ROUTING NODE (Root Page 0)<br/>Promoted Separator Key: 5 | Depth: 2"]
+    LeftLeaf["🍃 LEAF NODE (Child Page 1)<br/>• Key 1 Row Payload 60B<br/>• Key 2 Row Payload 60B<br/>• Key 4 Row Payload 60B"]
+    RightLeaf["🍃 LEAF NODE (Child Page 2)<br/>• Key 5 Row Payload 60B<br/>• Key 7 Row Payload 60B<br/>• Key 8 Row Payload 60B"]
+    
+    Root -->|Keys less than 5| LeftLeaf
+    Root -->|Keys greater or equal to 5| RightLeaf
 
-    Root["🗂️ <b>INTERNAL ROUTING NODE (Root Page #0)</b><br/>Promoted Separator Key: <b>5</b> | Depth: <b>2</b>"] ::: internal
-    
-    LeftLeaf["🍃 <b>LEAF NODE (Child Page #1)</b><br/>• Key 1 [Row Payload 60B]<br/>• Key 2 [Row Payload 60B]<br/>• Key 4 [Row Payload 60B]"] ::: leaf
-    
-    RightLeaf["🍃 <b>LEAF NODE (Child Page #2)</b><br/>• Key 5 [Row Payload 60B]<br/>• Key 7 [Row Payload 60B]<br/>• Key 8 [Row Payload 60B]"] ::: leaf
-    
-    Root -->|<b>Keys &lt; 5</b><br/>Left Child Pointer| LeftLeaf
-    Root -->|<b>Keys ≥ 5</b><br/>Rightmost Child Pointer| RightLeaf
+    style Root fill:#1e1b4b,stroke:#a855f7,stroke-width:2px,color:#d8b4fe,rx:8px,ry:8px
+    style LeftLeaf fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#a7f3d0,rx:6px,ry:6px
+    style RightLeaf fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#a7f3d0,rx:6px,ry:6px
 ```
 
 Notice how **Key 5** appears twice in our new architecture:

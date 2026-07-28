@@ -90,20 +90,22 @@ In this initial B+Tree stage, our database begins as a single root leaf node res
 #### Declarative Mermaid Layout View
 ```mermaid
 graph TD
-    classDef header fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
-    classDef cell fill:#0f172a,stroke:#34d399,stroke-width:2px,color:#a7f3d0;
-    classDef free fill:#1e293b,stroke:#64748b,stroke-dasharray: 4 4,color:#94a3b8;
-
-    H["📑 NODE HEADER: [ Type: LEAF (0x00) | Is Root | Num Cells ]"] ::: header
-    C0["📦 CELL #0: [ Key = 1 (4 bytes) | Row Payload (60 bytes) ] = 64B"] ::: cell
-    C1["📦 CELL #1: [ Key = 2 (4 bytes) | Row Payload (60 bytes) ] = 64B"] ::: cell
-    CMAX["📦 ... Capacity Supports up to ~63 Sequential Cells"] ::: cell
-    FREE["⬜ Unoccupied Tail Padding (Up to 4096 bytes total Buffer Pool page size)"] ::: free
+    H["📑 NODE HEADER: Type LEAF 0x00 | Is Root | Num Cells"]
+    C0["📦 CELL 0: Key = 1 (4 bytes) | Row Payload (60 bytes) = 64B"]
+    C1["📦 CELL 1: Key = 2 (4 bytes) | Row Payload (60 bytes) = 64B"]
+    CMAX["📦 ... Capacity Supports up to ~63 Sequential Cells"]
+    FREE["⬜ Unoccupied Tail Padding (Up to 4096 bytes total page size)"]
 
     H --> C0
     C0 --> C1
     C1 --> CMAX
     CMAX -.- FREE
+
+    style H fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8
+    style C0 fill:#0f172a,stroke:#34d399,stroke-width:2px,color:#a7f3d0
+    style C1 fill:#0f172a,stroke:#34d399,stroke-width:2px,color:#a7f3d0
+    style CMAX fill:#0f172a,stroke:#34d399,stroke-width:2px,color:#a7f3d0
+    style FREE fill:#1e293b,stroke:#64748b,stroke-dasharray:4 4,color:#94a3b8
 ```
 
 When an `INSERT INTO users` statement arrives, your execution engine serializes the 60-byte row, asks the Pager for Leaf Page 0, locates the offset of index `num_cells`, deposits the 4-byte key and 60-byte payload into the 64-byte cell slot, and increments the cell count. At this stage, your B+Tree leaf node is officially storing live relational data!

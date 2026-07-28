@@ -175,7 +175,20 @@ bool handle_debug_command(Table *table, char *command) {
         }
     }
 
-    // Stage 6-8: if (strncmp(command, "btree ", 6) == 0) { ... return true; }
+    // Stage 6-8: B-Tree debug commands
+    if (strncmp(command, "btree ", 6) == 0 || strcmp(command, "btree dump") == 0) {
+        const char* sub = command + 6;
+
+        if (strncmp(sub, "dump", 4) == 0) {
+            // "btree dump" (no arg) → page 0; "btree dump 0" → page 0; "btree dump 3" → page 3
+            uint32_t page_num = 0;
+            if (strlen(sub) > 5) {
+                page_num = (uint32_t)atoi(sub + 5);
+            }
+            btree_dump(table, page_num);
+            return true;
+        }
+    }
 
     return false;
 }
@@ -202,6 +215,12 @@ Table db_open(const char* filename) {
     users->pager->file_length = lseek(users->pager->file_descriptor, 0, SEEK_END);
     users->pager->num_pages = users->pager->file_length / PAGE_SIZE;
     users->root_page = 0;
+
+    if (users->pager->num_pages == 0) {
+        void* page = pager_alloc_page(users->pager);
+        btree_init_leaf_node(page);
+    }
+
     return *users;
 }
 

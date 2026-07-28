@@ -50,11 +50,7 @@ ExecuteResult execute_insert(Table *table, InsertStatement *stmt){
     strncpy(row.name, stmt->values[1].data.string_value, ROW_NAME_SIZE - 1);
     strncpy(row.email, stmt->values[2].data.string_value, ROW_EMAIL_SIZE - 1);
 
-    char *buffer = malloc(ROW_SIZE);
-    memset(buffer, 0, ROW_SIZE);
-    serialize_row(&row, buffer);
-
-    btree_insert_old(table, row.id, buffer);
+    btree_insert(table, &row);
 
     return (ExecuteResult){
         .status = EXECUTE_OK,

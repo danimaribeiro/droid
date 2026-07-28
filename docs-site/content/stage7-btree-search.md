@@ -70,19 +70,21 @@ AFTER MEMORY SHIFT & INSERTION (Sorted Page Memory):
 #### Declarative Mermaid Memory Shift View
 ```mermaid
 flowchart TD
-    classDef unshifted fill:#1e293b,stroke:#f59e0b,stroke-width:2px,color:#fde68a;
-    classDef inserted fill:#065f46,stroke:#34d399,stroke-width:2px,color:#a7f3d0;
-    classDef shifted fill:#1e1e2e,stroke:#6366f1,stroke-width:2px,color:#c7d2fe;
-
     subgraph BEFORE [Unshifted Memory State]
-        B0[Index #0: Key 1] --> B1[Index #1: Key 3] ::: unshifted
+        B0["Index 0: Key 1"] --> B1["Index 1: Key 3"]
     end
 
     subgraph AFTER [Sorted Memory State After 64-Byte Shift]
-        A0[Index #0: Key 1] --> A1[Index #1: Key 2 🎉 Inserted] ::: inserted --> A2[Index #2: Key 3 🔄 Shifted +64 Bytes] ::: shifted
+        A0["Index 0: Key 1"] --> A1["Index 1: Key 2 🎉 Inserted"] --> A2["Index 2: Key 3 🔄 Shifted +64 Bytes"]
     end
 
     B1 -.-|Memory shift rightwards by 1 cell / 64 bytes| A2
+
+    style B0 fill:#1e293b,stroke:#475569,stroke-width:2px,color:#f8fafc
+    style B1 fill:#1e293b,stroke:#f59e0b,stroke-width:2px,color:#fde68a
+    style A0 fill:#1e293b,stroke:#475569,stroke-width:2px,color:#f8fafc
+    style A1 fill:#065f46,stroke:#34d399,stroke-width:2px,color:#a7f3d0
+    style A2 fill:#1e1e2e,stroke:#6366f1,stroke-width:2px,color:#c7d2fe
 ```
 
 ## The Table Cursor Abstraction
