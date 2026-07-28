@@ -16,9 +16,9 @@ Dumps the structure of a B-tree node page. If `page_num` is omitted, dumps the r
 
 ```
 [BTREE] Page 0: type=LEAF num_cells=3
-[BTREE]   Cell 0: key=1 (508 bytes)
-[BTREE]   Cell 1: key=2 (508 bytes)
-[BTREE]   Cell 2: key=3 (508 bytes)
+[BTREE]   Cell 0: key=1 (60 bytes)
+[BTREE]   Cell 1: key=2 (60 bytes)
+[BTREE]   Cell 2: key=3 (60 bytes)
 ```
 
 Empty page:
@@ -56,13 +56,21 @@ Each test case deletes `droid.db` before running.
 - **Input**: INSERT 1 row → `btree dump 0`
 - **Expected**: `[BTREE] Page 0:` and `type=LEAF`
 
+### 7. `btree-dump-default`
+- **Input**: `btree dump` without argument
+- **Expected**: `[BTREE] Page 0:` and `type=LEAF` (defaults to dumping root page 0)
+
+### 8. `btree-dump-out-of-bounds`
+- **Input**: `btree dump 999`
+- **Expected**: `ERROR` in output (preventing unallocated node access without crashing)
+
 ## Node Layout Reference
 
 | Component | Size |
 |-----------|------|
 | Node header (type + num_cells) | ~8 bytes |
-| Cell (key + row payload) | 4 + 508 = 512 bytes |
-| Max cells per 4KB leaf | ~7 |
+| Cell (key + row payload) | 4 + 60 = 64 bytes |
+| Max cells per 4KB leaf | ~63 |
 
 > **Note**: At this stage, cells may be stored in insertion order. Sorted insertion is Stage 7.
 

@@ -32,7 +32,7 @@ All tests are in `tests/integration/python/stage8/btree_split_tests.py` and run 
 
 Each test case deletes `droid.db` before running.
 
-The split threshold is set to 10 rows in the test code (`SPLIT_THRESHOLD = 10`). With 512-byte cells (4-byte key + 508-byte row) and a 4096-byte page, a leaf holds roughly 7 cells. Inserting 10 rows guarantees at least one split.
+The split threshold is configured to 10 rows in our evaluation suite (`SPLIT_THRESHOLD = 10`). Although a 4096-byte page natively holds up to ~63 compact 64-byte cells (4-byte key + 60-byte row), enforcing a test split threshold of 10 allows our integration runner to test deep internal node creation without requiring massive insertion sequences. Inserting 10 rows guarantees at least one split.
 
 ### 1. `btree-no-split-under-limit`
 - **Input**: INSERT 3 rows → `btree structure`
@@ -70,7 +70,7 @@ The split threshold is set to 10 rows in the test code (`SPLIT_THRESHOLD = 10`).
 
 | Cell size | Page size | Header | Max cells/leaf |
 |-----------|-----------|--------|---------------|
-| 512 bytes | 4096 bytes | ~8 bytes | ~7 |
+| 64 bytes | 4096 bytes | ~8 bytes | ~63 (Test threshold: 10) |
 
 ## How to Run
 

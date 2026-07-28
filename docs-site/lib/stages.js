@@ -12,6 +12,9 @@ const TUTORIAL_SLUGS = [
   "stage3-parser",
   "stage4-serialization",
   "stage5-pager",
+  "stage6-btree-leaf",
+  "stage7-btree-search",
+  "stage8-btree-split",
 ];
 
 const STAGE_ORDER = [

@@ -1,11 +1,11 @@
 # Stage 11: Variable-Length Row Serialization
 
 ## Concept
-Replace the fixed 508-byte row format with a compact variable-length format where each field stores only the bytes it needs, using length prefixes for string fields.
+Replace the fixed 60-byte row format with a compact variable-length format where each field stores only the bytes it needs, using length prefixes for string fields.
 
 ## What It Teaches
 - **Length-prefixed encoding**: Each VARCHAR field is preceded by a 2-byte length, so the deserializer knows exactly how many bytes to read. This is how real databases (PostgreSQL TOAST, MySQL InnoDB) store variable-length data.
-- **Space efficiency**: A row with name="dan" (3 chars) uses 18 bytes instead of 508 — a 96% reduction. This means more rows per page, fewer disk reads, and better cache utilization.
+- **Space efficiency**: A row with name="dan" (3 chars) uses 18 bytes instead of 60 — a dramatic size reduction. This means more rows per page, fewer disk reads, and better cache utilization.
 - **Offset calculation**: With fixed fields, `email` is always at byte 256. With variable fields, `email` offset depends on the actual length of `name`. The student learns to compute field offsets dynamically.
 - **Round-trip correctness**: Serialize → write to buffer → deserialize must produce identical values. This is the fundamental invariant of any serialization format.
 

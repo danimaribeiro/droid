@@ -662,6 +662,349 @@ pub const Pager = struct {
       { id: "pager-get-unallocated", header: "Requests unallocated page index 5 within capacity bounds and expects ERROR output", input: "pager get 5\\n.exit", expected: "[ERROR:00201] Page number out of bounds", exitCode: 0 },
       { id: "pager-alloc-multiple", header: "After allocating 3 pages in succession, status should show total_pages=3", input: "pager alloc\\npager alloc\\npager alloc\\npager status\\n.exit", expected: "total_pages=3 after three allocs", exitCode: 0 }
     ]
+  },
+  "stage6-btree-leaf": {
+    subtitle: "Implement B+Tree Leaf Node formatting within 4KB memory frames and route relational INSERT execution down to cell buffers.",
+    examples: [
+      {
+        badge: "LEAF NODE INSPECTION",
+        terminal: `> insert into users (id, name, email) values (1, 'danimar', 'danimar@email.com');
+> btree dump 0
+[BTREE] Page 0: type=LEAF num_cells=1
+[BTREE]   Cell 0: key=1 (60 bytes)`
+      },
+      {
+        badge: "OUT-OF-BOUNDS PROTECTION",
+        terminal: `> btree dump 999
+[ERROR:00201] Page number out of bounds
+> .exit`
+      }
+    ],
+    samples: {
+      c: `// c-droid/btree.c - B+Tree Leaf Node & INSERT Execution
+#include "btree.h"
+#include <stdio.h>
+
+/* 
+ * TODO: Define B+Tree Leaf Node header constants and offsets.
+ * Remember: In our B+Tree, genuine table tuples reside exclusively inside Leaf Nodes!
+ * Node Header: [ Node Type (1 byte) | Is Root (1 byte) | Num Cells (4 bytes) ]
+ * Cell Layout: [ Primary Key (4 bytes) | Serialized Row Payload (60 bytes) ] = 64 bytes
+ */
+void btree_init_leaf_node(void* page) {
+    // TODO: Write LEAF node type flag and initialize cell counter to zero
+    printf("[ERROR:00101] B+Tree leaf initialization not implemented yet.\\n");
+}
+
+void btree_insert(Table* table, Row* row) {
+    // TODO: Fetch root leaf page from Pager, locate insertion slot, and write serialized row cell
+    printf("[ERROR:00101] B+Tree INSERT execution not implemented yet.\\n");
+}
+
+void btree_dump(Table* table, uint32_t page_num) {
+    // TODO: Dump node type, total occupancy count, and list primary keys for debugging
+    printf("[ERROR:00101] btree dump command not implemented yet.\\n");
+}`,
+      cpp: `// cpp-droid/src/BTree.cpp - B+Tree Leaf Node Architecture
+#include "BTree.hpp"
+#include <iostream>
+
+namespace droid {
+
+/*
+ * TODO: Implement B+Tree Leaf Node memory mapping.
+ * Unlike traditional B-Trees, internal nodes in a B+Tree store no user payloads.
+ * All relational table data lives safely inside our 4KB leaf pages!
+ */
+void BTree::init_leaf_node(void* page_buffer, bool is_root) {
+    // TODO: Initialize page header flags and reset cell counter
+    std::cout << "[ERROR:00101] B+Tree leaf initialization not implemented yet.\\n";
+}
+
+void BTree::insert_tuple(Table& table, const Row& row) {
+    // TODO: Serialize row attributes into cell slots inside target leaf node
+    std::cout << "[ERROR:00101] B+Tree insert tuple not implemented yet.\\n";
+}
+
+} // namespace droid`,
+      rust: `// rust-droid/src/btree.rs - B+Tree Leaf Node & Cell Packaging
+use std::io::Write;
+
+/// Represents node categorization in our B+Tree engine
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum NodeType {
+    Leaf = 0,
+    Internal = 1,
+}
+
+pub struct BTreeLeaf;
+
+impl BTreeLeaf {
+    /// TODO: Stamp fresh memory buffers from the Pager with B+Tree leaf headers.
+    /// Keep track of max capacity: (4096 - header_size) / 64 bytes per cell =~ 63 cells!
+    pub fn init_node(page_buf: &mut [u8], is_root: bool) -> Result<(), &'static str> {
+        // TODO: Write leaf tag and zero out cell count at header offset
+        Err("[ERROR:00101] B+Tree leaf initialization not implemented yet.")
+    }
+}`,
+      zig: `// zig-droid/src/btree.zig - B+Tree Leaf Node & Memory Offsets
+const std = @import("std");
+
+pub const BTreeNode = struct {
+    page_id: u32,
+    
+    /// TODO: Designate binary offsets for B+Tree Leaf Node Header and Cells.
+    /// In a B+Tree, tuples reside strictly in leaf cells: [ Key (u32) | Row Data (60 bytes) ]
+    pub fn initLeaf(buffer: []u8, is_root: bool, writer: anytype) !void {
+        // YOUR IMPLEMENTATION GOES HERE
+        try writer.writeAll("[ERROR:00101] B+Tree leaf initialization not implemented yet.\\n");
+    }
+};`
+    },
+    suiteName: "stage6/btree_leaf_tests.py",
+    makeCmd: "make test-stage6",
+    brokenTestId: "btree-insert-one-dump",
+    brokenActual: "[BTREE] Page 0: type=LEAF num_cells=0",
+    brokenCode: 0,
+    bugFailReason: "Logical flaw: INSERT execution routine copied cell attributes to memory but forgot to increment the leaf header's num_cells counter.",
+    tests: [
+      { id: "btree-dump-empty", header: "On a fresh database, 'btree dump 0' should show an empty leaf node", input: "btree dump 0\\n.exit", expected: "[BTREE] Page 0: type=LEAF num_cells=0", exitCode: 0 },
+      { id: "btree-insert-one-dump", header: "After inserting one row, 'btree dump 0' should show 1 cell with key=1", input: "insert into users values (1, 'danimar', 'danimar@email.com');\\nbtree dump 0\\n.exit", expected: "num_cells=1 with key=1", exitCode: 0 },
+      { id: "btree-insert-three-dump", header: "After inserting three rows, 'btree dump 0' should show 3 cells and keys", input: "insert into users values (1, 'a', 'a@t.com');\\ninsert into users values (2, 'b', 'b@t.com');\\ninsert into users values (3, 'c', 'c@t.com');\\nbtree dump 0\\n.exit", expected: "num_cells=3 with all three keys", exitCode: 0 },
+      { id: "btree-insert-custom-key", header: "Inserting a row with non-sequential id=42 should appear as key=42 in dump", input: "insert into users values (42, 'test', 'test@test.com');\\nbtree dump 0\\n.exit", expected: "key=42 in dump output", exitCode: 0 },
+      { id: "btree-insert-no-error", header: "A valid INSERT should execute cleanly without producing any error codes", input: "insert into users values (1, 'test', 'test@test.com');\\n.exit", expected: "No error codes in output", exitCode: 0 },
+      { id: "btree-node-type-leaf", header: "After insert, the root page should report LEAF node type (no splits yet)", input: "insert into users values (1, 'test', 'test@test.com');\\nbtree dump 0\\n.exit", expected: "type=LEAF in dump output", exitCode: 0 },
+      { id: "btree-dump-default", header: "Invoking 'btree dump' without arguments should default to dumping root page 0", input: "btree dump\\n.exit", expected: "[BTREE] Page 0: type=LEAF in dump output", exitCode: 0 },
+      { id: "btree-dump-out-of-bounds", header: "Invoking 'btree dump 999' on an out-of-bounds page should abort cleanly with ERROR", input: "btree dump 999\\n.exit", expected: "ERROR in output without crashing", exitCode: 0 }
+    ]
+  },
+  "stage7-btree-search": {
+    subtitle: "Upgrade leaf nodes with logarithmic binary search, enforce sorted memory shifting on insert, and wire sequential SELECT cursors.",
+    examples: [
+      {
+        badge: "LOGARITHMIC SEARCH & CURSORS",
+        terminal: `> btree find 1
+[BTREE] Find key=1: FOUND (page=0 cell=0)
+[BTREE] Row: id=1 name='danimar' email='danimar@email.com'
+> select * from users;
+id | name | email
+1 | danimar | danimar@email.com
+(1 rows)`
+      },
+      {
+        badge: "DUPLICATE KEY VIOLATION",
+        terminal: `> insert into users (id, name, email) values (1, 'alice', 'a@test.com');
+[ERROR:00601] Duplicate primary key violation: 1`
+      }
+    ],
+    samples: {
+      c: `// c-droid/btree_search.c - B+Tree Logarithmic Search & SELECT Cursors
+#include "btree.h"
+#include <stdio.h>
+
+/*
+ * TODO: Implement O(log N) binary search across sorted leaf node cells.
+ * Return matching cell coordinate or exact index where incoming key should be inserted.
+ */
+uint32_t btree_leaf_find(void* page_buf, uint32_t target_key) {
+    // TODO: Perform while (left <= right) midpoint calculation and comparisons
+    printf("[ERROR:00101] Binary leaf search not implemented yet.\\n");
+    return 0;
+}
+
+/*
+ * TODO: Execute SELECT table scans using Table Cursor abstractions.
+ * Iterate sequentially from Cell #0 to end-of-table without exposing bare memory pointers.
+ */
+void execute_select(Table* table) {
+    printf("[ERROR:00101] SELECT cursor scanning not implemented yet.\\n");
+}
+
+void btree_find_command(Table* table, uint32_t key) {
+    printf("[ERROR:00101] btree find diagnostic command not implemented yet.\\n");
+}`,
+      cpp: `// cpp-droid/src/BTreeSearch.cpp - B+Tree Search & Sorted Memory Shifting
+#include "BTree.hpp"
+#include <iostream>
+
+namespace droid {
+
+/*
+ * TODO: Maintain sorted cell ordering during out-of-order tuple insertion.
+ * Use std::memmove or safe overlapping shifts to vacate insertion slots cleanly.
+ */
+void BTree::insert_sorted_cell(void* leaf_buf, uint32_t target_idx, const Cell& new_cell) {
+    // TODO: Shift existing rightward cells by 64 bytes before depositing new row payload
+    std::cout << "[ERROR:00101] B+Tree sorted cell insertion not implemented yet.\\n";
+}
+
+void BTree::execute_cursor_scan(Table& table) {
+    std::cout << "[ERROR:00101] Table cursor scan not implemented yet.\\n";
+}
+
+} // namespace droid`,
+      rust: `// rust-droid/src/cursor.rs - B+Tree Cursor & SELECT Query Execution
+use std::io::Write;
+
+/// Abstraction representing a sequential record navigator over our B+Tree tables
+pub struct TableCursor {
+    pub page_id: u32,
+    pub cell_index: u32,
+    pub end_of_table: bool,
+}
+
+impl TableCursor {
+    /// TODO: Initialize table cursor pointing directly to Page 0, Cell 0
+    pub fn start(root_page: u32) -> Result<Self, &'static str> {
+        // YOUR IMPLEMENTATION GOES HERE
+        Err("[ERROR:00101] Table cursor initialization not implemented yet.")
+    }
+
+    /// TODO: Advance cursor to subsequent cell index or follow leaf sibling pointers
+    pub fn advance(&mut self) -> Result<(), &'static str> {
+        Err("[ERROR:00101] Cursor advance routine not implemented yet.")
+    }
+}`,
+      zig: `// zig-droid/src/cursor.zig - Table Cursor & Sorted Cell Insertion
+const std = @import("std");
+
+pub const TableCursor = struct {
+    page_id: u32,
+    cell_index: u32,
+    end_of_table: bool,
+    
+    /// TODO: Implement sequential pull-based record scanning for SELECT execution.
+    /// Validate that duplicate primary key insertions trigger clean error codes!
+    pub fn nextRecord(self: *TableCursor, writer: anytype) !void {
+        try writer.writeAll("[ERROR:00101] Table cursor scan not implemented yet.\\n");
+    }
+};`
+    },
+    suiteName: "stage7/btree_search_tests.py",
+    makeCmd: "make test-stage7",
+    brokenTestId: "btree-sorted-insert",
+    brokenActual: "Cell 0: key=3, Cell 1: key=1, Cell 2: key=2",
+    brokenCode: 0,
+    bugFailReason: "Ordering failure: Engine appended cells in raw arrival order (3, 1, 2) instead of shifting memory rightward to enforce sorted numerical key sequence.",
+    tests: [
+      { id: "btree-find-existing", header: "After inserting row id=1, 'btree find 1' should return FOUND with row data", input: "insert into users values (1, 'danimar', 'd@e.com');\\nbtree find 1\\n.exit", expected: "Find key=1: FOUND with row attributes", exitCode: 0 },
+      { id: "btree-find-missing", header: "Searching for non-existent key=99 should cleanly return NOT_FOUND", input: "btree find 99\\n.exit", expected: "Find key=99: NOT_FOUND", exitCode: 0 },
+      { id: "btree-sorted-insert", header: "Inserting keys out of order (3, 1, 2) should result in sorted cells (1, 2, 3)", input: "insert into users values (3, 'c', 'c@t.com');\\ninsert into users values (1, 'a', 'a@t.com');\\ninsert into users values (2, 'b', 'b@t.com');\\nbtree dump 0\\n.exit", expected: "Cell 0: key=1, Cell 1: key=2, Cell 2: key=3", exitCode: 0 },
+      { id: "btree-find-after-multiple", header: "After inserting 3 rows, each individual key should be FOUND via 'btree find'", input: "insert into users values (1, 'a', 'a@t.com');\\ninsert into users values (2, 'b', 'b@t.com');\\ninsert into users values (3, 'c', 'c@t.com');\\nbtree find 1\\nbtree find 2\\nbtree find 3\\n.exit", expected: "All three keys return FOUND", exitCode: 0 },
+      { id: "select-after-insert", header: "After inserting 2 rows, 'select * from users;' should print both rows", input: "insert into users values (1, 'danimar', 'd@e.com');\\ninsert into users values (2, 'alice', 'a@t.com');\\nselect * from users;\\n.exit", expected: "Both inserted row attributes in SELECT output", exitCode: 0 },
+      { id: "select-empty-table", header: "On a fresh database, 'select * from users;' should return zero rows cleanly", input: "select * from users;\\n.exit", expected: "(0 rows) without crashing", exitCode: 0 },
+      { id: "select-row-count", header: "After inserting 3 rows, the trailing summary should report (3 rows)", input: "insert into users values (1, 'a', 'a@t.com');\\ninsert into users values (2, 'b', 'b@t.com');\\ninsert into users values (3, 'c', 'c@t.com');\\nselect * from users;\\n.exit", expected: "(3 rows) in footer output", exitCode: 0 },
+      { id: "select-column-headers", header: "The SELECT output should begin with proper relational column header line", input: "insert into users values (1, 'test', 't@t.com');\\nselect * from users;\\n.exit", expected: "Header: id | name | email", exitCode: 0 },
+      { id: "btree-duplicate-key-error", header: "Inserting two rows with identical primary key id=1 should produce an ERROR", input: "insert into users values (1, 'alice', 'a@t.com');\\ninsert into users values (1, 'bob', 'b@t.com');\\n.exit", expected: "Error on duplicate primary key violation", exitCode: 0 }
+    ]
+  },
+  "stage8-btree-split": {
+    subtitle: "Implement median leaf node splitting upon capacity overflow (~7 cells per 4KB leaf), promoting separator routing keys up to Internal Nodes.",
+    examples: [
+      {
+        badge: "ROOT SPLIT & TOPOLOGY",
+        terminal: `> btree structure
+[BTREE] Tree depth: 2
+[BTREE] INTERNAL (page=0 keys=[8])
+[BTREE]   LEAF (page=1 cells=4 keys=[1,2,3,4])
+[BTREE]   LEAF (page=2 cells=4 keys=[8,9,10,11])`
+      },
+      {
+        badge: "SELECT TRAVERSAL AFTER SPLIT",
+        terminal: `> select * from users;
+id | name | email
+... (seamless sequential iteration over leaves)
+(8 rows)`
+      }
+    ],
+    samples: {
+      c: `// c-droid/btree_split.c - B+Tree Leaf Splits & Internal Routing Nodes
+#include "btree.h"
+#include <stdio.h>
+
+/*
+ * TODO: Implement median B+Tree Leaf Node split protocol upon cell overflow.
+ * Remember the B+Tree golden rule: When a leaf overflows and splits in half,
+ * keep authentic row payloads strictly inside the sibling leaves and promote only a COPY
+ * of the median routing separator key up to the parent Internal Node!
+ */
+void btree_split_leaf_node(Table* table, uint32_t leaf_page_id) {
+    // TODO: Allocate new sibling leaf via Pager, copy upper half of cells, and promote routing key
+    printf("[ERROR:00101] B+Tree leaf node splitting not implemented yet.\\n");
+}
+
+/*
+ * TODO: Initialize Internal Routing Node header layout:
+ * [ Node Type = INTERNAL (1 byte) | Num Keys (4 bytes) | Rightmost Child Ptr (4 bytes) ]
+ * Routing Array Entries: [ Child Page Pointer (4 bytes) | Separator Key (4 bytes) ] = 8 bytes!
+ */
+void btree_init_internal_node(void* page_buf) {
+    printf("[ERROR:00101] B+Tree internal node initialization not implemented yet.\\n");
+}
+
+void btree_structure_command(Table* table) {
+    printf("[ERROR:00101] btree structure diagnostic command not implemented yet.\\n");
+}`,
+      cpp: `// cpp-droid/src/BTreeSplit.cpp - B+Tree Leaf Splitting & Hierarchy Management
+#include "BTree.hpp"
+#include <iostream>
+
+namespace droid {
+
+/*
+ * TODO: Execute root node splitting to grow tree depth vertically from Depth 1 to Depth 2.
+ * Allocate Left Child #1 and Right Child #2, then convert Root Page 0 into an INTERNAL routing hub.
+ */
+void BTree::split_root_node(Table& table) {
+    // TODO: Copy root contents to child #1, execute median split to child #2, and promote key to root
+    std::cout << "[ERROR:00101] B+Tree root node splitting not implemented yet.\\n";
+}
+
+void BTree::print_tree_structure(Table& table) {
+    std::cout << "[ERROR:00101] btree structure visualization not implemented yet.\\n";
+}
+
+} // namespace droid`,
+      rust: `// rust-droid/src/internal_node.rs - B+Tree Internal Routing & Multi-Level Descent
+use std::io::Write;
+
+pub struct InternalNode;
+
+impl InternalNode {
+    /// TODO: Implement downward hierarchical branching for point evaluations ('btree find').
+    /// Compare target key against separator keys; descend via left pointer or Rightmost child pointer.
+    pub fn route_child_page(internal_buf: &[u8], target_key: u32) -> Result<u32, &'static str> {
+        // YOUR IMPLEMENTATION GOES HERE
+        Err("[ERROR:00101] Internal node routing descent not implemented yet.")
+    }
+}`,
+      zig: `// zig-droid/src/split.zig - B+Tree Leaf Splitting & Internal Node Architecture
+const std = @import("std");
+
+pub const BTreeSplit = struct {
+    /// TODO: Implement median cell balancing when insertions exceed 4KB leaf capacity (~7 cells).
+    /// Verify sustained tree balance during massive sequential ingestions (30+ tuples)!
+    pub fn splitAndPromote(self: *BTreeSplit, writer: anytype) !void {
+        try writer.writeAll("[ERROR:00101] B+Tree leaf split protocol not implemented yet.\\n");
+    }
+};`
+    },
+    suiteName: "stage8/btree_split_tests.py",
+    makeCmd: "make test-stage8",
+    brokenTestId: "btree-insert-order-after-split",
+    brokenActual: "id=10, id=9, id=8, ..., id=1",
+    brokenCode: 0,
+    bugFailReason: "Splitting error: During reverse insertion workload (ids 10 down to 1), engine miscalculated rightmost child pointer transition, breaking ascending SELECT cursor traversal.",
+    tests: [
+      { id: "btree-no-split-under-limit", header: "Inserting small row quantities under capacity limit keeps tree depth at 1 (single leaf)", input: "insert into users values (1, 'a', 'a@t.com');\\ninsert into users values (2, 'b', 'b@t.com');\\ninsert into users values (3, 'c', 'c@t.com');\\nbtree structure\\n.exit", expected: "Tree depth: 1 with a single LEAF node", exitCode: 0 },
+      { id: "btree-split-on-overflow", header: "Inserting 10 rows (exceeding ~7 cell capacity threshold) increases tree depth to 2", input: "insert 10 sequential rows...\\nbtree structure\\n.exit", expected: "Tree depth: 2 after overflow split", exitCode: 0 },
+      { id: "btree-internal-node-created", header: "After leaf split, tree structure should report presence of an INTERNAL node", input: "insert 10 sequential rows...\\nbtree structure\\n.exit", expected: "INTERNAL routing node present in structure", exitCode: 0 },
+      { id: "btree-split-has-two-leaves", header: "After split, tree hierarchy should list at least two distinct LEAF child branches", input: "insert 10 sequential rows...\\nbtree structure\\n.exit", expected: "At least two LEAF nodes in structure", exitCode: 0 },
+      { id: "btree-find-after-split", header: "After overflow split, querying keys 1, 5, and 10 should route correctly and return FOUND", input: "insert 10 sequential rows...\\nbtree find 1\\nbtree find 5\\nbtree find 10\\n.exit", expected: "All queried keys return FOUND across split leaves", exitCode: 0 },
+      { id: "btree-select-after-split", header: "After splitting across multiple leaves, SELECT should seamlessly traverse and output (10 rows)", input: "insert 10 sequential rows...\\nselect * from users;\\n.exit", expected: "(10 rows) in output via cursor transition", exitCode: 0 },
+      { id: "btree-insert-order-after-split", header: "Inserting 10 rows in reverse order (10 down to 1) should output ascending keys during SELECT", input: "insert 10 rows in reverse order...\\nselect * from users;\\n.exit", expected: "(10 rows) cleanly in ascending key sequence", exitCode: 0 },
+      { id: "btree-multi-split", header: "Inserting 30 sequential rows should sustain balance and create 3+ child leaf nodes", input: "insert 30 sequential rows...\\nbtree structure\\n.exit", expected: "INTERNAL and LEAF both present across multi-splits", exitCode: 0 }
+    ]
   }
 };
 

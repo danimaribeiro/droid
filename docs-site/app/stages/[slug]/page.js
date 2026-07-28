@@ -5,6 +5,7 @@ import MarkdownRenderer from "@/app/components/MarkdownRenderer";
 import AlgorithmCard from "@/app/components/AlgorithmCard";
 import StageObjective from "@/app/components/StageObjective";
 import CodeSubmitRunner from "@/app/components/CodeSubmitRunner";
+import BTreeVisualizer from "@/app/components/BTreeVisualizer";
 
 export async function generateStaticParams() {
   const slugs = getAllSlugs();
@@ -64,6 +65,9 @@ export default async function StagePage({ params }) {
               </ul>
             </section>
           )}
+
+          {/* Interactive B+Tree Architecture Lab */}
+          <BTreeVisualizer slug={slug} />
 
           {/* Body content (markdown comes before conceptual execution!) */}
           {tutorial.bodyContent && (

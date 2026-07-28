@@ -9,15 +9,15 @@ export default function CodeSubmitRunner({ slug }) {
   const stageData = STAGE_HARNESS_DATA[normalizedSlug];
 
   const [activeLang, setActiveLang] = useState("c");
-  const [code, setCode] = useState(stageData ? stageData.samples.c : "");
+  const [code, setCode] = useState(stageData?.samples?.c || "");
   const [isRunning, setIsRunning] = useState(false);
   const [hasRun, setHasRun] = useState(false);
   const [isBuggyMode, setIsBuggyMode] = useState(false);
   const [expandedCase, setExpandedCase] = useState(null);
 
   useEffect(() => {
-    if (stageData) {
-      setCode(stageData.samples[activeLang]);
+    if (stageData && stageData.samples) {
+      setCode(stageData.samples[activeLang] || "");
       setHasRun(false);
     }
   }, [normalizedSlug, activeLang, stageData]);
@@ -26,7 +26,9 @@ export default function CodeSubmitRunner({ slug }) {
 
   const handleLangChange = (lang) => {
     setActiveLang(lang);
-    setCode(stageData.samples[lang]);
+    if (stageData?.samples) {
+      setCode(stageData.samples[lang] || "");
+    }
   };
 
   const runTests = () => {
@@ -45,14 +47,14 @@ export default function CodeSubmitRunner({ slug }) {
       <div className="runner-header-block">
         <h2 className="runner-main-title">🛠️ Implementation & Submission Workspace</h2>
         <p className="runner-subtitle">
-          {stageData.subtitle}
+          {stageData.subtitle || "Build and execute integration tests in your target language."}
         </p>
         
         <div className="runner-example-box">
-          {stageData.examples.map((ex, idx) => (
+          {(stageData.examples || []).map((ex, idx) => (
             <div key={idx} className="example-col">
-              <span className="example-badge">{ex.badge}</span>
-              <pre className="example-terminal">{ex.terminal}</pre>
+              <span className="example-badge">{ex.badge || "EXAMPLE"}</span>
+              <pre className="example-terminal">{ex.terminal || ""}</pre>
             </div>
           ))}
         </div>

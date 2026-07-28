@@ -54,7 +54,7 @@ ExecuteResult execute_insert(Table *table, InsertStatement *stmt){
     memset(buffer, 0, ROW_SIZE);
     serialize_row(&row, buffer);
 
-    btree_insert(table, row.id, buffer);
+    btree_insert_old(table, row.id, buffer);
 
     return (ExecuteResult){
         .status = EXECUTE_OK,

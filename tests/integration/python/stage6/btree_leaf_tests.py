@@ -95,6 +95,22 @@ CASES: list[TestCase] = [
         expected="type=LEAF in dump output",
         must_contain=["[BTREE] Page 0:", "type=LEAF"],
     ),
+    TestCase(
+        name="btree-dump-default",
+        header="Dump without argument defaults to root page 0",
+        description="Invoking 'btree dump' without providing a page index should default to dumping root page 0.",
+        test_input="btree dump\n.exit\n",
+        expected="[BTREE] Page 0: type=LEAF in dump output",
+        must_contain=["[BTREE] Page 0:", "type=LEAF"],
+    ),
+    TestCase(
+        name="btree-dump-out-of-bounds",
+        header="Dump on an unallocated or out-of-bounds page returns clean error",
+        description="Invoking 'btree dump 999' on a non-existent page index should abort cleanly with an error message.",
+        test_input="btree dump 999\n.exit\n",
+        expected="ERROR in output",
+        must_contain=["ERROR"],
+    ),
 ]
 
 

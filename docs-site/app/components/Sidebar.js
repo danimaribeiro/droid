@@ -34,11 +34,11 @@ const ALL_PARTS = [
         ],
       },
       {
-        title: "The B-Tree Storage Engine",
+        title: "The B+Tree Storage Engine",
         stages: [
-          { num: 6, slug: "stage6-btree-leaf", title: "B-Tree Node Byte Layout" },
-          { num: 7, slug: "stage7-btree-search", title: "Leaf Node Search & Insertion" },
-          { num: 8, slug: "stage8-btree-split", title: "B-Tree Node Splits & Internal Nodes" },
+          { num: 6, slug: "stage6-btree-leaf", title: "B+Tree Leaf Node Byte Layout" },
+          { num: 7, slug: "stage7-btree-search", title: "Logarithmic Search & Sorted Insertion" },
+          { num: 8, slug: "stage8-btree-split", title: "Leaf Overflow Splits & Internal Nodes" },
         ],
       },
       {
@@ -146,7 +146,7 @@ const ALL_PARTS = [
 ];
 
 // Stages with tutorial content ready
-const IMPLEMENTED_STAGES = [1, 2, 3, 4, 5];
+const IMPLEMENTED_STAGES = [1, 2, 3, 4, 5, 6, 7, 8];
 
 /**
  * Find which part a given slug belongs to.

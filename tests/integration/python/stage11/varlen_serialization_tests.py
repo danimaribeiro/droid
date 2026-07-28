@@ -26,11 +26,11 @@ CASES: list[TestCase] = [
     TestCase(
         name="varlen-serialize-short",
         header="Short strings produce a compact row",
-        description="Variable-length row with short fields should be much smaller than 508 bytes.",
+        description="Variable-length row with short fields should be much smaller than 60 bytes.",
         test_input="serialize insert into users (id, name, email) values (1, 'dan', 'd@e');\n.exit\n",
-        expected="Row Size < 508 with (variable) tag and Round-trip: OK",
+        expected="Row Size < 60 with (variable) tag and Round-trip: OK",
         must_contain=["[SERIALIZE]", "(variable)", "Round-trip: OK"],
-        must_not_contain=["Row Size: 508"],
+        must_not_contain=["Row Size: 60"],
     ),
     TestCase(
         name="varlen-serialize-exact-size",

@@ -11,7 +11,7 @@ STAGE_ID = "stage8"
 STAGE_TITLE = "B-Tree Splits & Internal Nodes"
 
 # Number of rows to insert to guarantee at least one leaf split.
-# With 508-byte rows + 4-byte key = 512 bytes/cell, and a 4096-byte page
+# With 60-byte rows + 4-byte key = 64 bytes/cell (~63 cells/page, test threshold: 10)
 # minus header (~10 bytes), a leaf holds roughly 7 cells.
 # Inserting 10 rows will force a split.
 SPLIT_THRESHOLD = 10
