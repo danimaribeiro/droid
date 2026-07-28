@@ -145,8 +145,36 @@ bool handle_debug_command(Table *table, char *command) {
         return true;
     }
 
-    // Futuro:
-    // Stage 5: if (strncmp(command, "pager ", 6) == 0) { ... return true; }
+    // ── Stage 5: Pager debug ──
+    if (strncmp(command, "pager", 5) == 0) {
+        char *sql = command + 6;
+        if (strncmp(sql, "status", 6) == 0) {
+            pager_status(table->pager);
+            return true;
+        }
+
+        if (strncmp(sql, "alloc", 5) == 0) {
+            void* page = pager_alloc_page(table->pager);
+            if (page == NULL) {
+                printf("[ERROR:00501] Failed to allocate page\n");
+                return false;
+            }
+            printf("[PAGER] Alloc: page %u (%d bytes, zeroed)\n", table->pager->num_pages - 1, PAGE_SIZE);
+            return true;
+        }
+
+        if (strncmp(sql, "get", 3) == 0) {
+            int page_num = atoi(sql + 4);
+            void* page = pager_get_page(table->pager, page_num);
+            if (page == NULL) {
+                printf("[ERROR:00502] Failed to get page\n");
+                return false;
+            }
+            printf("[PAGER] Get page %d: CACHE_HIT\n", page_num);
+            return true;
+        }
+    }
+
     // Stage 6-8: if (strncmp(command, "btree ", 6) == 0) { ... return true; }
 
     return false;

@@ -146,7 +146,7 @@ const ALL_PARTS = [
 ];
 
 // Stages with tutorial content ready
-const IMPLEMENTED_STAGES = [1, 2, 3, 4];
+const IMPLEMENTED_STAGES = [1, 2, 3, 4, 5];
 
 /**
  * Find which part a given slug belongs to.

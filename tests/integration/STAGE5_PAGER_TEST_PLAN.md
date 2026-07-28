@@ -51,7 +51,11 @@ Each test case deletes `droid.db` before running to ensure a clean state.
 - **Input**: `pager get 999`
 - **Expected**: `ERROR` in output
 
-### 6. `pager-alloc-multiple`
+### 6. `pager-get-unallocated`
+- **Input**: `pager get 5` (on a freshly initialized 0 or 1 page database)
+- **Expected**: `ERROR` in output (preventing unallocated page read within TABLE_MAX_PAGES bounds)
+
+### 7. `pager-alloc-multiple`
 - **Input**: `pager alloc` × 3 then `pager status`
 - **Expected**: `total_pages=3`
 

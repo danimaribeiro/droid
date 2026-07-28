@@ -11,6 +11,7 @@ const TUTORIAL_SLUGS = [
   "stage2-lexer",
   "stage3-parser",
   "stage4-serialization",
+  "stage5-pager",
 ];
 
 const STAGE_ORDER = [

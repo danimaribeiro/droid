@@ -16,7 +16,12 @@ typedef struct {
 } Pager;
 
 
+// Pager step
 void* pager_get_page(Pager* pager, uint32_t page_num);
+void* pager_alloc_page(Pager* pager);
+void pager_status(Pager* pager);
+
+// Persistence step
 void pager_flush(Pager* pager, uint32_t page_num);
 
 #endif

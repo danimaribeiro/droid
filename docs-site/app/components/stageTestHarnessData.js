@@ -504,5 +504,164 @@ pub fn serializeRow(row: *const Row, dest: []u8) void {
       { id: "deserialize-valid", header: "Deserialize reconstructs logical field values cleanly from hex stream", input: "deserialize 01 00 00 00 64 61 6e 69 6d 61 72...", expected: "[DESERIALIZE] Field id = 1\n[DESERIALIZE] Field name = danimar\n[DESERIALIZE] Field email = danimar@email.com", exitCode: 0 },
       { id: "deserialize-round-trip", header: "Verifies 100% data fidelity when serializing then deserializing back", input: "serialize insert... -> deserialize <hex>", expected: "[SERIALIZE] ...\n[DESERIALIZE] Field id = 1...", exitCode: 0 }
     ]
+  },
+
+  "stage5-pager": {
+    title: "Stage 5: Pager & Buffer Pool Cache Contracts",
+    subtitle: "Manage 4KB memory blocks as the core unit of storage I/O, providing an in-memory buffer pool cache to avoid redundant hardware reads.",
+    examples: [
+      {
+        badge: "PAGE ALLOCATION & STATUS CONTRACT",
+        terminal: `$ ./bin/c-droid
+droid > pager status
+[PAGER] Status: total_pages=0 cached=0
+droid > pager alloc
+[PAGER] Alloc: page 0 (4096 bytes, zeroed)
+droid > pager alloc
+[PAGER] Alloc: page 1 (4096 bytes, zeroed)
+droid > pager status
+[PAGER] Status: total_pages=2 cached=2`
+      },
+      {
+        badge: "CACHE HIT VS OUT-OF-BOUNDS ERROR RESILIENCE",
+        terminal: `$ ./bin/c-droid
+droid > pager get 0
+[PAGER] Get page 0: CACHE_HIT
+droid > pager get 5
+[PAGER] Get page 5: CACHE_MISS (loaded from disk)
+droid > pager get 999
+[PAGER] Get page 999: ERROR (page out of bounds)
+droid > .exit
+exiting.. good bye!`
+      }
+    ],
+    samples: {
+      c: `// c-droid/pager.c - Stage 5 Starter Boilerplate
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#define PAGE_SIZE 4096
+#define TABLE_MAX_PAGES 100
+
+typedef struct {
+    void* pages[TABLE_MAX_PAGES];
+    uint32_t num_pages;
+} Pager;
+
+/*
+ * TODO: Implement the Pager initialization and memory pool management.
+ * Requirements:
+ * 1. Initialize Pager struct with NULL page pointers and num_pages = 0.
+ * 2. In 'pager alloc', allocate a 4096-byte zeroed memory block on the heap and store in pages[num_pages].
+ * 3. In 'pager get <N>', check boundaries! If N >= num_pages, print ERROR cleanly without crashing.
+ * 4. Report CACHE_HIT if pages[N] != NULL, otherwise handle CACHE_MISS.
+ */
+void* pager_get_page(Pager* pager, uint32_t page_num) {
+    // YOUR PAGER CACHE RETRIEVAL ROUTINE GOES HERE
+    printf("[ERROR:00101] Pager get execution not implemented yet.\\n");
+    return NULL;
+}
+
+uint32_t pager_alloc_page(Pager* pager) {
+    // YOUR 4KB PAGE ALLOCATION ROUTINE GOES HERE
+    printf("[ERROR:00101] Pager alloc execution not implemented yet.\\n");
+    return 0;
+}`,
+      cpp: `// cpp-droid/pager.cpp - Stage 5 Starter Boilerplate
+#include <iostream>
+#include <vector>
+#include <memory>
+
+constexpr size_t PAGE_SIZE = 4096;
+constexpr size_t TABLE_MAX_PAGES = 100;
+
+class Pager {
+private:
+    std::vector<std::unique_ptr<char[]>> pages;
+    size_t total_pages = 0;
+public:
+    /*
+     * TODO: Implement dynamic page allocations and cache lookup methods.
+     * Guard strictly against out-of-bounds page requests without throwing unhandled exceptions!
+     */
+    char* get_page(size_t page_num) {
+        // YOUR IMPLEMENTATION GOES HERE
+        std::cout << "[ERROR:00101] Pager get not implemented yet.\\n";
+        return nullptr;
+    }
+
+    size_t alloc_page() {
+        // YOUR IMPLEMENTATION GOES HERE
+        std::cout << "[ERROR:00101] Pager alloc not implemented yet.\\n";
+        return 0;
+    }
+};`,
+      rust: `// rust-droid/src/pager.rs - Stage 5 Starter Boilerplate
+pub const PAGE_SIZE: usize = 4096;
+pub const TABLE_MAX_PAGES: usize = 100;
+
+pub struct Pager {
+    pages: [Option<Box<[u8; PAGE_SIZE]>>; TABLE_MAX_PAGES],
+    pub total_pages: usize,
+}
+
+impl Pager {
+    /*
+     * TODO: Implement alloc_page and get_page routines.
+     * Enforce strict bounds checks to gracefully emit formatted error messages on out-of-bounds queries.
+     */
+    pub fn new() -> Self {
+        // YOUR INITIALIZATION ROUTINE GOES HERE
+        Self {
+            pages: [const { None }; TABLE_MAX_PAGES],
+            total_pages: 0,
+        }
+    }
+
+    pub fn alloc_page(&mut self) -> Result<usize, &'static str> {
+        // YOUR ALLOCATION LOGIC GOES HERE
+        Err("[ERROR:00101] Pager alloc not implemented yet.")
+    }
+}`,
+      zig: `// zig-droid/src/pager.zig - Stage 5 Starter Boilerplate
+const std = @import("std");
+
+pub const PAGE_SIZE: usize = 4096;
+pub const TABLE_MAX_PAGES: usize = 100;
+
+pub const Pager = struct {
+    allocator: std.mem.Allocator,
+    pages: [TABLE_MAX_PAGES]?[]u8 = [_]?[]u8{null} ** TABLE_MAX_PAGES,
+    total_pages: u32 = 0,
+
+    /*
+     * TODO: Implement memory buffer allocation using allocator.alloc(u8, PAGE_SIZE).
+     * Verify array indices to block out-of-bounds segmentation faults!
+     */
+    pub fn allocPage(self: *Pager, writer: anytype) !u32 {
+        // YOUR IMPLEMENTATION GOES HERE
+        try writer.writeAll("[ERROR:00101] Pager alloc not implemented yet.\\n");
+        return 0;
+    }
+};`
+    },
+    suiteName: "stage5/pager_tests.py",
+    makeCmd: "make test-stage5",
+    brokenTestId: "pager-get-out-of-bounds",
+    brokenActual: "Fatal signal 11 (SIGSEGV) at memory address 0x00003e70",
+    brokenCode: 139,
+    bugFailReason: "Segmentation fault: Pager failed to perform bounds checking before reading array index 999, crashing on null memory address.",
+    tests: [
+      { id: "pager-status-fresh", header: "Checks that 'pager status' on a freshly opened database reports zero pages", input: "pager status\\n.exit", expected: "[PAGER] Status: total_pages=0 cached=0", exitCode: 0 },
+      { id: "pager-alloc-first", header: "Checks that 'pager alloc' creates page 0 and outputs allocation confirmation", input: "pager alloc\\n.exit", expected: "[PAGER] Alloc: page 0 (4096 bytes, zeroed)", exitCode: 0 },
+      { id: "pager-status-after-alloc", header: "After allocating one page, 'pager status' should show total_pages=1", input: "pager alloc\\npager status\\n.exit", expected: "total_pages=1 after one alloc", exitCode: 0 },
+      { id: "pager-get-cached", header: "After allocating page 0, 'pager get 0' should report a cache hit", input: "pager alloc\\npager get 0\\n.exit", expected: "[PAGER] Get page 0: CACHE_HIT", exitCode: 0 },
+      { id: "pager-get-out-of-bounds", header: "Requests out of bounds page index 999 and expects clean ERROR output", input: "pager get 999\\n.exit", expected: "[PAGER] Get page 999: ERROR (page out of bounds)", exitCode: 0 },
+      { id: "pager-get-unallocated", header: "Requests unallocated page index 5 within capacity bounds and expects ERROR output", input: "pager get 5\\n.exit", expected: "[ERROR:00201] Page number out of bounds", exitCode: 0 },
+      { id: "pager-alloc-multiple", header: "After allocating 3 pages in succession, status should show total_pages=3", input: "pager alloc\\npager alloc\\npager alloc\\npager status\\n.exit", expected: "total_pages=3 after three allocs", exitCode: 0 }
+    ]
   }
 };
+

@@ -66,6 +66,14 @@ CASES: list[TestCase] = [
         must_contain=["ERROR"],
     ),
     TestCase(
+        name="pager-get-unallocated",
+        header="Get an unallocated page within buffer bounds returns error",
+        description="Requesting page 5 on a fresh database (within TABLE_MAX_PAGES but unallocated) should produce an error.",
+        test_input="pager get 5\n.exit\n",
+        expected="Error for unallocated page access within bounds",
+        must_contain=["ERROR"],
+    ),
+    TestCase(
         name="pager-alloc-multiple",
         header="Multiple allocations increment page count",
         description="After allocating 3 pages, status should show total_pages=3.",
