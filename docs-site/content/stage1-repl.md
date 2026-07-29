@@ -2,6 +2,7 @@
 stage: 1
 title: "Building the CLI Interface"
 subtitle: "The Read-Eval-Print Loop"
+youtubeId: "Or3MMzZMpVY"
 section: "Command Loop & The REPL"
 objective: "Construct an infinite loop that prompts the user for inputs, processes them, and prints the result."
 concepts:

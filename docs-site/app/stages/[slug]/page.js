@@ -54,6 +54,22 @@ export default async function StagePage({ params }) {
           {/* Stage Objective */}
           <StageObjective objective={tutorial.objective} />
 
+          {/* YouTube Video Walkthrough */}
+          {tutorial.youtubeId && (
+            <section className="tutorial-section">
+              <h2>🎬 Video Walkthrough</h2>
+              <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: 12, border: "1px solid #30363d", marginTop: 16 }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${tutorial.youtubeId}`}
+                  title={`${tutorial.title} Video Walkthrough`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                />
+              </div>
+            </section>
+          )}
+
           {/* Core Concepts */}
           {tutorial.concepts && tutorial.concepts.length > 0 && (
             <section className="tutorial-section">
