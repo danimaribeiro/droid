@@ -2,6 +2,7 @@
 stage: 2
 title: "Lexical Analysis (Tokenizer)"
 subtitle: "Turning raw SQL text into a stream of classified tokens"
+youtubeId: "ddg2gmXJ0fs"
 section: "SQL Statement Compiler"
 objective: "Build a Tokenizer (Lexer) that scans a SQL string character by character and produces a list of typed tokens — keywords, identifiers, numbers, strings, and symbols."
 concepts:
