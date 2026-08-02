@@ -188,6 +188,22 @@ bool handle_debug_command(Table *table, char *command) {
             btree_dump(table, page_num);
             return true;
         }
+
+        if (strncmp(sub, "find", 4) == 0) {
+            int key = atoi(sub + 5);
+            Cursor cursor;
+            bool found = btree_find(table, key, &cursor);
+            if (!found) {
+                printf("[BTREE] Find key=%d: NOT_FOUND\n", key);
+            } else {
+                printf("[BTREE] Find key=%d: FOUND (page=%u cell=%u)\n", key, cursor.page_num, cursor.cell_num);
+                void* cell_ptr = cursor_value(&cursor);
+                Row row = {0};
+                deserialize_row(cell_ptr + 4, &row);
+                printf("[BTREE] Row: id=%u name='%s' email='%s'\n", row.id, row.name, row.email);
+            }
+            return true;
+        }
     }
 
     return false;
@@ -202,7 +218,9 @@ void execute_sql(Table *table, char *command) {
     TokenList list = tokenize(command);
     AST_Node root = parse_statement(&list);
     ExecuteResult result = execute_statement(table, &root);
-    printf("%s\n", result.message);
+    if (strlen(result.message) > 0) {
+        printf("%s\n", result.message);
+    }
     free_tokens(&list);
 }
 

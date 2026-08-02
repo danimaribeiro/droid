@@ -7,11 +7,83 @@
 #include "table.h"
 
 
+bool validate_schema_select(SelectStatement *stmt) {
+    if (strcmp(stmt->table_name, "users") != 0) {
+        printf("[ERROR:00401] Table '%s' does not exist.\n", stmt->table_name);
+        return false;
+    }
+    // Check column names
+    for (int i = 0; i < stmt->column_count; i++) {
+        if (strcmp(stmt->column_names[i], "*") != 0 &&
+            strcmp(stmt->column_names[i], "id") != 0 &&
+            strcmp(stmt->column_names[i], "name") != 0 &&
+            strcmp(stmt->column_names[i], "email") != 0) {
+            printf("[ERROR:00303] Column '%s' does not exist.\n", stmt->column_names[i]);
+            return false;
+        }
+    }
+    return true;
+}
+
+
 ExecuteResult execute_select(Table *table, SelectStatement *stmt){
+    if (!validate_schema_select(stmt)) {
+        return (ExecuteResult){
+            .status = EXECUTE_ERROR,
+            .affected_rows = 0,
+            .message = "Schema validation failed"
+        };
+    }
+
+    Cursor cursor;
+    table_start(table, &cursor);
+    
+    uint32_t count = 0;
+    bool select_all = (stmt->column_count > 0 && strcmp(stmt->column_names[0], "*") == 0);
+    if (select_all) {
+        printf("id | name | email\n");
+    } else {
+        for (int i = 0; i < stmt->column_count; i++) {
+            printf("%s", stmt->column_names[i]);
+            if (i < stmt->column_count - 1) {
+                printf(" | ");
+            }
+        }
+        printf("\n");
+    }
+    while (!cursor.is_eof) {
+        Row row = {0};
+        void* cell_ptr = cursor_value(&cursor);
+        deserialize_row(cell_ptr + 4, &row);
+
+        if (select_all) {
+            printf("%u | %s | %s\n", row.id, row.name, row.email);
+        } else {
+            for (int i = 0; i < stmt->column_count; i++) {
+                if (strcmp(stmt->column_names[i], "id") == 0) {
+                    printf("%u", row.id);
+                } else if (strcmp(stmt->column_names[i], "name") == 0) {
+                    printf("%s", row.name);
+                } else if (strcmp(stmt->column_names[i], "email") == 0) {
+                    printf("%s", row.email);
+                }
+                
+                // Formatação do separador
+                if (i < stmt->column_count - 1) printf(" | ");
+            }
+            printf("\n");
+        }
+
+        cursor_advance(&cursor);
+        count++;
+    }
+    
+    printf("(%u rows)\n", count);
+
     return (ExecuteResult){
         .status = EXECUTE_OK,
-        .affected_rows = 0,
-        .message = "Select statement executed successfully"
+        .affected_rows = count,
+        .message = ""
     };
 }
 
