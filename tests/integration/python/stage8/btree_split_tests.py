@@ -84,16 +84,18 @@ CASES: list[TestCase] = [
     TestCase(
         name="btree-find-after-split",
         header="All keys findable after split",
-        description="After inserting enough rows to trigger a split, every key should still be FOUND.",
+        description="After inserting enough rows to trigger a split (must limit leaf to <10 rows), every key should still be FOUND.",
         test_input=(
             _generate_inserts(SPLIT_THRESHOLD)
+            + "btree structure\n"
             + "btree find 1\n"
             + "btree find 5\n"
             + f"btree find {SPLIT_THRESHOLD}\n"
             + ".exit\n"
         ),
-        expected="All queried keys return FOUND",
+        expected="Tree split into INTERNAL node and all queried keys return FOUND",
         must_contain=[
+            "INTERNAL",
             "Find key=1: FOUND",
             "Find key=5: FOUND",
             f"Find key={SPLIT_THRESHOLD}: FOUND",
@@ -102,30 +104,32 @@ CASES: list[TestCase] = [
     TestCase(
         name="btree-select-after-split",
         header="SELECT returns all rows after split",
-        description="After inserting enough rows to split, SELECT should return the correct total count.",
+        description="After inserting enough rows to split (must limit leaf to <10 rows), SELECT should return the correct total count.",
         test_input=(
             _generate_inserts(SPLIT_THRESHOLD)
+            + "btree structure\n"
             + "select * from users;\n"
             + ".exit\n"
         ),
-        expected=f"({SPLIT_THRESHOLD} rows) in SELECT output",
-        must_contain=[f"({SPLIT_THRESHOLD} rows)"],
+        expected=f"Tree split into INTERNAL node and ({SPLIT_THRESHOLD} rows) in SELECT output",
+        must_contain=["INTERNAL", f"({SPLIT_THRESHOLD} rows)"],
     ),
     TestCase(
         name="btree-insert-order-after-split",
         header="Rows returned in key order after split",
-        description="After out-of-order inserts that trigger a split, SELECT should return rows sorted by key.",
+        description="After out-of-order inserts that trigger a split (must limit leaf to <10 rows), SELECT should return rows sorted by key.",
         test_input=(
             # Insert in reverse order to stress the sorting
             "".join(
                 f"insert into users (id, name, email) values ({i}, 'user{i}', 'user{i}@test.com');\n"
                 for i in range(SPLIT_THRESHOLD, 0, -1)
             )
+            + "btree structure\n"
             + "select * from users;\n"
             + ".exit\n"
         ),
-        expected="Rows in ascending key order despite reverse insertion",
-        must_contain=[f"({SPLIT_THRESHOLD} rows)"],
+        expected="Tree split into INTERNAL node and rows in ascending key order despite reverse insertion",
+        must_contain=["INTERNAL", f"({SPLIT_THRESHOLD} rows)"],
         # Ordering is verified by the custom check in run_case
     ),
     TestCase(

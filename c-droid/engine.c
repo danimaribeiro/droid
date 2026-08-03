@@ -204,6 +204,11 @@ bool handle_debug_command(Table *table, char *command) {
             }
             return true;
         }
+
+        if (strncmp(sub, "structure", 9) == 0) {
+            btree_structure(table);
+            return true;
+        }
     }
 
     return false;
@@ -233,11 +238,6 @@ Table db_open(const char* filename) {
     users->pager->file_length = lseek(users->pager->file_descriptor, 0, SEEK_END);
     users->pager->num_pages = users->pager->file_length / PAGE_SIZE;
     users->root_page = 0;
-
-    if (users->pager->num_pages == 0) {
-        void* page = pager_alloc_page(users->pager);
-        btree_init_leaf_node(page);
-    }
 
     return *users;
 }

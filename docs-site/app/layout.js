@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
   const isHome = pathname === "/";
 
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         <title>droid — Database Internals Tutorial</title>
         <meta name="description" content="Build a database engine from scratch. A step-by-step tutorial covering REPL, SQL parsing, B-trees, transactions, WAL, query optimization, and more." />

@@ -10,13 +10,13 @@ typedef struct {
     uint32_t page_num;
     uint32_t cell_num;
     bool is_eof;
+    uint32_t parent_page_num;
 } Cursor;
 
 void btree_init_leaf_node(void* page);
 void btree_insert(Table* table, Row* row);
 void btree_dump(Table* table, uint32_t page_num);
 
-void btree_select_all(Table *table);
 bool btree_find(Table *table, int key, Cursor* cursor);
 void table_start(Table* table, Cursor* cursor);
 void cursor_advance(Cursor* cursor);
