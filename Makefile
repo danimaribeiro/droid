@@ -260,26 +260,27 @@ test-zig-stage10:
 	@if [ ! -x "$(ZIG_BIN)" ]; then echo "Missing binary: $(ZIG_BIN)"; echo "Build it with: make build-zig"; exit 1; fi
 	@python3 tests/integration/python/run_tests.py --stage stage10 --bins $(ZIG_BIN)
 
-test-stage11: check-bins
-	@python3 tests/integration/python/run_tests.py --stage stage11 --bins $(BINS)
+test-c-stage11: build-c
+	@uv run python -m python.run_tests --stage stage11 --binary ./bin/c-db
 
-test-c-stage11:
-	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
-	@python3 tests/integration/python/run_tests.py --stage stage11 --bins $(C_BIN)
+test-c-stage12-delete-update: build-c
+	@uv run python -m python.run_tests --stage stage12-delete-update --binary ./bin/c-db
 
-test-stage12: check-bins
-	@python3 tests/integration/python/run_tests.py --stage stage12 --bins $(BINS)
-
-test-c-stage12:
-	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
-	@python3 tests/integration/python/run_tests.py --stage stage12 --bins $(C_BIN)
-
-test-stage13: check-bins
-	@python3 tests/integration/python/run_tests.py --stage stage13 --bins $(BINS)
-
-test-c-stage13:
-	@if [ ! -x "$(C_BIN)" ]; then echo "Missing binary: $(C_BIN)"; echo "Build it with: make build-c"; exit 1; fi
-	@python3 tests/integration/python/run_tests.py --stage stage13 --bins $(C_BIN)
+test-smoke: build-c
+	@echo "\n--- Running basic smoke tests on currently implemented C stages ---"
+	@uv run python -m python.run_tests --stage stage1 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage2 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage3 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage4 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage5 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage6 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage7 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage8 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage9 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage10 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage11 --binary ./bin/c-db
+	@uv run python -m python.run_tests --stage stage12-delete-update --binary ./bin/c-db
+	@echo "\n--- Smoke tests passed ---"
 
 test-stage14: check-bins
 	@python3 tests/integration/python/run_tests.py --stage stage14 --bins $(BINS)

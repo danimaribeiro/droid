@@ -47,6 +47,7 @@ const ALL_PARTS = [
         stages: [
           { num: 10, slug: "stage10-persistence", title: "Persistence & WHERE Clause" },
           { num: 11, slug: "stage11-planner", title: "Query Planner & Executor (Volcano)" },
+          { num: 12, slug: "stage12-delete-update", title: "DELETE & UPDATE Execution" },
         ],
       },
     ],
@@ -87,7 +88,6 @@ const ALL_PARTS = [
       {
         title: "DML Operations",
         stages: [
-          { num: 21, slug: "stage21-delete-update", title: "DELETE & UPDATE Execution" },
           { num: 22, slug: "stage22-advanced-where", title: "Advanced WHERE Expressions" },
         ],
       },
@@ -147,7 +147,7 @@ const ALL_PARTS = [
 ];
 
 // Stages with tutorial content ready
-const IMPLEMENTED_STAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const IMPLEMENTED_STAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 /**
  * Find which part a given slug belongs to.

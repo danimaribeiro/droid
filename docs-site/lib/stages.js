@@ -18,6 +18,7 @@ const TUTORIAL_SLUGS = [
   "stage9-btree-internal-split",
   "stage10-persistence",
   "stage11-planner",
+  "stage12-delete-update",
 ];
 
 const STAGE_ORDER = [
@@ -32,6 +33,7 @@ const STAGE_ORDER = [
   { file: "STAGE9_BTREE_INTERNAL_SPLIT_TEST_PLAN.md", num: 9, part: 1 },
   { file: "STAGE10_PERSISTENCE_TEST_PLAN.md", num: 10, part: 1 },
   { file: "STAGE11_PLANNER_TEST_PLAN.md", num: 11, part: 1 },
+  { file: "STAGE12_DELETE_UPDATE_TEST_PLAN.md", num: 12, part: 1 },
   { file: "STAGE12_VARLEN_SERIALIZATION_TEST_PLAN.md", num: 12, part: 2 },
   { file: "STAGE13_SLOTTED_PAGE_TEST_PLAN.md", num: 13, part: 2 },
   { file: "STAGE14_VARLEN_BTREE_TEST_PLAN.md", num: 14, part: 2 },
@@ -40,7 +42,6 @@ const STAGE_ORDER = [
   { file: "STAGE17_TRANSACTION_COMMIT_TEST_PLAN.md", num: 17, part: 2 },
   { file: "STAGE18_TRANSACTION_ROLLBACK_TEST_PLAN.md", num: 18, part: 2 },
   { file: "STAGE19_WAL_TEST_PLAN.md", num: 19, part: 2 },
-  { file: "STAGE20_DELETE_UPDATE_TEST_PLAN.md", num: 20, part: 3 },
   { file: "STAGE21_ADVANCED_WHERE_TEST_PLAN.md", num: 21, part: 3 },
   { file: "STAGE22_ORDER_BY_TEST_PLAN.md", num: 22, part: 3 },
   { file: "STAGE23_LIMIT_OFFSET_TEST_PLAN.md", num: 23, part: 3 },

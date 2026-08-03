@@ -17,6 +17,7 @@ from stage8.btree_split_tests import run_suite as run_stage8_suite
 from stage9.btree_internal_split_tests import run_suite as run_stage9_suite
 from stage10.persistence_tests import run_suite as run_stage10_suite
 from stage11.planner_tests import run_suite as run_stage11_suite
+from stage12_delete_update.delete_update_tests import run_suite as run_stage12_delete_update_suite
 from stage12.varlen_serialization_tests import run_suite as run_stage12_suite
 from stage13.slotted_page_tests import run_suite as run_stage13_suite
 from stage14.varlen_btree_tests import run_suite as run_stage14_suite
@@ -40,6 +41,7 @@ STAGE_RUNNERS = {
     "stage9": run_stage9_suite,
     "stage10": run_stage10_suite,
     "stage11": run_stage11_suite,
+    "stage12-delete-update": run_stage12_delete_update_suite,
     "stage12": run_stage12_suite,
     "stage13": run_stage13_suite,
     "stage14": run_stage14_suite,
