@@ -46,6 +46,9 @@ const STAGE_ORDER = [
   { file: "STAGE2_ORDER_BY_TEST_PLAN.md", num: 2, part: 3 },
   { file: "STAGE3_LIMIT_OFFSET_TEST_PLAN.md", num: 3, part: 3 },
   { file: "STAGE4_AGGREGATIONS_TEST_PLAN.md", num: 4, part: 3 },
+  { file: "STAGE5_GROUP_BY_HAVING_TEST_PLAN.md", num: 5, part: 3 },
+  { file: "STAGE6_NULL_HANDLING_TEST_PLAN.md", num: 6, part: 3 },
+  { file: "STAGE7_ADDITIONAL_DDL_TEST_PLAN.md", num: 7, part: 3 },
   { file: "STAGE1_SECONDARY_INDEXES_TEST_PLAN.md", num: 1, part: 4 },
   { file: "STAGE2_COST_OPTIMIZER_TEST_PLAN.md", num: 2, part: 4 },
   { file: "STAGE3_VACUUM_TEST_PLAN.md", num: 3, part: 4 },
@@ -86,7 +89,7 @@ const PART_NAMES = {
 const PART_DESCRIPTIONS = {
   1: "Build a working database from scratch with REPL, SQL parser, fixed-size rows, B-tree storage, Volcano planner, and DELETE/UPDATE.",
   2: "Implement full transaction support with WAL, CREATE TABLE with schema catalog, and variable-length storage with slotted pages.",
-  3: "Implement advanced WHERE expressions, ORDER BY, LIMIT/OFFSET, and aggregate functions.",
+  3: "Implement advanced WHERE expressions, ORDER BY, LIMIT/OFFSET, aggregate functions, GROUP BY, NULL handling, and additional DDL.",
   4: "Add secondary indexes, a cost-based query optimizer, and VACUUM for space reclamation.",
   5: "Implement JOINs (nested loop and hash), foreign key constraints, and subqueries.",
   6: "Add a lock manager, Multi-Version Concurrency Control (MVCC), and deadlock detection.",

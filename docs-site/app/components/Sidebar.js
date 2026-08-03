@@ -97,6 +97,9 @@ const ALL_PARTS = [
           { num: 2, slug: "part3-stage2-order-by", title: "ORDER BY" },
           { num: 3, slug: "part3-stage3-limit-offset", title: "LIMIT & OFFSET" },
           { num: 4, slug: "part3-stage4-aggregations", title: "Aggregate Functions" },
+          { num: 5, slug: "part3-stage5-group-by-having", title: "GROUP BY & HAVING" },
+          { num: 6, slug: "part3-stage6-null-handling", title: "NULL Handling" },
+          { num: 7, slug: "part3-stage7-additional-ddl", title: "Additional DDL (ALTER/DROP)" },
         ],
       },
     ],
@@ -243,7 +246,7 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </div>
         <div className="sidebar-progress">
-          Stages: 12 / 34
+          Stages: 12 / 37
         </div>
       </div>
     </aside>
