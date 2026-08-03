@@ -17,6 +17,7 @@ algorithms:
       - "Calculate the precise median cell division index dividing existing records into Left and Right halves."
       - "Copy the upper half of existing cells from the original overflowing leaf over to index zero of the newly minted Right leaf node."
       - "Adjust the cell counters (num_cells) on both the original Left leaf and new Right leaf to reflect their newly halved inventories."
+      - "Update the 'next_leaf' sibling pointers to chain the Left leaf directly to the Right leaf, preserving horizontal linked-list traversal for full table scans (SELECT *)."
       - "Identify the very first primary key of the new Right leaf node to act as our promoted routing separator key in the parent internal node!"
   - title: "Root Node Split & Tree Growth"
     description: "When the overflowing leaf happens to be Root Page 0, the B+Tree grows upward by spawning an Internal Root node."
@@ -37,6 +38,7 @@ checklist:
   - "Define internal node header layout constants (Node Type, Number of Keys, Rightmost Child Pointer)"
   - "Calculate leaf overflow thresholds where cell occupancy forces a structural tree split"
   - "Implement leaf splitting routine to divide cell buffers cleanly across sibling pages without data loss"
+  - "Link sibling leaf pages via a next_leaf pointer to support sequential table scans across page boundaries"
   - "Implement parent routing key promotion while keeping authentic table records securely inside leaf nodes"
   - "Upgrade search routines ('btree find' and SELECT cursors) to cascade correctly down internal routing branches"
   - "Verify ascending record ordering during SELECT operations even when records are inserted in reverse chronological order (ids 10 down to 1)"
@@ -102,6 +104,12 @@ When Root Page 0 transitions from an overflowing leaf into an **Internal Node**,
 * **Number of Keys Counter**: Tracks how many dividing separator keys currently populate the routing table.
 * **Rightmost Child Pointer**: An integer specifying the Buffer Pool Page ID of the rightmost child branch (used whenever a search query requests a key greater than all separator values).
 * **Routing Cell Array**: A hyper-dense sequence of paired integer attributes: `[ Child Page Pointer (4 bytes) | Separator Key (4 bytes) ]`. Because each routing entry consumes merely 8 bytes, a single internal page can direct query traffic across hundreds of distinct child branches!
+
+## Sequential Allocation & Sibling Linking
+
+During a leaf node split, allocating the **Left Child** first and the **Right Child** second is highly recommended to maintain strict physical sequential order in the database file (e.g., Page 1 followed immediately by Page 2 on disk). When the OS reads the file sequentially, preserving this physical ordering triggers hardware-level **Read-Ahead Caching**, vastly accelerating `SELECT *` scans!
+
+Equally important is the `next_leaf` pointer (Offset 6 in our leaf headers). When a node fractures in two, the original Left leaf must securely chain its `next_leaf` pointer to the newly minted Right leaf. This invisible linked list spans across the bottom of the B+Tree, allowing full table scans to hop horizontally from leaf to leaf without continually traversing down from the root!
 
 ## Multi-Split Scalability
 

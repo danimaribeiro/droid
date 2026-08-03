@@ -14,16 +14,17 @@ from stage5.pager_tests import run_suite as run_stage5_suite
 from stage6.btree_leaf_tests import run_suite as run_stage6_suite
 from stage7.btree_search_tests import run_suite as run_stage7_suite
 from stage8.btree_split_tests import run_suite as run_stage8_suite
-from stage9.persistence_tests import run_suite as run_stage9_suite
-from stage10.planner_tests import run_suite as run_stage10_suite
-from stage11.varlen_serialization_tests import run_suite as run_stage11_suite
-from stage12.slotted_page_tests import run_suite as run_stage12_suite
-from stage13.varlen_btree_tests import run_suite as run_stage13_suite
-from stage14.create_table_tests import run_suite as run_stage14_suite
-from stage15.schema_validation_tests import run_suite as run_stage15_suite
-from stage16.transaction_commit_tests import run_suite as run_stage16_suite
-from stage17.transaction_rollback_tests import run_suite as run_stage17_suite
-from stage18.wal_tests import run_suite as run_stage18_suite
+from stage9.btree_internal_split_tests import run_suite as run_stage9_suite
+from stage10.persistence_tests import run_suite as run_stage10_suite
+from stage11.planner_tests import run_suite as run_stage11_suite
+from stage12.varlen_serialization_tests import run_suite as run_stage12_suite
+from stage13.slotted_page_tests import run_suite as run_stage13_suite
+from stage14.varlen_btree_tests import run_suite as run_stage14_suite
+from stage15.create_table_tests import run_suite as run_stage15_suite
+from stage16.schema_validation_tests import run_suite as run_stage16_suite
+from stage17.transaction_commit_tests import run_suite as run_stage17_suite
+from stage18.transaction_rollback_tests import run_suite as run_stage18_suite
+from stage19.wal_tests import run_suite as run_stage19_suite
 from utils import format_result
 
 
@@ -46,6 +47,7 @@ STAGE_RUNNERS = {
     "stage16": run_stage16_suite,
     "stage17": run_stage17_suite,
     "stage18": run_stage18_suite,
+    "stage19": run_stage19_suite,
 }
 
 GREEN = "\033[32m"

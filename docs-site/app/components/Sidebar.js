@@ -39,13 +39,14 @@ const ALL_PARTS = [
           { num: 6, slug: "stage6-btree-leaf", title: "B+Tree Leaf Node Byte Layout" },
           { num: 7, slug: "stage7-btree-search", title: "Logarithmic Search & Sorted Insertion" },
           { num: 8, slug: "stage8-btree-split", title: "Leaf Overflow Splits & Internal Nodes" },
+          { num: 9, slug: "stage9-btree-internal-split", title: "B+Tree Internal Node Splits" },
         ],
       },
       {
         title: "Persistence & Query Execution",
         stages: [
-          { num: 9, slug: "stage9-persistence", title: "Persistence & WHERE Clause" },
-          { num: 10, slug: "stage10-planner", title: "Query Planner & Executor (Volcano)" },
+          { num: 10, slug: "stage10-persistence", title: "Persistence & WHERE Clause" },
+          { num: 11, slug: "stage11-planner", title: "Query Planner & Executor (Volcano)" },
         ],
       },
     ],
@@ -57,24 +58,24 @@ const ALL_PARTS = [
       {
         title: "Variable-Length Storage",
         stages: [
-          { num: 11, slug: "stage11-varlen-serialization", title: "Variable-Length Row Serialization" },
-          { num: 12, slug: "stage12-slotted-page", title: "Slotted Page Layout" },
-          { num: 13, slug: "stage13-varlen-btree", title: "Variable-Length B-Tree" },
+          { num: 13, slug: "stage13-varlen-serialization", title: "Variable-Length Row Serialization" },
+          { num: 14, slug: "stage14-slotted-page", title: "Slotted Page Layout" },
+          { num: 15, slug: "stage15-varlen-btree", title: "Variable-Length B-Tree" },
         ],
       },
       {
         title: "Schema & Catalog",
         stages: [
-          { num: 14, slug: "stage14-create-table", title: "CREATE TABLE & Schema Catalog" },
-          { num: 15, slug: "stage15-schema-validation", title: "Schema Validation" },
+          { num: 16, slug: "stage16-create-table", title: "CREATE TABLE & Schema Catalog" },
+          { num: 17, slug: "stage17-schema-validation", title: "Schema Validation" },
         ],
       },
       {
         title: "Transactions & Durability",
         stages: [
-          { num: 16, slug: "stage16-transaction-commit", title: "Transaction COMMIT" },
-          { num: 17, slug: "stage17-transaction-rollback", title: "Transaction ROLLBACK" },
-          { num: 18, slug: "stage18-wal", title: "Write-Ahead Logging (WAL)" },
+          { num: 18, slug: "stage18-transaction-commit", title: "Transaction COMMIT" },
+          { num: 19, slug: "stage19-transaction-rollback", title: "Transaction ROLLBACK" },
+          { num: 20, slug: "stage20-wal", title: "Write-Ahead Logging (WAL)" },
         ],
       },
     ],
@@ -86,16 +87,16 @@ const ALL_PARTS = [
       {
         title: "DML Operations",
         stages: [
-          { num: 19, slug: "stage19-delete-update", title: "DELETE & UPDATE Execution" },
-          { num: 20, slug: "stage20-advanced-where", title: "Advanced WHERE Expressions" },
+          { num: 21, slug: "stage21-delete-update", title: "DELETE & UPDATE Execution" },
+          { num: 22, slug: "stage22-advanced-where", title: "Advanced WHERE Expressions" },
         ],
       },
       {
         title: "Result Processing",
         stages: [
-          { num: 21, slug: "stage21-order-by", title: "ORDER BY" },
-          { num: 22, slug: "stage22-limit-offset", title: "LIMIT & OFFSET" },
-          { num: 23, slug: "stage23-aggregations", title: "Aggregate Functions" },
+          { num: 23, slug: "stage23-order-by", title: "ORDER BY" },
+          { num: 24, slug: "stage24-limit-offset", title: "LIMIT & OFFSET" },
+          { num: 25, slug: "stage25-aggregations", title: "Aggregate Functions" },
         ],
       },
     ],
@@ -107,9 +108,9 @@ const ALL_PARTS = [
       {
         title: "Indexes & Optimization",
         stages: [
-          { num: 24, slug: "stage24-secondary-indexes", title: "Secondary Indexes" },
-          { num: 25, slug: "stage25-cost-optimizer", title: "Cost-Based Query Optimizer" },
-          { num: 26, slug: "stage26-vacuum", title: "VACUUM & Space Reclamation" },
+          { num: 26, slug: "stage26-secondary-indexes", title: "Secondary Indexes" },
+          { num: 27, slug: "stage27-cost-optimizer", title: "Cost-Based Query Optimizer" },
+          { num: 28, slug: "stage28-vacuum", title: "VACUUM & Space Reclamation" },
         ],
       },
     ],
@@ -121,10 +122,10 @@ const ALL_PARTS = [
       {
         title: "Joins & Relations",
         stages: [
-          { num: 27, slug: "stage27-joins-nested-loop", title: "Nested Loop JOIN" },
-          { num: 28, slug: "stage28-hash-join", title: "Hash JOIN" },
-          { num: 29, slug: "stage29-foreign-keys", title: "Foreign Key Constraints" },
-          { num: 30, slug: "stage30-subqueries", title: "Subqueries" },
+          { num: 29, slug: "stage29-joins-nested-loop", title: "Nested Loop JOIN" },
+          { num: 30, slug: "stage30-hash-join", title: "Hash JOIN" },
+          { num: 31, slug: "stage31-foreign-keys", title: "Foreign Key Constraints" },
+          { num: 32, slug: "stage32-subqueries", title: "Subqueries" },
         ],
       },
     ],
@@ -136,9 +137,9 @@ const ALL_PARTS = [
       {
         title: "Concurrent Access",
         stages: [
-          { num: 31, slug: "stage31-lock-manager", title: "Lock Manager" },
-          { num: 32, slug: "stage32-mvcc", title: "Multi-Version Concurrency (MVCC)" },
-          { num: 33, slug: "stage33-deadlock-detection", title: "Deadlock Detection" },
+          { num: 33, slug: "stage33-lock-manager", title: "Lock Manager" },
+          { num: 34, slug: "stage34-mvcc", title: "Multi-Version Concurrency (MVCC)" },
+          { num: 34, slug: "stage34-deadlock-detection", title: "Deadlock Detection" },
         ],
       },
     ],
@@ -146,7 +147,7 @@ const ALL_PARTS = [
 ];
 
 // Stages with tutorial content ready
-const IMPLEMENTED_STAGES = [1, 2, 3, 4, 5, 6, 7, 8];
+const IMPLEMENTED_STAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 /**
  * Find which part a given slug belongs to.
