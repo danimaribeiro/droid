@@ -6,48 +6,48 @@ const PART_META = {
   1: { 
     icon: "⚙️", 
     tag: "CORE ENGINE", 
-    stages: "Stages 1–10", 
+    stages: "Stages 1–12", 
     slug: "stage1-repl",
     ready: true,
-    statusText: "🟢 STAGES 1–4 READY" 
+    statusText: "🟢 STAGES 1–12 READY" 
   },
   2: { 
     icon: "⚡", 
     tag: "STORAGE & WAL", 
-    stages: "Stages 11–18", 
-    slug: "stage11-varlen-serialization",
+    stages: "Stages 1–8", 
+    slug: "part2-stage1-wal",
     ready: false,
     statusText: "🚧 UNDER CONSTRUCTION" 
   },
   3: { 
     icon: "🧠", 
     tag: "COMPLETE SQL", 
-    stages: "Stages 19–23", 
-    slug: "stage19-delete-update",
+    stages: "Stages 1–4", 
+    slug: "part3-stage1-advanced-where",
     ready: false,
     statusText: "🚧 UNDER CONSTRUCTION" 
   },
   4: { 
     icon: "🔍", 
     tag: "OPTIMIZATION", 
-    stages: "Stages 24–26", 
-    slug: "stage24-secondary-indexes",
+    stages: "Stages 1–3", 
+    slug: "part4-stage1-secondary-indexes",
     ready: false,
     statusText: "🚧 UNDER CONSTRUCTION" 
   },
   5: { 
     icon: "🔗", 
     tag: "RELATIONSHIPS", 
-    stages: "Stages 27–30", 
-    slug: "stage27-joins-nested-loop",
+    stages: "Stages 1–4", 
+    slug: "part5-stage1-joins-nested-loop",
     ready: false,
     statusText: "🚧 UNDER CONSTRUCTION" 
   },
   6: { 
     icon: "🛡️", 
     tag: "CONCURRENCY", 
-    stages: "Stages 31–33", 
-    slug: "stage31-lock-manager",
+    stages: "Stages 1–3", 
+    slug: "part6-stage1-lock-manager",
     ready: false,
     statusText: "🚧 UNDER CONSTRUCTION" 
   },

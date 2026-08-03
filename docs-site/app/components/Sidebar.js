@@ -57,26 +57,26 @@ const ALL_PARTS = [
     name: "Advanced Storage & Transactions",
     sections: [
       {
-        title: "Variable-Length Storage",
+        title: "Transactions & Durability",
         stages: [
-          { num: 13, slug: "stage13-varlen-serialization", title: "Variable-Length Row Serialization" },
-          { num: 14, slug: "stage14-slotted-page", title: "Slotted Page Layout" },
-          { num: 15, slug: "stage15-varlen-btree", title: "Variable-Length B-Tree" },
+          { num: 1, slug: "part2-stage1-wal", title: "Write-Ahead Logging (WAL)" },
+          { num: 2, slug: "part2-stage2-transaction-commit", title: "Transaction COMMIT" },
+          { num: 3, slug: "part2-stage3-transaction-rollback", title: "Transaction ROLLBACK" },
         ],
       },
       {
         title: "Schema & Catalog",
         stages: [
-          { num: 16, slug: "stage16-create-table", title: "CREATE TABLE & Schema Catalog" },
-          { num: 17, slug: "stage17-schema-validation", title: "Schema Validation" },
+          { num: 4, slug: "part2-stage4-create-table", title: "CREATE TABLE & Schema Catalog" },
+          { num: 5, slug: "part2-stage5-schema-validation", title: "Schema Validation" },
         ],
       },
       {
-        title: "Transactions & Durability",
+        title: "Variable-Length Storage",
         stages: [
-          { num: 18, slug: "stage18-transaction-commit", title: "Transaction COMMIT" },
-          { num: 19, slug: "stage19-transaction-rollback", title: "Transaction ROLLBACK" },
-          { num: 20, slug: "stage20-wal", title: "Write-Ahead Logging (WAL)" },
+          { num: 6, slug: "part2-stage6-varlen-serialization", title: "Variable-Length Row Serialization" },
+          { num: 7, slug: "part2-stage7-slotted-page", title: "Slotted Page Layout" },
+          { num: 8, slug: "part2-stage8-varlen-btree", title: "Variable-Length B-Tree" },
         ],
       },
     ],
@@ -86,17 +86,17 @@ const ALL_PARTS = [
     name: "Complete SQL",
     sections: [
       {
-        title: "DML Operations",
+        title: "Query Enhancements",
         stages: [
-          { num: 22, slug: "stage22-advanced-where", title: "Advanced WHERE Expressions" },
+          { num: 1, slug: "part3-stage1-advanced-where", title: "Advanced WHERE Expressions" },
         ],
       },
       {
         title: "Result Processing",
         stages: [
-          { num: 23, slug: "stage23-order-by", title: "ORDER BY" },
-          { num: 24, slug: "stage24-limit-offset", title: "LIMIT & OFFSET" },
-          { num: 25, slug: "stage25-aggregations", title: "Aggregate Functions" },
+          { num: 2, slug: "part3-stage2-order-by", title: "ORDER BY" },
+          { num: 3, slug: "part3-stage3-limit-offset", title: "LIMIT & OFFSET" },
+          { num: 4, slug: "part3-stage4-aggregations", title: "Aggregate Functions" },
         ],
       },
     ],
@@ -108,9 +108,9 @@ const ALL_PARTS = [
       {
         title: "Indexes & Optimization",
         stages: [
-          { num: 26, slug: "stage26-secondary-indexes", title: "Secondary Indexes" },
-          { num: 27, slug: "stage27-cost-optimizer", title: "Cost-Based Query Optimizer" },
-          { num: 28, slug: "stage28-vacuum", title: "VACUUM & Space Reclamation" },
+          { num: 1, slug: "part4-stage1-secondary-indexes", title: "Secondary Indexes" },
+          { num: 2, slug: "part4-stage2-cost-optimizer", title: "Cost-Based Query Optimizer" },
+          { num: 3, slug: "part4-stage3-vacuum", title: "VACUUM & Space Reclamation" },
         ],
       },
     ],
@@ -122,10 +122,10 @@ const ALL_PARTS = [
       {
         title: "Joins & Relations",
         stages: [
-          { num: 29, slug: "stage29-joins-nested-loop", title: "Nested Loop JOIN" },
-          { num: 30, slug: "stage30-hash-join", title: "Hash JOIN" },
-          { num: 31, slug: "stage31-foreign-keys", title: "Foreign Key Constraints" },
-          { num: 32, slug: "stage32-subqueries", title: "Subqueries" },
+          { num: 1, slug: "part5-stage1-joins-nested-loop", title: "Nested Loop JOIN" },
+          { num: 2, slug: "part5-stage2-hash-join", title: "Hash JOIN" },
+          { num: 3, slug: "part5-stage3-foreign-keys", title: "Foreign Key Constraints" },
+          { num: 4, slug: "part5-stage4-subqueries", title: "Subqueries" },
         ],
       },
     ],
@@ -137,9 +137,9 @@ const ALL_PARTS = [
       {
         title: "Concurrent Access",
         stages: [
-          { num: 33, slug: "stage33-lock-manager", title: "Lock Manager" },
-          { num: 34, slug: "stage34-mvcc", title: "Multi-Version Concurrency (MVCC)" },
-          { num: 34, slug: "stage34-deadlock-detection", title: "Deadlock Detection" },
+          { num: 1, slug: "part6-stage1-lock-manager", title: "Lock Manager" },
+          { num: 2, slug: "part6-stage2-mvcc", title: "MVCC & Snapshot Isolation" },
+          { num: 3, slug: "part6-stage3-deadlock-detection", title: "Deadlock Detection" },
         ],
       },
     ],
@@ -200,7 +200,7 @@ export default function Sidebar({ isOpen, onClose }) {
             </div>
             {section.stages.map((stage) => {
               const isActive = pathname === `/stages/${stage.slug}`;
-              const isImplemented = IMPLEMENTED_STAGES.includes(stage.num);
+              const isImplemented = currentPart.part === 1;
               return (
                 <Link
                   key={stage.slug}
@@ -243,7 +243,7 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </div>
         <div className="sidebar-progress">
-          Stages: {IMPLEMENTED_STAGES.length} / 33
+          Stages: 12 / 34
         </div>
       </div>
     </aside>

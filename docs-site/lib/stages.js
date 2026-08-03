@@ -3,7 +3,7 @@ import path from "path";
 import matter from "gray-matter";
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
-const STAGES_DIR = path.join(process.cwd(), "..", "tests", "integration");
+const STAGES_DIR = path.join(process.cwd(), "..", "tests", "docs");
 
 // Tutorial content slugs (with frontmatter)
 const TUTORIAL_SLUGS = [
@@ -34,28 +34,28 @@ const STAGE_ORDER = [
   { file: "STAGE10_PERSISTENCE_TEST_PLAN.md", num: 10, part: 1 },
   { file: "STAGE11_PLANNER_TEST_PLAN.md", num: 11, part: 1 },
   { file: "STAGE12_DELETE_UPDATE_TEST_PLAN.md", num: 12, part: 1 },
-  { file: "STAGE12_VARLEN_SERIALIZATION_TEST_PLAN.md", num: 12, part: 2 },
-  { file: "STAGE13_SLOTTED_PAGE_TEST_PLAN.md", num: 13, part: 2 },
-  { file: "STAGE14_VARLEN_BTREE_TEST_PLAN.md", num: 14, part: 2 },
-  { file: "STAGE15_CREATE_TABLE_TEST_PLAN.md", num: 15, part: 2 },
-  { file: "STAGE16_SCHEMA_VALIDATION_TEST_PLAN.md", num: 16, part: 2 },
-  { file: "STAGE17_TRANSACTION_COMMIT_TEST_PLAN.md", num: 17, part: 2 },
-  { file: "STAGE18_TRANSACTION_ROLLBACK_TEST_PLAN.md", num: 18, part: 2 },
-  { file: "STAGE19_WAL_TEST_PLAN.md", num: 19, part: 2 },
-  { file: "STAGE21_ADVANCED_WHERE_TEST_PLAN.md", num: 21, part: 3 },
-  { file: "STAGE22_ORDER_BY_TEST_PLAN.md", num: 22, part: 3 },
-  { file: "STAGE23_LIMIT_OFFSET_TEST_PLAN.md", num: 23, part: 3 },
-  { file: "STAGE24_AGGREGATIONS_TEST_PLAN.md", num: 24, part: 3 },
-  { file: "STAGE25_SECONDARY_INDEXES_TEST_PLAN.md", num: 25, part: 4 },
-  { file: "STAGE26_COST_OPTIMIZER_TEST_PLAN.md", num: 26, part: 4 },
-  { file: "STAGE27_VACUUM_TEST_PLAN.md", num: 27, part: 4 },
-  { file: "STAGE28_JOINS_NESTED_LOOP_TEST_PLAN.md", num: 28, part: 5 },
-  { file: "STAGE29_HASH_JOIN_TEST_PLAN.md", num: 29, part: 5 },
-  { file: "STAGE30_FOREIGN_KEYS_TEST_PLAN.md", num: 30, part: 5 },
-  { file: "STAGE31_SUBQUERIES_TEST_PLAN.md", num: 31, part: 5 },
-  { file: "STAGE32_LOCK_MANAGER_TEST_PLAN.md", num: 32, part: 6 },
-  { file: "STAGE33_MVCC_TEST_PLAN.md", num: 33, part: 6 },
-  { file: "STAGE34_DEADLOCK_DETECTION_TEST_PLAN.md", num: 34, part: 6 },
+  { file: "STAGE1_WAL_TEST_PLAN.md", num: 1, part: 2 },
+  { file: "STAGE2_TRANSACTION_COMMIT_TEST_PLAN.md", num: 2, part: 2 },
+  { file: "STAGE3_TRANSACTION_ROLLBACK_TEST_PLAN.md", num: 3, part: 2 },
+  { file: "STAGE4_CREATE_TABLE_TEST_PLAN.md", num: 4, part: 2 },
+  { file: "STAGE5_SCHEMA_VALIDATION_TEST_PLAN.md", num: 5, part: 2 },
+  { file: "STAGE6_VARLEN_SERIALIZATION_TEST_PLAN.md", num: 6, part: 2 },
+  { file: "STAGE7_SLOTTED_PAGE_TEST_PLAN.md", num: 7, part: 2 },
+  { file: "STAGE8_VARLEN_BTREE_TEST_PLAN.md", num: 8, part: 2 },
+  { file: "STAGE1_ADVANCED_WHERE_TEST_PLAN.md", num: 1, part: 3 },
+  { file: "STAGE2_ORDER_BY_TEST_PLAN.md", num: 2, part: 3 },
+  { file: "STAGE3_LIMIT_OFFSET_TEST_PLAN.md", num: 3, part: 3 },
+  { file: "STAGE4_AGGREGATIONS_TEST_PLAN.md", num: 4, part: 3 },
+  { file: "STAGE1_SECONDARY_INDEXES_TEST_PLAN.md", num: 1, part: 4 },
+  { file: "STAGE2_COST_OPTIMIZER_TEST_PLAN.md", num: 2, part: 4 },
+  { file: "STAGE3_VACUUM_TEST_PLAN.md", num: 3, part: 4 },
+  { file: "STAGE1_JOINS_NESTED_LOOP_TEST_PLAN.md", num: 1, part: 5 },
+  { file: "STAGE2_HASH_JOIN_TEST_PLAN.md", num: 2, part: 5 },
+  { file: "STAGE3_FOREIGN_KEYS_TEST_PLAN.md", num: 3, part: 5 },
+  { file: "STAGE4_SUBQUERIES_TEST_PLAN.md", num: 4, part: 5 },
+  { file: "STAGE1_LOCK_MANAGER_TEST_PLAN.md", num: 1, part: 6 },
+  { file: "STAGE2_MVCC_TEST_PLAN.md", num: 2, part: 6 },
+  { file: "STAGE3_DEADLOCK_DETECTION_TEST_PLAN.md", num: 3, part: 6 },
 ];
 
 const EXTRAS_ORDER = [
@@ -84,9 +84,9 @@ const PART_NAMES = {
 };
 
 const PART_DESCRIPTIONS = {
-  1: "Build a working database from scratch with REPL, SQL parser, fixed-size rows, B-tree storage, and a query planner.",
-  2: "Evolve to variable-length storage, slotted pages, CREATE TABLE with schema catalog, and full transaction support with WAL.",
-  3: "Implement DELETE, UPDATE, advanced WHERE expressions, ORDER BY, LIMIT/OFFSET, and aggregate functions.",
+  1: "Build a working database from scratch with REPL, SQL parser, fixed-size rows, B-tree storage, Volcano planner, and DELETE/UPDATE.",
+  2: "Implement full transaction support with WAL, CREATE TABLE with schema catalog, and variable-length storage with slotted pages.",
+  3: "Implement advanced WHERE expressions, ORDER BY, LIMIT/OFFSET, and aggregate functions.",
   4: "Add secondary indexes, a cost-based query optimizer, and VACUUM for space reclamation.",
   5: "Implement JOINs (nested loop and hash), foreign key constraints, and subqueries.",
   6: "Add a lock manager, Multi-Version Concurrency Control (MVCC), and deadlock detection.",
@@ -131,14 +131,30 @@ export function getTutorialContent(slug) {
   return { ...data, bodyContent: content };
 }
 
+function findStageFile(filename, partNum = null) {
+  let directPath = path.join(STAGES_DIR, filename);
+  if (fs.existsSync(directPath)) return directPath;
+  if (partNum) {
+    let partPath = path.join(STAGES_DIR, `part${partNum}`, filename);
+    if (fs.existsSync(partPath)) return partPath;
+  }
+  // Fallback search in all part folders
+  for (let p = 1; p <= 6; p++) {
+    let pPath = path.join(STAGES_DIR, `part${p}`, filename);
+    if (fs.existsSync(pPath)) return pPath;
+  }
+  let extraPath = path.join(STAGES_DIR, "extras", filename);
+  if (fs.existsSync(extraPath)) return extraPath;
+  return null;
+}
+
 export function getStages() {
   return STAGE_ORDER.map((entry) => {
-    const filePath = path.join(STAGES_DIR, entry.file);
-    if (!fs.existsSync(filePath)) return null;
+    const filePath = findStageFile(entry.file, entry.part);
+    if (!filePath) return null;
     const content = fs.readFileSync(filePath, "utf-8");
-    // Build slug: try tutorial slug first, else derive from filename
-    const tutorialSlug = `stage${entry.num}-${extractSlug(entry.file).replace(`stage${entry.num}-`, "")}`;
-    const slug = TUTORIAL_SLUGS.includes(tutorialSlug) ? tutorialSlug : extractSlug(entry.file);
+    const baseSlug = extractSlug(entry.file);
+    const slug = entry.part > 1 ? `part${entry.part}-${baseSlug}` : baseSlug;
     return {
       slug,
       num: entry.num,
@@ -146,15 +162,15 @@ export function getStages() {
       title: extractTitle(content),
       summary: extractFirstSection(content),
       content,
-      hasTutorial: TUTORIAL_SLUGS.includes(tutorialSlug),
+      hasTutorial: TUTORIAL_SLUGS.includes(slug),
     };
   }).filter(Boolean);
 }
 
 export function getExtras() {
   return EXTRAS_ORDER.map((file) => {
-    const filePath = path.join(STAGES_DIR, file);
-    if (!fs.existsSync(filePath)) return null;
+    const filePath = findStageFile(file);
+    if (!filePath) return null;
     const content = fs.readFileSync(filePath, "utf-8");
     return {
       slug: extractSlug(file),

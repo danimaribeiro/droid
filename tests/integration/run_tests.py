@@ -6,26 +6,26 @@ import os
 import sys
 from collections import defaultdict
 
-from stage1.repl_tests import run_suite as run_stage1_suite
-from stage2.lexer_tests import run_suite as run_stage2_suite
-from stage3.parser_tests import run_suite as run_stage3_suite
-from stage4.serialization_tests import run_suite as run_stage4_suite
-from stage5.pager_tests import run_suite as run_stage5_suite
-from stage6.btree_leaf_tests import run_suite as run_stage6_suite
-from stage7.btree_search_tests import run_suite as run_stage7_suite
-from stage8.btree_split_tests import run_suite as run_stage8_suite
-from stage9.btree_internal_split_tests import run_suite as run_stage9_suite
-from stage10.persistence_tests import run_suite as run_stage10_suite
-from stage11.planner_tests import run_suite as run_stage11_suite
-from stage12_delete_update.delete_update_tests import run_suite as run_stage12_delete_update_suite
-from stage12.varlen_serialization_tests import run_suite as run_stage12_suite
-from stage13.slotted_page_tests import run_suite as run_stage13_suite
-from stage14.varlen_btree_tests import run_suite as run_stage14_suite
-from stage15.create_table_tests import run_suite as run_stage15_suite
-from stage16.schema_validation_tests import run_suite as run_stage16_suite
-from stage17.transaction_commit_tests import run_suite as run_stage17_suite
-from stage18.transaction_rollback_tests import run_suite as run_stage18_suite
-from stage19.wal_tests import run_suite as run_stage19_suite
+from part1.stage1.repl_tests import run_suite as run_stage1_suite
+from part1.stage2.lexer_tests import run_suite as run_stage2_suite
+from part1.stage3.parser_tests import run_suite as run_stage3_suite
+from part1.stage4.serialization_tests import run_suite as run_stage4_suite
+from part1.stage5.pager_tests import run_suite as run_stage5_suite
+from part1.stage6.btree_leaf_tests import run_suite as run_stage6_suite
+from part1.stage7.btree_search_tests import run_suite as run_stage7_suite
+from part1.stage8.btree_split_tests import run_suite as run_stage8_suite
+from part1.stage9.btree_internal_split_tests import run_suite as run_stage9_suite
+from part1.stage10.persistence_tests import run_suite as run_stage10_suite
+from part1.stage11.planner_tests import run_suite as run_stage11_suite
+from part1.stage12.delete_update_tests import run_suite as run_stage12_delete_update_suite
+from part2.stage1.wal_tests import run_suite as run_part2_stage1_suite
+from part2.stage2.transaction_commit_tests import run_suite as run_part2_stage2_suite
+from part2.stage3.transaction_rollback_tests import run_suite as run_part2_stage3_suite
+from part2.stage4.create_table_tests import run_suite as run_part2_stage4_suite
+from part2.stage5.schema_validation_tests import run_suite as run_part2_stage5_suite
+from part2.stage6.varlen_serialization_tests import run_suite as run_part2_stage6_suite
+from part2.stage7.slotted_page_tests import run_suite as run_part2_stage7_suite
+from part2.stage8.varlen_btree_tests import run_suite as run_part2_stage8_suite
 from utils import format_result
 
 
@@ -41,15 +41,16 @@ STAGE_RUNNERS = {
     "stage9": run_stage9_suite,
     "stage10": run_stage10_suite,
     "stage11": run_stage11_suite,
+    "stage12": run_stage12_delete_update_suite,
     "stage12-delete-update": run_stage12_delete_update_suite,
-    "stage12": run_stage12_suite,
-    "stage13": run_stage13_suite,
-    "stage14": run_stage14_suite,
-    "stage15": run_stage15_suite,
-    "stage16": run_stage16_suite,
-    "stage17": run_stage17_suite,
-    "stage18": run_stage18_suite,
-    "stage19": run_stage19_suite,
+    "part2-stage1": run_part2_stage1_suite,
+    "part2-stage2": run_part2_stage2_suite,
+    "part2-stage3": run_part2_stage3_suite,
+    "part2-stage4": run_part2_stage4_suite,
+    "part2-stage5": run_part2_stage5_suite,
+    "part2-stage6": run_part2_stage6_suite,
+    "part2-stage7": run_part2_stage7_suite,
+    "part2-stage8": run_part2_stage8_suite,
 }
 
 GREEN = "\033[32m"
