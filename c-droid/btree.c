@@ -5,6 +5,7 @@
 #include "pager.c"
 
 #define LEAF_NODE_MAX_CELLS 8
+#define INTERNAL_NODE_MAX_KEYS 3
 
 #define LEAF_NODE_TYPE       0x00
 #define INTERNAL_NODE_TYPE   0x01
@@ -79,6 +80,20 @@ void leaf_node_insert(Cursor* cursor, Row* row) {
     // Update number of cells
     num_cells++;
     *(uint32_t*)(page + LEAF_NODE_NUM_CELLS_OFFSET) = num_cells;
+}
+
+/*
+ * TODO (Amanhã): Implementar o Split de Nós Internos (Stage 9)
+ * 
+ * Passos para o Split Interno:
+ * 1. Checar Estouro: Se num_keys >= INTERNAL_NODE_MAX_KEYS, acionar o split.
+ * 2. Criar Novo Nó: Alocar nova página (right_page) no Pager.
+ * 3. Partir Chaves: Distribuir chaves e ponteiros entre o nó antigo (left) e o novo (right).
+ * 4. Promover Mediana: A chave central SOBE para o pai (diferente da folha, ela não se duplica).
+ * 5. Tratar Raiz / Recursão: Se for a Raiz, criar nova raiz (profundidade +1). Se não, chamar recursivo no pai.
+ */
+void internal_node_split_and_insert(Table* table, uint32_t parent_page_num, uint32_t key, uint32_t child_page_num) {
+    // Implementar a lógica amanhã!
 }
 
 void internal_node_insert(Table* table, uint32_t parent_page_num, uint32_t key, uint32_t child_page_num) {
