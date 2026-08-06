@@ -4,46 +4,57 @@
 
 
 void* pager_get_page(Pager* pager, uint32_t page_num) {
-    if (page_num >= TABLE_MAX_PAGES || page_num >= pager->num_pages) {
+    // Check if the page exists in the file
+    if (page_num >= pager->num_pages) {
         printf("[ERROR:00201] Page number out of bounds\n");
         return NULL;
     }
-    
-    // Stage 9 - persistence
-    if (pager->pages[page_num] == NULL) {
-        pager->pages[page_num] = malloc(PAGE_SIZE);
-        if (pager->pages[page_num] == NULL) {
-            printf("[ERROR:00203] Failed to allocate memory for page\n");
-            return NULL;
-        }
 
-        if (page_num < pager->num_pages) {
-            lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
-            read(pager->file_descriptor, pager->pages[page_num], PAGE_SIZE);
+    // return the page from the cache
+    for(int i = 0; i < TABLE_MAX_PAGES; i++) {
+        if (pager->frames[i].page_num == page_num) {
+            return pager->frames[i].data;
         }
     }
 
-    return pager->pages[page_num];
+    // Its not in the cache, load it from disk
+    // first flush if dirty
+    if(pager->frames[pager->next_victim].is_dirty) {
+        pager_flush(pager, pager->frames[pager->next_victim].page_num);
+    }
+
+    lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
+    read(pager->file_descriptor, pager->frames[pager->next_victim].data, PAGE_SIZE);
+    
+    uint32_t victim_index = pager->next_victim;
+    pager->next_victim = (pager->next_victim + 1) % TABLE_MAX_PAGES;
+    pager->frames[victim_index].page_num = page_num;
+    pager->frames[victim_index].is_dirty = false;
+
+    return pager->frames[victim_index].data;
 }
 
 
 void* pager_alloc_page(Pager* pager) {
-    if (pager->num_pages >= TABLE_MAX_PAGES) {
-        printf("[ERROR:00204] Max pages reached\n");
-        return NULL;
-    }
-
     uint32_t new_page = pager->num_pages;
-
-    pager->pages[new_page] = malloc(PAGE_SIZE);
-    if (pager->pages[new_page] == NULL) {
-        printf("[ERROR:00203] Failed to allocate memory for page\n");
-        return NULL;
-    }
-    memset(pager->pages[new_page], 0, PAGE_SIZE);
-
     pager->num_pages++;
-    return pager->pages[new_page];
+
+    // Flush if dirty
+    if(pager->frames[pager->next_victim].is_dirty) {
+        pager_flush(pager, pager->frames[pager->next_victim].page_num);
+    }
+
+    uint32_t victim_index = pager->next_victim;
+    pager->next_victim = (pager->next_victim + 1) % TABLE_MAX_PAGES;
+
+    // Update the victim frame
+    pager->frames[victim_index].page_num = new_page;
+    pager->frames[victim_index].is_dirty = true;
+
+    // Clear the page
+    memset(pager->frames[victim_index].data, 0, PAGE_SIZE);
+
+    return pager->frames[victim_index].data;
 }
 
 void pager_status(Pager* pager) {
@@ -52,10 +63,27 @@ void pager_status(Pager* pager) {
 
 
 void pager_flush(Pager* pager, uint32_t page_num) {
-    if(pager->pages[page_num] == NULL) {
-        printf("[ERROR:00202] Page not found\n");
-        return;
+    for(int i = 0; i < TABLE_MAX_PAGES; i++) {
+        if (pager->frames[i].page_num == page_num) {
+            lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
+            write(pager->file_descriptor, pager->frames[i].data, PAGE_SIZE);
+            pager->frames[i].is_dirty = false;
+            return;
+        }
     }
-    lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
-    write(pager->file_descriptor, pager->pages[page_num], PAGE_SIZE);
+    printf("[ERROR:00202] Page not found\n");
+}
+void pager_close(Pager* pager) {
+    for (int i = 0; i < TABLE_MAX_PAGES; i++) {
+        if (pager->frames[i].is_dirty) {
+            uint32_t page_num = pager->frames[i].page_num;
+            lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
+            write(pager->file_descriptor, pager->frames[i].data, PAGE_SIZE);
+        }
+        free(pager->frames[i].data);
+    }
+    
+    fsync(pager->file_descriptor);
+    close(pager->file_descriptor);
+    free(pager);
 }

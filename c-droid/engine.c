@@ -237,12 +237,19 @@ Table db_open(const char* filename) {
     users->pager->file_descriptor = open(filename, O_RDWR | O_CREAT, 0644);
     users->pager->file_length = lseek(users->pager->file_descriptor, 0, SEEK_END);
     users->pager->num_pages = users->pager->file_length / PAGE_SIZE;
+    users->pager->next_victim = 0;
+    // Allocate all the cache frames
+    for(int i = 0; i < TABLE_MAX_PAGES; i++) {
+        users->pager->frames[i].page_num = 0xFFFFFFFF;
+        users->pager->frames[i].is_dirty = false;
+        users->pager->frames[i].data = malloc(PAGE_SIZE);
+    }
+    
     users->root_page = 0;
 
     return *users;
 }
 
 void db_close(Table *table) {
-    fsync(table->pager->file_descriptor);
-    close(table->pager->file_descriptor);
+    pager_close(table->pager);
 }
