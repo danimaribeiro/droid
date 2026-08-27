@@ -1,0 +1,51 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: bin/rails server -b 0.0.0.0 -p 3000
+    ports:
+      - "4000:3000"
+    environment:
+      - RAILS_ENV=development
+      - DATABASE_URL=postgres://postgres:password@db:5432/droid_backend_development
+      - PISTON_URL=http://piston:2000
+    depends_on:
+      db:
+        condition: service_healthy
+      piston:
+        condition: service_started
+    volumes:
+      - ./backend:/rails
+
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: droid_backend_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  piston:
+    image: ghcr.io/engineer-man/piston:latest
+    restart: always
+    # Piston is NOT exposed to host machine; accessible only inside docker network at http://piston:2000
+    expose:
+      - "2000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./tests:/droid/tests:ro
+    tmpfs:
+      - /tmp
+
+volumes:
+  postgres_data:

@@ -30,6 +30,29 @@ from utils import format_result
 
 
 STAGE_RUNNERS = {
+    # Canonical category slugs (<part>/<stage>)
+    "database/repl": run_stage1_suite,
+    "database/lexer": run_stage2_suite,
+    "database/parser": run_stage3_suite,
+    "database/row-serialization": run_stage4_suite,
+    "database/pager": run_stage5_suite,
+    "database/btree-leaf": run_stage6_suite,
+    "database/btree-search": run_stage7_suite,
+    "database/btree-split": run_stage8_suite,
+    "database/persistence": run_stage9_suite,
+    "database/planner": run_stage10_suite,
+    "database/index-scan": run_stage11_suite,
+    "database/delete-update": run_stage12_delete_update_suite,
+    "advanced-storage/wal": run_part2_stage1_suite,
+    "advanced-storage/commit": run_part2_stage2_suite,
+    "advanced-storage/rollback": run_part2_stage3_suite,
+    "advanced-storage/create-table": run_part2_stage4_suite,
+    "advanced-storage/schema-validation": run_part2_stage5_suite,
+    "advanced-storage/varlen-serialization": run_part2_stage6_suite,
+    "advanced-storage/slotted-page": run_part2_stage7_suite,
+    "advanced-storage/varlen-btree": run_part2_stage8_suite,
+
+    # Legacy stage aliases for backward compatibility
     "stage1": run_stage1_suite,
     "stage2": run_stage2_suite,
     "stage3": run_stage3_suite,
@@ -78,12 +101,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--stage",
-        choices=["stage1", "stage2", "stage3", "stage4", "stage5",
-                 "stage6", "stage7", "stage8", "stage9", "stage10",
-                 "stage11", "stage12", "stage13", "stage14", "stage15",
-                 "stage16", "stage17", "stage18", "all"],
-        default="stage1",
-        help="Choose which stage to run (default: stage1)",
+        choices=list(STAGE_RUNNERS.keys()) + ["all"],
+        default="database/repl",
+        help="Choose which stage to run (default: database/repl)",
     )
     return parser.parse_args()
 

@@ -123,6 +123,15 @@ export default async function StagePage({ params }) {
             </section>
           )}
 
+          {/* Link to Full Multi-File Workspace Playground */}
+          {slug === "stage1-repl" && (
+            <div style={{ marginTop: 24, marginBottom: 24, textAlign: "center" }}>
+              <Link href="/playground/stage1" style={{ display: "inline-block", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", padding: "14px 28px", borderRadius: 10, fontWeight: 700, fontSize: 15, boxShadow: "0 4px 16px rgba(99, 102, 241, 0.4)" }}>
+                🚀 Launch Multi-File Code Editor Workspace (/playground/stage1)
+              </Link>
+            </div>
+          )}
+
           {/* Interactive Submission Workspace and Test Harness */}
           <CodeSubmitRunner slug={slug} />
 

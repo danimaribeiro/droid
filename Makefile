@@ -1,4 +1,4 @@
-.PHONY: all build-c build-cpp build-rust build-zig run-c run-cpp run-rust run-zig run-all test test-smoke check-bins test-stage1 test-stage2 test-stage3 test-stage4 test-stage5 test-stage6 test-stage7 test-stage8 test-stage9 test-stage10 test-stage11 test-stage12 test-stage13 test-stage14 test-stage15 test-stage16 test-stage17 test-stage18 test-all-stages test-c-stage1 test-cpp-stage1 test-rust-stage1 test-zig-stage1 clean
+.PHONY: all build-c build-cpp build-rust build-zig run-c run-cpp run-rust run-zig run-all test test-smoke check-bins check-templates test-stage1 test-stage2 test-stage3 test-stage4 test-stage5 test-stage6 test-stage7 test-stage8 test-stage9 test-stage10 test-stage11 test-stage12 test-stage13 test-stage14 test-stage15 test-stage16 test-stage17 test-stage18 test-all-stages test-c-stage1 test-cpp-stage1 test-rust-stage1 test-zig-stage1 clean
 
 CC := gcc
 CXX := g++
@@ -69,6 +69,22 @@ check-bins:
 		echo "Build binaries first with: make all"; \
 		exit 1; \
 	fi
+
+check-templates:
+	@echo "Checking backend starter code templates compilation..."
+	@mkdir -p tmp/template-check
+	@echo "Testing C template (database/repl)..."
+	@$(CC) -Wall -Wextra -std=c99 backend/templates/database/repl/c/*.c -o tmp/template-check/c-repl && echo "  ✓ C database/repl template compiled successfully."
+	@echo "Testing C++ template (database/repl)..."
+	@$(CXX) -Wall -std=c++17 backend/templates/database/repl/cpp/*.cpp -o tmp/template-check/cpp-repl && echo "  ✓ C++ database/repl template compiled successfully."
+	@echo "Testing Rust template (database/repl)..."
+	@rustc backend/templates/database/repl/rust/src/main.rs -o tmp/template-check/rust-repl && echo "  ✓ Rust database/repl template compiled successfully."
+	@if command -v $(ZIG) >/dev/null 2>&1; then \
+		echo "Testing Zig template (database/repl)..."; \
+		$(ZIG) build-exe backend/templates/database/repl/zig/main.zig -femit-bin=tmp/template-check/zig-repl && echo "  ✓ Zig database/repl template compiled successfully."; \
+	fi
+	@rm -rf tmp/template-check
+	@echo "All backend starter code templates compiled cleanly!"
 
 test-stage1: check-bins
 	@python3 tests/integration/run_tests.py --stage stage1 --bins $(BINS)
