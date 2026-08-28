@@ -4,12 +4,13 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useEffect, useState, useId } from "react";
 import mermaid from "mermaid";
+import { useTheme } from "./ThemeContext";
 
 function MermaidBlock({ chart }) {
   const [svg, setSvg] = useState("");
   const [error, setError] = useState(false);
+  const { isGlass } = useTheme();
   const rawId = useId();
-  // Ensure a safe DOM selector ID for mermaid compiler
   const chartId = "mermaid_" + rawId.replace(/[^a-zA-Z0-9]/g, "_");
 
   useEffect(() => {
@@ -22,7 +23,6 @@ function MermaidBlock({ chart }) {
         fontFamily: "var(--font-mono, monospace)",
       });
 
-      // Render chart asynchronously into static SVG HTML string
       mermaid
         .render(chartId, chart)
         .then((result) => {
@@ -41,7 +41,6 @@ function MermaidBlock({ chart }) {
 
     return () => {
       isMounted = false;
-      // Cleanup any dangling temporary render elements created by mermaid
       const el = document.getElementById(chartId);
       if (el) el.remove();
     };
@@ -49,35 +48,58 @@ function MermaidBlock({ chart }) {
 
   if (error) {
     return (
-      <div className="mermaid-fallback-error">
-        <span className="err-badge">⚠️ MERMAID DIAGRAM RENDER WARNING</span>
-        <pre className="err-code">{chart}</pre>
+      <div className={`rounded-xl p-4 my-4 ${
+        isGlass
+          ? "bg-red-500/10 border border-red-500/20"
+          : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40"
+      }`}>
+        <span className={`text-xs font-bold ${isGlass ? "text-red-300" : "text-red-600 dark:text-red-400"}`}>
+          Diagram Render Error
+        </span>
+        <pre className="mt-2 text-xs font-mono overflow-x-auto text-gray-400">{chart}</pre>
       </div>
     );
   }
 
   if (!svg) {
     return (
-      <div className="mermaid-loading-box">
-        <span className="loading-dots">⏳ Rendering vector memory architecture diagram...</span>
+      <div className={`rounded-xl p-6 my-4 text-center ${
+        isGlass ? "bg-white/[0.05]" : "bg-gray-50 dark:bg-gray-800/50"
+      }`}>
+        <span className={`text-sm ${isGlass ? "text-gray-400" : "text-gray-500 dark:text-gray-400"}`}>
+          Rendering diagram...
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="mermaid-chart-box">
-      <div className="mermaid-badge">📊 VECTOR ARCHITECTURE DIAGRAM (MERMAID)</div>
-      <div
-        className="mermaid-svg-wrapper"
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
+    <div className={`rounded-xl overflow-hidden my-4 ${
+      isGlass
+        ? "bg-white/[0.06] border border-white/[0.10]"
+        : "bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700"
+    }`}>
+      <div className={`px-4 py-2 text-[10px] font-bold tracking-wider uppercase border-b ${
+        isGlass
+          ? "text-gray-400 border-white/[0.08]"
+          : "text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700"
+      }`}>
+        Architecture Diagram
+      </div>
+      <div className="p-4 overflow-x-auto" dangerouslySetInnerHTML={{ __html: svg }} />
     </div>
   );
 }
 
 export default function MarkdownRenderer({ content }) {
+  const { isGlass } = useTheme();
+
   return (
-    <div className="markdown-body">
+    <div className={`prose max-w-none ${
+      isGlass
+        ? "prose-invert prose-p:text-gray-200 prose-headings:text-white prose-strong:text-white prose-code:text-purple-300 prose-a:text-blue-300 prose-li:text-gray-200 prose-blockquote:border-white/[0.15] prose-blockquote:text-gray-300 prose-pre:bg-gray-950 prose-pre:border prose-pre:border-white/[0.10]"
+        : "dark:prose-invert prose-pre:bg-gray-950 prose-pre:border prose-pre:border-gray-200 dark:prose-pre:border-gray-700"
+    }`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{

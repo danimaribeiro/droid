@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "../../components/AuthContext";
+import { useTheme } from "../../components/ThemeContext";
 import AuthModal from "../../components/AuthModal";
+import GlassShell from "../../components/GlassShell";
+import ThemeSwitcher from "../../components/ThemeSwitcher";
+import { Bot } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
@@ -56,8 +60,30 @@ const PART_NAMES = {
   6: "Concurrency",
 };
 
+function StatusBadge({ status, isGlass }) {
+  const styles = {
+    passed: isGlass
+      ? "bg-green-500/20 text-green-300 border-green-500/20"
+      : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/40",
+    failed: isGlass
+      ? "bg-red-500/20 text-red-300 border-red-500/20"
+      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/40",
+    none: isGlass
+      ? "bg-white/[0.06] text-gray-400 border-white/[0.08]"
+      : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700",
+  };
+  const label = status === "passed" ? "Passed" : status === "failed" ? "Failed" : "Not attempted";
+  const key = status === "passed" ? "passed" : status === "failed" ? "failed" : "none";
+  return (
+    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${styles[key]}`}>
+      {label}
+    </span>
+  );
+}
+
 export default function ProfilePage() {
   const { user, token, loading, logout } = useAuth();
+  const { isGlass } = useTheme();
   const [submissions, setSubmissions] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -78,24 +104,44 @@ export default function ProfilePage() {
       .finally(() => setFetching(false));
   }, [user, token, loading]);
 
+  const border = isGlass ? "border-white/[0.10]" : "border-gray-200 dark:border-gray-700";
+  const cardCls = isGlass
+    ? "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] rounded-xl"
+    : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm";
+  const textPrimary = isGlass ? "text-white" : "text-gray-900 dark:text-white";
+  const textMuted = isGlass ? "text-gray-400" : "text-gray-500 dark:text-gray-400";
+
   if (loading) {
     return (
-      <div className="profile-container">
-        <div className="profile-loading">Loading...</div>
-      </div>
+      <GlassShell>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className={`text-sm ${textMuted}`}>Loading...</div>
+        </div>
+      </GlassShell>
     );
   }
 
   if (!user) {
     return (
-      <div className="profile-container">
-        <div className="profile-guest">
-          <h1>Your Profile</h1>
-          <p>Log in or sign up to track your progress across all tutorial stages.</p>
-          <button className="btn-glow-primary" onClick={() => setShowAuthModal(true)}>
-            <span>Log In / Sign Up</span>
-            <span className="btn-arrow">-&gt;</span>
-          </button>
+      <GlassShell>
+        <div className="min-h-screen flex flex-col items-center justify-center p-6">
+          <div className={`${cardCls} p-10 max-w-md w-full text-center`}>
+            <span className="text-4xl">🗄️</span>
+            <h1 className={`text-2xl font-bold mt-4 ${textPrimary}`}>Your Profile</h1>
+            <p className={`text-sm mt-2 mb-6 ${textMuted}`}>
+              Log in or sign up to track your progress across all tutorial stages.
+            </p>
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className={`w-full py-3 rounded-lg text-sm font-semibold transition-all ${
+                isGlass
+                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg shadow-purple-500/25"
+                  : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/25"
+              }`}
+            >
+              Log In / Sign Up
+            </button>
+          </div>
           <AuthModal
             isOpen={showAuthModal}
             onClose={() => setShowAuthModal(false)}
@@ -103,7 +149,7 @@ export default function ProfilePage() {
             initialTab="login"
           />
         </div>
-      </div>
+      </GlassShell>
     );
   }
 
@@ -122,172 +168,275 @@ export default function ProfilePage() {
   }
 
   const totalPassed = Object.values(bestByStage).filter((s) => s.status === "passed").length;
+  const totalStages = STAGES.length;
+  const progressPct = Math.round((totalPassed / totalStages) * 100);
 
   return (
-    <div className="profile-container">
-      <header className="nav-top-bar">
-        <Link href="/" className="nav-brand">
-          <span>🗄️ Database Curriculum</span>
+    <GlassShell>
+      {/* Nav bar */}
+      <header className={`flex items-center justify-between px-6 py-3 border-b ${border} ${
+        isGlass ? "bg-white/[0.08] backdrop-blur-xl" : "bg-white dark:bg-gray-900"
+      }`}>
+        <Link href="/" className={`flex items-center gap-2 text-sm font-medium ${
+          isGlass ? "text-gray-300 hover:text-white" : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+        } transition-colors`}>
+          <Bot className="w-5 h-5" />
+          droid
         </Link>
-        <div className="nav-auth">
-          <span className="nav-user-name">{user.name}</span>
-          <button className="btn-login-ghost" onClick={logout}>Log Out</button>
+        <div className="flex items-center gap-3">
+          <ThemeSwitcher />
+          <span className={`text-sm font-medium ${isGlass ? "text-gray-200" : "text-gray-700 dark:text-gray-300"}`}>
+            {user.name}
+          </span>
+          <button
+            onClick={logout}
+            className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${
+              isGlass
+                ? "text-gray-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.10]"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700"
+            }`}
+          >
+            Log Out
+          </button>
         </div>
       </header>
 
-      <div className="profile-header">
-        <div className="profile-avatar">{user.name?.charAt(0).toUpperCase()}</div>
-        <div>
-          <h1 className="profile-name">{user.name}</h1>
-          <p className="profile-email">{user.email}</p>
-        </div>
-        <div className="profile-stat">
-          <span className="profile-stat-number">{totalPassed}</span>
-          <span className="profile-stat-label">stages passed</span>
-        </div>
-      </div>
-
-      <section className="profile-section">
-        <h2 className="profile-section-title">Stage Progress</h2>
-        {Object.entries(groupedByPart).map(([partNum, stages]) => (
-          <div key={partNum} className="progress-part-group">
-            <h3 className="progress-part-title">
-              Part {partNum}: {PART_NAMES[partNum]}
-            </h3>
-            <div className="progress-grid">
-              {stages.map((stage) => {
-                const best = bestByStage[stage.slug];
-                let statusClass = "status-none";
-                let statusLabel = "Not attempted";
-                if (best) {
-                  if (best.status === "passed") { statusClass = "status-passed"; statusLabel = "Passed"; }
-                  else if (best.status === "failed") { statusClass = "status-failed"; statusLabel = "Failed"; }
-                  else { statusClass = "status-pending"; statusLabel = best.status; }
-                }
-                return (
-                  <Link
-                    key={stage.slug}
-                    href={`/stages/${stage.slug}`}
-                    className={`progress-card ${statusClass}`}
-                  >
-                    <span className="progress-card-num">P{stage.part}.{stage.num}</span>
-                    <span className="progress-card-name">{stage.name}</span>
-                    <span className={`progress-badge ${statusClass}`}>{statusLabel}</span>
-                  </Link>
-                );
-              })}
+      <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+        {/* Profile header card */}
+        <div className={`${cardCls} p-6`}>
+          <div className="flex items-center gap-5">
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold ${
+              isGlass
+                ? "bg-gradient-to-br from-purple-500/40 to-pink-500/40 text-white"
+                : "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+            }`}>
+              {user.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className={`text-xl font-bold ${textPrimary}`}>{user.name}</h1>
+              <p className={`text-sm ${textMuted}`}>{user.email}</p>
+            </div>
+            <div className="text-center">
+              <div className={`text-3xl font-bold ${isGlass ? "text-purple-300" : "text-blue-600 dark:text-blue-400"}`}>
+                {totalPassed}
+              </div>
+              <div className={`text-xs ${textMuted}`}>stages passed</div>
             </div>
           </div>
-        ))}
-      </section>
 
-      <section className="profile-section">
-        <h2 className="profile-section-title">Submission History</h2>
-        {fetching ? (
-          <p className="profile-loading">Loading submissions...</p>
-        ) : submissions.length === 0 ? (
-          <p className="profile-empty">No submissions yet. Start a tutorial stage to begin!</p>
-        ) : (
-          <div className="submissions-table-wrap">
-            <table className="submissions-table">
-              <thead>
-                <tr>
-                  <th>Stage</th>
-                  <th>Language</th>
-                  <th>Status</th>
-                  <th>Tests</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map((sub) => {
-                  const isExpanded = expandedId === sub.id;
-                  const detail = testDetails[sub.id];
-                  return (
-                    <React.Fragment key={sub.id}>
-                      <tr
-                        className={`sub-row-clickable ${isExpanded ? "sub-row-expanded" : ""}`}
-                        onClick={() => {
-                          if (isExpanded) {
-                            setExpandedId(null);
-                            return;
-                          }
-                          setExpandedId(sub.id);
-                          if (!testDetails[sub.id]) {
-                            fetch(`${API_BASE}/api/v1/submissions/${sub.id}`, {
-                              headers: { Authorization: `Bearer ${token}` },
-                            })
-                              .then((r) => r.json())
-                              .then((data) => setTestDetails((prev) => ({ ...prev, [sub.id]: data })))
-                              .catch(() => {});
-                          }
-                        }}
-                      >
-                        <td>
-                          <Link href={`/stages/${sub.stage_slug}`} className="sub-stage-link" onClick={(e) => e.stopPropagation()}>
-                            {sub.stage_slug}
-                          </Link>
-                        </td>
-                        <td className="sub-lang">{sub.language_slug}</td>
-                        <td>
-                          <span className={`sub-status sub-status-${sub.status}`}>{sub.status}</span>
-                        </td>
-                        <td>
-                          {sub.test_run
-                            ? `${sub.test_run.total_passed} / ${sub.test_run.total_passed + sub.test_run.total_failed}`
-                            : "—"}
-                        </td>
-                        <td className="sub-date">{new Date(sub.created_at).toLocaleDateString()}</td>
-                      </tr>
-                      {isExpanded && (
-                        <tr className="sub-detail-row">
-                          <td colSpan={5}>
-                            {!detail ? (
-                              <p className="sub-detail-loading">Loading test results...</p>
-                            ) : !detail.test_run ? (
-                              <p className="sub-detail-loading">No test results available.</p>
-                            ) : (
-                              <div className="sub-detail-content">
-                                <div className="sub-detail-summary">
-                                  <span className="sub-detail-passed">{detail.test_run.total_passed} passed</span>
-                                  <span className="sub-detail-failed">{detail.test_run.total_failed} failed</span>
-                                  {detail.test_run.duration_ms != null && (
-                                    <span className="sub-detail-duration">{detail.test_run.duration_ms}ms</span>
-                                  )}
-                                </div>
-                                <table className="sub-tests-table">
-                                  <thead>
-                                    <tr>
-                                      <th></th>
-                                      <th>Test</th>
-                                      <th>Expected</th>
-                                      <th>Actual</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {detail.test_run.test_cases.map((tc, i) => (
-                                      <tr key={i} className={tc.passed ? "tc-passed" : "tc-failed"}>
-                                        <td className="tc-icon">{tc.passed ? "✓" : "✗"}</td>
-                                        <td className="tc-name">{tc.name}</td>
-                                        <td className="tc-output"><code>{tc.expected || "—"}</code></td>
-                                        <td className="tc-output"><code>{tc.actual || "—"}</code></td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
+          {/* Overall progress bar */}
+          <div className="mt-5">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className={`text-xs font-medium ${textMuted}`}>Overall Progress</span>
+              <span className={`text-xs font-semibold ${isGlass ? "text-gray-200" : "text-gray-700 dark:text-gray-300"}`}>
+                {totalPassed} / {totalStages} ({progressPct}%)
+              </span>
+            </div>
+            <div className={`w-full h-2 rounded-full overflow-hidden ${
+              isGlass ? "bg-white/[0.08]" : "bg-gray-200 dark:bg-gray-700"
+            }`}>
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  isGlass
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500"
+                    : "bg-blue-600"
+                }`}
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
           </div>
-        )}
-      </section>
-    </div>
+        </div>
+
+        {/* Stage Progress */}
+        <section>
+          <h2 className={`text-lg font-semibold mb-4 ${textPrimary}`}>Stage Progress</h2>
+          <div className="space-y-6">
+            {Object.entries(groupedByPart).map(([partNum, stages]) => (
+              <div key={partNum}>
+                <h3 className={`text-sm font-medium mb-3 ${textMuted}`}>
+                  Part {partNum}: {PART_NAMES[partNum]}
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                  {stages.map((stage) => {
+                    const best = bestByStage[stage.slug];
+                    const status = best?.status || "none";
+                    return (
+                      <Link
+                        key={stage.slug}
+                        href={`/stages/${stage.slug}`}
+                        className={`${cardCls} p-3 hover:scale-[1.02] transition-transform`}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className={`text-[10px] font-mono ${textMuted}`}>
+                            P{stage.part}.{stage.num}
+                          </span>
+                          {status === "passed" && (
+                            <span className={`text-xs ${isGlass ? "text-green-400" : "text-green-500"}`}>✓</span>
+                          )}
+                          {status === "failed" && (
+                            <span className={`text-xs ${isGlass ? "text-red-400" : "text-red-500"}`}>✗</span>
+                          )}
+                        </div>
+                        <div className={`text-xs font-medium truncate ${textPrimary}`}>
+                          {stage.name}
+                        </div>
+                        <StatusBadge status={status} isGlass={isGlass} />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Submission History */}
+        <section>
+          <h2 className={`text-lg font-semibold mb-4 ${textPrimary}`}>Submission History</h2>
+          {fetching ? (
+            <div className={`${cardCls} p-8 text-center`}>
+              <p className={`text-sm ${textMuted}`}>Loading submissions...</p>
+            </div>
+          ) : submissions.length === 0 ? (
+            <div className={`${cardCls} p-8 text-center`}>
+              <p className={`text-sm ${textMuted}`}>No submissions yet. Start a tutorial stage to begin!</p>
+            </div>
+          ) : (
+            <div className={`${cardCls} overflow-hidden`}>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className={`border-b ${border}`}>
+                      {["Stage", "Language", "Status", "Tests", "Date"].map((h) => (
+                        <th key={h} className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className={`divide-y ${isGlass ? "divide-white/[0.06]" : "divide-gray-100 dark:divide-gray-800"}`}>
+                    {submissions.map((sub) => {
+                      const isExpanded = expandedId === sub.id;
+                      const detail = testDetails[sub.id];
+                      return (
+                        <React.Fragment key={sub.id}>
+                          <tr
+                            className={`cursor-pointer transition-colors ${
+                              isGlass
+                                ? "hover:bg-white/[0.04]"
+                                : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                            } ${isExpanded ? (isGlass ? "bg-white/[0.04]" : "bg-gray-50 dark:bg-gray-800/50") : ""}`}
+                            onClick={() => {
+                              if (isExpanded) {
+                                setExpandedId(null);
+                                return;
+                              }
+                              setExpandedId(sub.id);
+                              if (!testDetails[sub.id]) {
+                                fetch(`${API_BASE}/api/v1/submissions/${sub.id}`, {
+                                  headers: { Authorization: `Bearer ${token}` },
+                                })
+                                  .then((r) => r.json())
+                                  .then((data) => setTestDetails((prev) => ({ ...prev, [sub.id]: data })))
+                                  .catch(() => {});
+                              }
+                            }}
+                          >
+                            <td className="px-4 py-3">
+                              <Link
+                                href={`/stages/${sub.stage_slug}`}
+                                className={`text-sm font-medium ${
+                                  isGlass ? "text-purple-300 hover:text-purple-200" : "text-blue-600 dark:text-blue-400 hover:underline"
+                                }`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {sub.stage_slug}
+                              </Link>
+                            </td>
+                            <td className={`px-4 py-3 text-sm ${isGlass ? "text-gray-300" : "text-gray-700 dark:text-gray-300"}`}>
+                              {sub.language_slug}
+                            </td>
+                            <td className="px-4 py-3">
+                              <StatusBadge status={sub.status} isGlass={isGlass} />
+                            </td>
+                            <td className={`px-4 py-3 text-sm ${isGlass ? "text-gray-300" : "text-gray-700 dark:text-gray-300"}`}>
+                              {sub.test_run
+                                ? `${sub.test_run.total_passed} / ${sub.test_run.total_passed + sub.test_run.total_failed}`
+                                : "—"}
+                            </td>
+                            <td className={`px-4 py-3 text-sm ${textMuted}`}>
+                              {new Date(sub.created_at).toLocaleDateString()}
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr>
+                              <td colSpan={5} className={`px-4 py-4 ${
+                                isGlass ? "bg-white/[0.03]" : "bg-gray-50 dark:bg-gray-800/30"
+                              }`}>
+                                {!detail ? (
+                                  <p className={`text-sm text-center ${textMuted}`}>Loading test results...</p>
+                                ) : !detail.test_run ? (
+                                  <p className={`text-sm text-center ${textMuted}`}>No test results available.</p>
+                                ) : (
+                                  <div className="space-y-3">
+                                    <div className="flex items-center gap-4">
+                                      <span className={`text-sm font-medium ${isGlass ? "text-green-300" : "text-green-600 dark:text-green-400"}`}>
+                                        {detail.test_run.total_passed} passed
+                                      </span>
+                                      <span className={`text-sm font-medium ${isGlass ? "text-red-300" : "text-red-600 dark:text-red-400"}`}>
+                                        {detail.test_run.total_failed} failed
+                                      </span>
+                                      {detail.test_run.duration_ms != null && (
+                                        <span className={`text-sm ${textMuted}`}>{detail.test_run.duration_ms}ms</span>
+                                      )}
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                      <table className="w-full text-sm">
+                                        <thead>
+                                          <tr className={`border-b ${border}`}>
+                                            <th className={`py-1.5 pr-2 text-left ${textMuted}`}></th>
+                                            <th className={`py-1.5 pr-2 text-left ${textMuted}`}>Test</th>
+                                            <th className={`py-1.5 pr-2 text-left ${textMuted}`}>Expected</th>
+                                            <th className={`py-1.5 text-left ${textMuted}`}>Actual</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {detail.test_run.test_cases.map((tc, i) => (
+                                            <tr key={i} className={`border-b last:border-0 ${isGlass ? "border-white/[0.04]" : "border-gray-100 dark:border-gray-800"}`}>
+                                              <td className={`py-1.5 pr-2 ${tc.passed ? (isGlass ? "text-green-400" : "text-green-500") : (isGlass ? "text-red-400" : "text-red-500")}`}>
+                                                {tc.passed ? "✓" : "✗"}
+                                              </td>
+                                              <td className={`py-1.5 pr-2 ${isGlass ? "text-gray-200" : "text-gray-700 dark:text-gray-300"}`}>
+                                                {tc.name}
+                                              </td>
+                                              <td className="py-1.5 pr-2">
+                                                <code className={`text-xs ${textMuted}`}>{tc.expected || "—"}</code>
+                                              </td>
+                                              <td className="py-1.5">
+                                                <code className={`text-xs ${tc.passed ? textMuted : (isGlass ? "text-red-300" : "text-red-600 dark:text-red-400")}`}>
+                                                  {tc.actual || "—"}
+                                                </code>
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
+    </GlassShell>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthProvider } from "../components/AuthContext";
+import { ThemeProvider } from "../components/ThemeContext";
 import "../tailwind-variants.css";
 
 export default function VariantsLayout({ children }) {
@@ -16,7 +17,9 @@ export default function VariantsLayout({ children }) {
       </head>
       <body>
         <AuthProvider>
-          {children}
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

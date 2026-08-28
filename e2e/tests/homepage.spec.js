@@ -5,22 +5,22 @@ test.describe("Homepage", () => {
     await page.goto("/");
 
     await expect(page.locator("h1")).toContainText("Build the Engine");
-    await expect(page.locator(".hero-tagline")).toBeVisible();
+    await expect(page.locator('[data-testid="hero-tagline"]')).toBeVisible();
   });
 
   test("shows supported languages", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.locator(".chip-c")).toContainText("C");
-    await expect(page.locator(".chip-cpp")).toContainText("C++");
-    await expect(page.locator(".chip-rust")).toContainText("Rust");
-    await expect(page.locator(".chip-zig")).toContainText("Zig");
+    await expect(page.locator('[data-testid="chip-c"]')).toContainText("C");
+    await expect(page.locator('[data-testid="chip-cpp"]')).toContainText("C++");
+    await expect(page.locator('[data-testid="chip-rust"]')).toContainText("Rust");
+    await expect(page.locator('[data-testid="chip-zig"]')).toContainText("Zig");
   });
 
   test("shows curriculum roadmap with Part 1 ready", async ({ page }) => {
     await page.goto("/");
 
-    const part1Card = page.locator(".roadmap-card").first();
+    const part1Card = page.locator('[data-testid="roadmap-card"]').first();
     await expect(part1Card).toContainText("Part 1");
     await expect(part1Card).toContainText("READY");
   });

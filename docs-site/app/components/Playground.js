@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import AuthModal from "./AuthModal";
+import { Bot } from "lucide-react";
 import {
   usePlaygroundLogic,
   Editor,
@@ -122,7 +123,7 @@ export default function Playground({ stageSlug }) {
               <path d="M1 3h14v1.5H1V3zm0 4.25h14v1.5H1v-1.5zm0 4.25h14V13H1v-1.5z" />
             </svg>
           </button>
-          <Link href="/" className={`text-sm font-bold ${isGlass ? "text-white" : "text-gray-800 dark:text-gray-200"}`}>droid</Link>
+          <Link href="/" className={`flex items-center gap-1.5 text-sm font-bold ${isGlass ? "text-white" : "text-gray-800 dark:text-gray-200"}`}><Bot className="w-4 h-4" />droid</Link>
           <span className={isGlass ? "text-gray-500" : "text-gray-300 dark:text-gray-600"}>/</span>
           <Link href={`/stages/${stageSlug}`} data-testid="pg-topbar-stage" className={`text-sm truncate ${isGlass ? "text-gray-300 hover:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`}>{stageLabel}</Link>
           <span className={isGlass ? "text-gray-500" : "text-gray-300 dark:text-gray-600"}>/</span>

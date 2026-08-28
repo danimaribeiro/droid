@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "./ThemeContext";
+import { Bot } from "lucide-react";
 
 const ALL_PARTS = [
   {
@@ -149,12 +151,8 @@ const ALL_PARTS = [
   },
 ];
 
-// Stages with tutorial content ready
 const IMPLEMENTED_STAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-/**
- * Find which part a given slug belongs to.
- */
 function findPartForSlug(slug) {
   for (const part of ALL_PARTS) {
     for (const section of part.sections) {
@@ -163,12 +161,9 @@ function findPartForSlug(slug) {
       }
     }
   }
-  return ALL_PARTS[0]; // fallback
+  return ALL_PARTS[0];
 }
 
-/**
- * Get the slug from a pathname like /stages/database/repl or /playground/database/repl
- */
 function getSlugFromPathname(pathname) {
   const match = pathname.match(/\/(?:stages|playground)\/(.+)/);
   return match ? match[1] : null;
@@ -176,76 +171,132 @@ function getSlugFromPathname(pathname) {
 
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
+  const { isGlass } = useTheme();
   const currentSlug = getSlugFromPathname(pathname);
   const currentPart = currentSlug ? findPartForSlug(currentSlug) : ALL_PARTS[0];
 
+  const border = isGlass ? "border-white/[0.10]" : "border-gray-200 dark:border-gray-700";
+
   return (
-    <aside className={`tutorial-sidebar ${isOpen ? "open" : ""}`}>
-      <Link href="/" className="sidebar-logo">
-        <span className="sidebar-logo-icon">🗄️</span>
+    <aside
+      className={`${isOpen ? "fixed inset-y-0 left-0 z-50 w-72" : "hidden lg:flex"} flex-col w-72 shrink-0 h-screen ${
+        isGlass
+          ? "bg-white/[0.10] backdrop-blur-xl border-r border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+          : `bg-white dark:bg-gray-900 border-r ${border}`
+      }`}
+    >
+      {/* Logo */}
+      <Link
+        href="/"
+        className={`flex items-center gap-3 px-5 py-4 border-b ${border} ${
+          isGlass ? "hover:bg-white/[0.06]" : "hover:bg-gray-50 dark:hover:bg-gray-800"
+        } transition-colors`}
+      >
+        <Bot className={`w-6 h-6 ${isGlass ? "text-purple-400" : "text-blue-600 dark:text-purple-400"}`} />
         <div>
-          <div className="sidebar-logo-title">Database Curriculum</div>
-          <div className="sidebar-logo-subtitle">ALGORITHM COURSEWARE</div>
+          <div className={`text-sm font-semibold ${isGlass ? "text-white" : "text-gray-900 dark:text-white"}`}>
+            Database Curriculum
+          </div>
+          <div className={`text-[10px] font-medium tracking-wider uppercase ${isGlass ? "text-gray-400" : "text-gray-500 dark:text-gray-400"}`}>
+            Algorithm Courseware
+          </div>
         </div>
       </Link>
 
       {/* Part selector */}
-      <div className="sidebar-part-header">
-        <span className="sidebar-part-badge">Part {currentPart.part}</span>
-        <span className="sidebar-part-name">{currentPart.name}</span>
+      <div className={`flex items-center gap-2 px-5 py-3 border-b ${border}`}>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+          isGlass
+            ? "bg-purple-500/30 text-purple-200"
+            : "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+        }`}>
+          Part {currentPart.part}
+        </span>
+        <span className={`text-xs font-medium ${isGlass ? "text-gray-200" : "text-gray-700 dark:text-gray-300"}`}>
+          {currentPart.name}
+        </span>
       </div>
 
-      <nav className="sidebar-nav">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
         {currentPart.sections.map((section, sIdx) => (
-          <div key={sIdx} className="sidebar-section">
-            <div className="sidebar-section-title">
-              {section.title.toUpperCase()}
+          <div key={sIdx}>
+            <div className={`text-[10px] font-semibold tracking-wider uppercase px-2 mb-1.5 ${
+              isGlass ? "text-gray-400" : "text-gray-500 dark:text-gray-400"
+            }`}>
+              {section.title}
             </div>
-            {section.stages.map((stage) => {
-              const isActive = pathname === `/stages/${stage.slug}` || pathname === `/playground/${stage.slug}`;
-              const isImplemented = currentPart.part === 1;
-              return (
-                <Link
-                  key={stage.slug}
-                  href={`/stages/${stage.slug}`}
-                  className={`sidebar-stage-link ${isActive ? "active" : ""} ${!isImplemented ? "coming-soon" : ""}`}
-                  onClick={onClose}
-                >
-                  <span className={`sidebar-stage-indicator ${isImplemented ? "done" : ""}`}>
-                    {isImplemented ? "✓" : "○"}
-                  </span>
-                  <div>
-                    <div className="sidebar-stage-title">
-                      {stage.title}
-                      {!isImplemented && (
-                        <span style={{ marginLeft: "6px", fontSize: "10px", color: "#f59e0b", background: "rgba(245,158,11,0.1)", padding: "2px 6px", borderRadius: "4px" }}>
-                          🚧 SOON
-                        </span>
-                      )}
+            <div className="space-y-0.5">
+              {section.stages.map((stage) => {
+                const isActive = pathname === `/stages/${stage.slug}` || pathname === `/playground/${stage.slug}`;
+                const isImplemented = currentPart.part === 1;
+                return (
+                  <Link
+                    key={stage.slug}
+                    href={`/stages/${stage.slug}`}
+                    onClick={onClose}
+                    className={`flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors ${
+                      isActive
+                        ? isGlass
+                          ? "bg-white/[0.12] text-white"
+                          : "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                        : isGlass
+                          ? "text-gray-200 hover:bg-white/[0.06] hover:text-white"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    } ${!isImplemented ? "opacity-60" : ""}`}
+                  >
+                    <span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 ${
+                      isImplemented
+                        ? isGlass
+                          ? "bg-green-500/20 text-green-300"
+                          : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                        : isGlass
+                          ? "border border-white/[0.15] text-gray-400"
+                          : "border border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
+                    }`}>
+                      {isImplemented ? "✓" : "○"}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="truncate text-[13px] leading-tight">
+                        {stage.title}
+                        {!isImplemented && (
+                          <span className="ml-1.5 text-[9px] font-medium text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                            SOON
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         ))}
       </nav>
 
-      {/* Part navigation */}
-      <div className="sidebar-footer">
-        <div className="sidebar-part-nav">
+      {/* Footer */}
+      <div className={`px-5 py-3 border-t ${border} space-y-2`}>
+        <div className="flex items-center justify-center gap-1">
           {ALL_PARTS.map((p) => (
             <Link
               key={p.part}
               href={`/stages/${p.sections[0].stages[0].slug}`}
-              className={`sidebar-part-dot ${p.part === currentPart.part ? "active" : ""}`}
+              className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors ${
+                p.part === currentPart.part
+                  ? isGlass
+                    ? "bg-white/[0.15] text-white"
+                    : "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                  : isGlass
+                    ? "text-gray-400 hover:bg-white/[0.08] hover:text-white"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
               title={`Part ${p.part}: ${p.name}`}
             >
               {p.part}
             </Link>
           ))}
         </div>
-        <div className="sidebar-progress">
+        <div className={`text-center text-[11px] ${isGlass ? "text-gray-400" : "text-gray-500 dark:text-gray-400"}`}>
           Stages: 12 / 37
         </div>
       </div>
