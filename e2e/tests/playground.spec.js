@@ -282,6 +282,49 @@ test.describe("Playground — File Creation & Workspace", () => {
     await expect(page.locator(".pg-save-btn")).toContainText("Save");
   });
 
+  test("edited file content persists after save and reload", async ({ page, request }) => {
+    // Wait for Monaco editor to fully load
+    await expect(page.locator(".monaco-editor .view-lines")).toBeVisible({ timeout: 10000 });
+
+    // Focus the editor
+    await page.click(".monaco-editor");
+    await page.waitForTimeout(300);
+
+    // Go to beginning of file and prepend a unique marker
+    if (process.platform === "darwin") {
+      await page.keyboard.press("Meta+ArrowUp");
+    } else {
+      await page.keyboard.press("Control+Home");
+    }
+    await page.keyboard.press("Home");
+    await page.keyboard.type("/* PERSIST_CHECK_42 */\n");
+
+    await page.waitForTimeout(500);
+
+    // Save manually
+    await page.click(".pg-save-btn");
+    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+
+    // Verify content reached the server
+    const loginRes = await request.post(`${API_BASE}/api/v1/login`, {
+      data: { email: "admin@droid.dev", password: "admin" },
+    });
+    const { token } = await loginRes.json();
+    const wsRes = await request.get(
+      `${API_BASE}/api/v1/workspaces/database/repl/c`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const ws = await wsRes.json();
+    expect(
+      Object.values(ws.code_files).some((c) => c.includes("PERSIST_CHECK_42"))
+    ).toBe(true);
+
+    // Reload and verify editor shows persisted content
+    await page.reload();
+    await expect(page.locator(".monaco-editor .view-lines")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(".view-lines")).toContainText("PERSIST_CHECK_42", { timeout: 5000 });
+  });
+
   test("new file extension changes with language", async ({ page }) => {
     // Switch to Rust
     await page.click('.pg-lang-btn:has-text("Rust")');
