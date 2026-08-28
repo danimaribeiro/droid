@@ -47,8 +47,7 @@ jobs:
 
       - name: Setup database
         run: |
-          bundle exec rails db:schema:load
-          bundle exec rails db:seed
+          bundle exec rails db:prepare
 
       - name: Run specs
         run: bundle exec rspec --format documentation
