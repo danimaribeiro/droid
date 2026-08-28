@@ -275,6 +275,7 @@ export default function MultiFilePlayground({ stageSlug }) {
 
   const handleFileContentChange = (newContent) => {
     setFilesMap((prev) => ({ ...prev, [activeFile]: newContent }));
+    if (saveStatus === "saved") setSaveStatus(null);
   };
 
   const handleCreateFile = () => {
@@ -318,6 +319,7 @@ export default function MultiFilePlayground({ stageSlug }) {
     setActiveFile(name);
     setIsCreatingFile(false);
     setNewFileName("");
+    if (saveStatus === "saved") setSaveStatus(null);
   };
 
   const [confirmingDelete, setConfirmingDelete] = useState(null);
@@ -334,6 +336,7 @@ export default function MultiFilePlayground({ stageSlug }) {
         return next;
       });
       setConfirmingDelete(null);
+      if (saveStatus === "saved") setSaveStatus(null);
     } else {
       setConfirmingDelete(filename);
     }

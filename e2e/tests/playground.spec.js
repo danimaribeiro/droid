@@ -205,14 +205,68 @@ test.describe("Playground — File Creation & Workspace", () => {
   });
 
   test("workspace loads on page refresh after save", async ({ page }) => {
-    // Save the workspace first
     await page.click(".pg-save-btn");
     await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
 
-    // Reload and check workspace loads
     await page.reload();
     await expect(page.locator(".pg-save-btn")).toBeVisible();
     await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+  });
+
+  test("created files persist after save and reload", async ({ page, request }) => {
+    // Create a new file
+    await page.click(".pg-new-file-btn");
+    const input = page.locator(".pg-new-file-input");
+    await input.fill("c-droid/helper.c");
+    await input.press("Enter");
+
+    // Verify both .c and .h were created
+    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.c")')).toBeVisible();
+    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.h")')).toBeVisible();
+
+    const fileCountBefore = await page.locator(".pg-file-item").count();
+
+    // Explicitly save
+    await page.click(".pg-save-btn");
+    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+
+    // Verify on server
+    const loginRes = await request.post(`${API_BASE}/api/v1/login`, {
+      data: { email: "admin@droid.dev", password: "admin" },
+    });
+    const { token } = await loginRes.json();
+    const wsRes = await request.get(`${API_BASE}/api/v1/workspaces/database/repl/c`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const ws = await wsRes.json();
+    expect(ws.code_files).toHaveProperty("c-droid/helper.c");
+    expect(ws.code_files).toHaveProperty("c-droid/helper.h");
+
+    // Reload and verify files are still there
+    await page.reload();
+    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+    expect(await page.locator(".pg-file-item").count()).toBe(fileCountBefore);
+    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.c")')).toBeVisible();
+    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.h")')).toBeVisible();
+  });
+
+  test("auto-save fires after editing when workspace exists", async ({ page }) => {
+    // First create the workspace
+    await page.click(".pg-save-btn");
+    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+
+    // Create a new file
+    await page.click(".pg-new-file-btn");
+    const input = page.locator(".pg-new-file-input");
+    await input.fill("c-droid/extra.c");
+    await input.press("Enter");
+
+    // Wait for auto-save (2s debounce + network)
+    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 6000 });
+
+    // Reload and verify auto-saved file is there
+    await page.reload();
+    await expect(page.locator('.pg-file-item:has-text("c-droid/extra.c")')).toBeVisible({ timeout: 5000 });
   });
 
   test("reset button appears after save and resets to template", async ({ page }) => {
