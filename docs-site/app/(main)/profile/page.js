@@ -107,6 +107,9 @@ export default function ProfilePage() {
   const [avatarSaving, setAvatarSaving] = useState(false);
   const fileInputRef = useRef(null);
 
+  const [resetConfirm, setResetConfirm] = useState(null);
+  const [resetting, setResetting] = useState(false);
+
   const saveProfile = async (data) => {
     const res = await fetch(`${API_BASE}/api/v1/me`, {
       method: "PUT",
@@ -182,6 +185,26 @@ export default function ProfilePage() {
       await saveProfile({ avatar_url: dataUrl });
     } catch {}
     setAvatarSaving(false);
+  };
+
+  const handleResetProgress = async (stageSlug) => {
+    setResetting(true);
+    try {
+      const params = stageSlug ? `?stage_slug=${encodeURIComponent(stageSlug)}` : "";
+      const res = await fetch(`${API_BASE}/api/v1/me/progress${params}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        if (stageSlug) {
+          setSubmissions((prev) => prev.filter((s) => s.stage_slug !== stageSlug));
+        } else {
+          setSubmissions([]);
+        }
+      }
+    } catch {}
+    setResetting(false);
+    setResetConfirm(null);
   };
 
   useEffect(() => {
@@ -495,6 +518,46 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+
+          {/* Danger Zone */}
+          <div className={`mt-5 pt-5 border-t ${border}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className={`text-sm font-medium ${isGlass ? "text-red-300" : "text-red-600 dark:text-red-400"}`}>Reset All Progress</span>
+                <p className={`text-xs mt-0.5 ${textMuted}`}>Delete all submissions and saved workspaces. This cannot be undone.</p>
+              </div>
+              {resetConfirm === "all" ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleResetProgress(null)}
+                    disabled={resetting}
+                    className="text-xs px-3 py-1.5 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white transition-colors"
+                  >
+                    {resetting ? "Resetting..." : "Confirm Reset"}
+                  </button>
+                  <button
+                    onClick={() => setResetConfirm(null)}
+                    className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                      isGlass ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-700 dark:hover:text-white"
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setResetConfirm("all")}
+                  className={`text-xs px-3 py-1.5 rounded-lg transition-colors border ${
+                    isGlass
+                      ? "text-red-300 hover:text-red-200 hover:bg-red-500/10 border-red-500/20"
+                      : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800/40"
+                  }`}
+                >
+                  Reset All
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Stage Progress */}
@@ -510,28 +573,58 @@ export default function ProfilePage() {
                   {stages.map((stage) => {
                     const best = bestByStage[stage.slug];
                     const status = best?.status || "none";
+                    const isConfirmingReset = resetConfirm === stage.slug;
                     return (
-                      <Link
-                        key={stage.slug}
-                        href={`/stages/${stage.slug}`}
-                        className={`${cardCls} p-3 hover:scale-[1.02] transition-transform`}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className={`text-[10px] font-mono ${textMuted}`}>
-                            P{stage.part}.{stage.num}
-                          </span>
-                          {status === "passed" && (
-                            <span className={`text-xs ${isGlass ? "text-green-400" : "text-green-500"}`}>✓</span>
-                          )}
-                          {status === "failed" && (
-                            <span className={`text-xs ${isGlass ? "text-red-400" : "text-red-500"}`}>✗</span>
-                          )}
-                        </div>
-                        <div className={`text-xs font-medium truncate ${textPrimary}`}>
-                          {stage.name}
-                        </div>
-                        <StatusBadge status={status} isGlass={isGlass} />
-                      </Link>
+                      <div key={stage.slug} className={`${cardCls} p-3 hover:scale-[1.02] transition-transform group/card relative`}>
+                        <Link href={`/stages/${stage.slug}`}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className={`text-[10px] font-mono ${textMuted}`}>
+                              P{stage.part}.{stage.num}
+                            </span>
+                            {status === "passed" && (
+                              <span className={`text-xs ${isGlass ? "text-green-400" : "text-green-500"}`}>✓</span>
+                            )}
+                            {status === "failed" && (
+                              <span className={`text-xs ${isGlass ? "text-red-400" : "text-red-500"}`}>✗</span>
+                            )}
+                          </div>
+                          <div className={`text-xs font-medium truncate ${textPrimary}`}>
+                            {stage.name}
+                          </div>
+                          <StatusBadge status={status} isGlass={isGlass} />
+                        </Link>
+                        {status !== "none" && (
+                          isConfirmingReset ? (
+                            <div className="absolute inset-0 rounded-xl flex items-center justify-center gap-1.5 bg-black/60 backdrop-blur-sm z-10">
+                              <button
+                                onClick={() => handleResetProgress(stage.slug)}
+                                disabled={resetting}
+                                className="text-[10px] px-2 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-medium"
+                              >
+                                {resetting ? "..." : "Reset"}
+                              </button>
+                              <button
+                                onClick={() => setResetConfirm(null)}
+                                className="text-[10px] px-2 py-1 rounded bg-white/20 hover:bg-white/30 text-white font-medium"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setResetConfirm(stage.slug)}
+                              className={`absolute top-1.5 right-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity p-1 rounded-md text-[10px] ${
+                                isGlass
+                                  ? "text-gray-400 hover:text-red-300 hover:bg-white/[0.08]"
+                                  : "text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              }`}
+                              title="Reset stage progress"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )
+                        )}
+                      </div>
                     );
                   })}
                 </div>

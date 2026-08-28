@@ -3,6 +3,21 @@ module Api
     class ProfilesController < ::ApplicationController
       before_action :authenticate_user!
 
+      def reset_progress
+        scope = current_user.submissions
+        scope = scope.where(stage_slug: params[:stage_slug]) if params[:stage_slug].present?
+        count = scope.count
+        scope.destroy_all
+
+        if params[:stage_slug].present?
+          current_user.workspaces.where(stage_slug: params[:stage_slug]).destroy_all
+        else
+          current_user.workspaces.destroy_all
+        end
+
+        render json: { deleted: count }
+      end
+
       def update
         if params[:current_password].present? && params[:password].present?
           unless current_user.authenticate(params[:current_password])

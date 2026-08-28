@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       post "signup", to: "registrations#create"
       get "me", to: "sessions#me"
       put "me", to: "profiles#update"
+      delete "me/progress", to: "profiles#reset_progress"
 
       get "stages/:part/:stage/template", to: "stages#template"
       get "stages/:part/:stage", to: "stages#show"

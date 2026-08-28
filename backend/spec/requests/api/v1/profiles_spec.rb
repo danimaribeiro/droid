@@ -57,4 +57,39 @@ RSpec.describe "Api::V1::Profiles" do
       expect(response).to have_http_status(:unauthorized)
     end
   end
+
+  describe "DELETE /api/v1/me/progress" do
+    before do
+      user.submissions.create!(stage_slug: "database/repl", language_slug: "c", status: :passed, code_files: { "main.c" => "" })
+      user.submissions.create!(stage_slug: "database/repl", language_slug: "c", status: :failed, code_files: { "main.c" => "" })
+      user.submissions.create!(stage_slug: "database/lexer", language_slug: "c", status: :passed, code_files: { "main.c" => "" })
+      user.workspaces.create!(stage_slug: "database/repl", language_slug: "c", code_files: { "main.c" => "" })
+    end
+
+    it "resets progress for a specific stage" do
+      delete "/api/v1/me/progress", params: { stage_slug: "database/repl" }, headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      json = response.parsed_body
+      expect(json["deleted"]).to eq(2)
+      expect(user.submissions.where(stage_slug: "database/repl").count).to eq(0)
+      expect(user.submissions.where(stage_slug: "database/lexer").count).to eq(1)
+      expect(user.workspaces.where(stage_slug: "database/repl").count).to eq(0)
+    end
+
+    it "resets all progress when no stage_slug given" do
+      delete "/api/v1/me/progress", headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      json = response.parsed_body
+      expect(json["deleted"]).to eq(3)
+      expect(user.submissions.count).to eq(0)
+      expect(user.workspaces.count).to eq(0)
+    end
+
+    it "returns 401 without authentication" do
+      delete "/api/v1/me/progress", as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end
