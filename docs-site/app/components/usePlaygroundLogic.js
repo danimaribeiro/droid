@@ -341,7 +341,7 @@ export function usePlaygroundLogic(stageSlug) {
   };
 
   const confirmCreateFile = () => {
-    const name = newFileName.trim();
+    const name = (newFileInputRef.current?.value ?? newFileName).trim();
     if (!name || filesMap.hasOwnProperty(name)) {
       setIsCreatingFile(false);
       return;

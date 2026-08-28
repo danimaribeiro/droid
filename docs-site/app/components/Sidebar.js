@@ -171,7 +171,7 @@ function getSlugFromPathname(pathname) {
   return match ? match[1] : null;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
