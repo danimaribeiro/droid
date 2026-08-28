@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "./components/AuthContext";
-import AuthModal from "./components/AuthModal";
-import TerminalPreview from "./components/TerminalPreview";
+import { useAuth } from "../components/AuthContext";
+import AuthModal from "../components/AuthModal";
+import TerminalPreview from "../components/TerminalPreview";
 
 const PARTS = [
   { num: 1, name: "Fixed-Layout Database", description: "Build a working database from scratch with REPL, SQL parser, fixed-size rows, B-tree storage, Volcano planner, and DELETE/UPDATE.", icon: "⚙️", tag: "CORE ENGINE", stages: "Stages 1–12", slug: "database/repl", ready: true, statusText: "🟢 STAGES 1–12 READY" },

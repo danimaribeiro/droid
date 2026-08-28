@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useAuth } from "../components/AuthContext";
-import AuthModal from "../components/AuthModal";
+import { useAuth } from "../../components/AuthContext";
+import AuthModal from "../../components/AuthModal";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 

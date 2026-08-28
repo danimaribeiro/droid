@@ -13,25 +13,25 @@ test.describe("Playground — Stage 1 (REPL)", () => {
     await page.goto("/playground/database/repl");
     await page.evaluate((t) => localStorage.setItem("droid_token", t), token);
     await page.reload();
-    await expect(page.locator(".pg-user-name")).toBeVisible();
+    await expect(page.locator('[data-testid="pg-user-name"]')).toBeVisible();
   });
 
   test("loads playground with editor and file sidebar", async ({ page }) => {
-    await expect(page.locator(".pg-topbar")).toBeVisible();
-    await expect(page.locator(".pg-sidebar")).toBeVisible();
-    await expect(page.locator(".pg-editor-pane")).toBeVisible();
+    await expect(page.locator('[data-testid="pg-topbar"]')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-sidebar"]')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-editor-pane"]')).toBeVisible();
 
     // Should have file tabs
-    const tabs = page.locator(".pg-tab");
+    const tabs = page.locator('[data-testid="pg-tab"]');
     await expect(tabs.first()).toBeVisible();
   });
 
   test("displays correct stage in breadcrumb", async ({ page }) => {
-    await expect(page.locator(".pg-topbar-stage")).toContainText("Database");
+    await expect(page.locator('[data-testid="pg-topbar-stage"]')).toContainText("Database");
   });
 
   test("loads C template files by default", async ({ page }) => {
-    const fileItems = page.locator(".pg-file-item");
+    const fileItems = page.locator('[data-testid="pg-file-item"]');
     await expect(fileItems.first()).toBeVisible();
 
     // C template should have .c files
@@ -41,22 +41,22 @@ test.describe("Playground — Stage 1 (REPL)", () => {
 
   test("can switch between languages", async ({ page }) => {
     // Switch to Rust
-    await page.click('.pg-lang-btn:has-text("Rust")');
-    await expect(page.locator('.pg-lang-btn.active:has-text("Rust")')).toBeVisible();
+    await page.click('[data-testid="pg-lang-btn"]:has-text("Rust")');
+    await expect(page.locator('[data-testid="pg-lang-btn"][data-active="true"]:has-text("Rust")')).toBeVisible();
 
     // File list should update to .rs files
-    await expect(page.locator(".pg-file-item").first()).toBeVisible();
-    const firstFile = await page.locator(".pg-file-item").first().textContent();
+    await expect(page.locator('[data-testid="pg-file-item"]').first()).toBeVisible();
+    const firstFile = await page.locator('[data-testid="pg-file-item"]').first().textContent();
     expect(firstFile).toMatch(/\.(rs|toml)$/);
 
     // Switch to C++
-    await page.click('.pg-lang-btn:has-text("C++")');
-    await expect(page.locator('.pg-lang-btn.active:has-text("C++")')).toBeVisible();
-    await expect(page.locator(".pg-file-item").first()).toBeVisible();
+    await page.click('[data-testid="pg-lang-btn"]:has-text("C++")');
+    await expect(page.locator('[data-testid="pg-lang-btn"][data-active="true"]:has-text("C++")')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-file-item"]').first()).toBeVisible();
   });
 
   test("can click files to switch active editor tab", async ({ page }) => {
-    const fileItems = page.locator(".pg-file-item");
+    const fileItems = page.locator('[data-testid="pg-file-item"]');
     const count = await fileItems.count();
 
     if (count > 1) {
@@ -64,63 +64,63 @@ test.describe("Playground — Stage 1 (REPL)", () => {
       await fileItems.nth(1).click();
 
       // The active tab should match the clicked file
-      await expect(page.locator(".pg-tab.active")).toContainText(secondFileName.trim());
+      await expect(page.locator('[data-testid="pg-tab"][data-active="true"]')).toContainText(secondFileName.trim());
     }
   });
 
   test("Run Tests button is visible and enabled", async ({ page }) => {
-    const submitBtn = page.locator(".pg-submit-btn");
+    const submitBtn = page.locator('[data-testid="pg-submit-btn"]');
     await expect(submitBtn).toBeVisible();
     await expect(submitBtn).toBeEnabled();
     await expect(submitBtn).toContainText("Run Tests");
   });
 
   test("submitting code shows progress steps", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
 
     // Progress indicator should appear
-    await expect(page.locator(".progress-steps")).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="progress-steps"]')).toBeVisible({ timeout: 5000 });
   });
 
   test("submission completes and shows results panel", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
 
     // Wait for results panel to appear (up to 60s for Piston execution)
-    await expect(page.locator(".pg-results-panel")).toBeVisible({ timeout: 60000 });
+    await expect(page.locator('[data-testid="pg-results-panel"]')).toBeVisible({ timeout: 60000 });
 
     // Should show results banner with title
-    await expect(page.locator(".pg-results-banner-title")).toBeVisible();
+    await expect(page.locator('[data-testid="pg-results-banner-title"]')).toBeVisible();
 
     // Should show either all-pass, has-fail, build-fail, or error banner
-    const banner = page.locator(".pg-results-banner");
+    const banner = page.locator('[data-testid="pg-results-banner"]');
     await expect(banner).toBeVisible();
   });
 
   test("failed submission shows test case details", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
 
-    await expect(page.locator(".pg-results-panel")).toBeVisible({ timeout: 60000 });
+    await expect(page.locator('[data-testid="pg-results-panel"]')).toBeVisible({ timeout: 60000 });
 
-    const failedItems = page.locator(".pg-test-item.fail");
-    const totalItems = page.locator(".pg-test-item");
+    const failedItems = page.locator('[data-testid="pg-test-item"][data-status="fail"]');
+    const totalItems = page.locator('[data-testid="pg-test-item"]');
 
     const totalCount = await totalItems.count();
     if (totalCount > 0) {
       const failCount = await failedItems.count();
       if (failCount > 0) {
-        await expect(failedItems.first().locator(".pg-test-detail")).toBeVisible();
-        await expect(failedItems.first().locator('label:has-text("EXPECTED")')).toBeVisible();
-        await expect(failedItems.first().locator('label:has-text("ACTUAL")')).toBeVisible();
+        await expect(failedItems.first().locator('[data-testid="pg-test-detail"]')).toBeVisible();
+        await expect(failedItems.first().locator(':has-text("Expected")')).toBeVisible();
+        await expect(failedItems.first().locator(':has-text("Actual")')).toBeVisible();
       }
     }
   });
 
   test("shows error banner when no test output", async ({ page }) => {
-    await page.click(".pg-submit-btn");
-    await expect(page.locator(".pg-results-panel")).toBeVisible({ timeout: 60000 });
+    await page.click('[data-testid="pg-submit-btn"]');
+    await expect(page.locator('[data-testid="pg-results-panel"]')).toBeVisible({ timeout: 60000 });
 
-    const errorBanner = page.locator(".pg-error-banner");
-    const testItems = page.locator(".pg-test-item");
+    const errorBanner = page.locator('[data-testid="pg-error-banner"]');
+    const testItems = page.locator('[data-testid="pg-test-item"]');
 
     const hasError = await errorBanner.isVisible().catch(() => false);
     const hasTests = (await testItems.count()) > 0;
@@ -144,16 +144,16 @@ test.describe("Playground — File Creation & Workspace", () => {
     await page.goto("/playground/database/repl");
     await page.evaluate((t) => localStorage.setItem("droid_token", t), token);
     await page.reload();
-    await expect(page.locator(".pg-user-name")).toBeVisible();
+    await expect(page.locator('[data-testid="pg-user-name"]')).toBeVisible();
   });
 
   test("new file button appears in sidebar", async ({ page }) => {
-    await expect(page.locator(".pg-new-file-btn")).toBeVisible();
+    await expect(page.locator('[data-testid="pg-new-file-btn"]')).toBeVisible();
   });
 
   test("clicking + opens inline input with language prefix", async ({ page }) => {
-    await page.click(".pg-new-file-btn");
-    const input = page.locator(".pg-new-file-input");
+    await page.click('[data-testid="pg-new-file-btn"]');
+    const input = page.locator('[data-testid="pg-new-file-input"]');
     await expect(input).toBeVisible();
 
     const value = await input.inputValue();
@@ -161,34 +161,34 @@ test.describe("Playground — File Creation & Workspace", () => {
   });
 
   test("can create a new file via Enter", async ({ page }) => {
-    await page.click(".pg-new-file-btn");
-    const input = page.locator(".pg-new-file-input");
+    await page.click('[data-testid="pg-new-file-btn"]');
+    const input = page.locator('[data-testid="pg-new-file-input"]');
     await input.fill("c-droid/helper.c");
     await input.press("Enter");
 
     // New file should appear in sidebar and be active
-    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.c")')).toBeVisible();
-    await expect(page.locator('.pg-tab.active:has-text("c-droid/helper.c")')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-file-item"]:has-text("c-droid/helper.c")')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-tab"][data-active="true"]:has-text("c-droid/helper.c")')).toBeVisible();
   });
 
   test("can cancel file creation with Escape", async ({ page }) => {
-    const fileCountBefore = await page.locator(".pg-file-item").count();
-    await page.click(".pg-new-file-btn");
-    await page.locator(".pg-new-file-input").press("Escape");
+    const fileCountBefore = await page.locator('[data-testid="pg-file-item"]').count();
+    await page.click('[data-testid="pg-new-file-btn"]');
+    await page.locator('[data-testid="pg-new-file-input"]').press("Escape");
 
     // Input should disappear, file count unchanged
-    await expect(page.locator(".pg-new-file-input")).not.toBeVisible();
-    expect(await page.locator(".pg-file-item").count()).toBe(fileCountBefore);
+    await expect(page.locator('[data-testid="pg-new-file-input"]')).not.toBeVisible();
+    expect(await page.locator('[data-testid="pg-file-item"]').count()).toBe(fileCountBefore);
   });
 
   test("save button is visible for authenticated user", async ({ page }) => {
-    await expect(page.locator(".pg-save-btn")).toBeVisible();
-    await expect(page.locator(".pg-save-btn")).toContainText("Save");
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Save");
   });
 
   test("clicking save creates workspace on server", async ({ page, request }) => {
-    await page.click(".pg-save-btn");
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+    await page.click('[data-testid="pg-save-btn"]');
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 5000 });
 
     // Verify workspace was created via API
     const loginRes = await request.post(`${API_BASE}/api/v1/login`, {
@@ -205,30 +205,30 @@ test.describe("Playground — File Creation & Workspace", () => {
   });
 
   test("workspace loads on page refresh after save", async ({ page }) => {
-    await page.click(".pg-save-btn");
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+    await page.click('[data-testid="pg-save-btn"]');
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 5000 });
 
     await page.reload();
-    await expect(page.locator(".pg-save-btn")).toBeVisible();
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 5000 });
   });
 
   test("created files persist after save and reload", async ({ page, request }) => {
     // Create a new file
-    await page.click(".pg-new-file-btn");
-    const input = page.locator(".pg-new-file-input");
+    await page.click('[data-testid="pg-new-file-btn"]');
+    const input = page.locator('[data-testid="pg-new-file-input"]');
     await input.fill("c-droid/helper.c");
     await input.press("Enter");
 
     // Verify both .c and .h were created
-    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.c")')).toBeVisible();
-    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.h")')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-file-item"]:has-text("c-droid/helper.c")')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-file-item"]:has-text("c-droid/helper.h")')).toBeVisible();
 
-    const fileCountBefore = await page.locator(".pg-file-item").count();
+    const fileCountBefore = await page.locator('[data-testid="pg-file-item"]').count();
 
     // Explicitly save
-    await page.click(".pg-save-btn");
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+    await page.click('[data-testid="pg-save-btn"]');
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 5000 });
 
     // Verify on server
     const loginRes = await request.post(`${API_BASE}/api/v1/login`, {
@@ -244,42 +244,42 @@ test.describe("Playground — File Creation & Workspace", () => {
 
     // Reload and verify files are still there
     await page.reload();
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
-    expect(await page.locator(".pg-file-item").count()).toBe(fileCountBefore);
-    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.c")')).toBeVisible();
-    await expect(page.locator('.pg-file-item:has-text("c-droid/helper.h")')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 5000 });
+    expect(await page.locator('[data-testid="pg-file-item"]').count()).toBe(fileCountBefore);
+    await expect(page.locator('[data-testid="pg-file-item"]:has-text("c-droid/helper.c")')).toBeVisible();
+    await expect(page.locator('[data-testid="pg-file-item"]:has-text("c-droid/helper.h")')).toBeVisible();
   });
 
   test("auto-save fires after editing when workspace exists", async ({ page }) => {
     // First create the workspace
-    await page.click(".pg-save-btn");
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+    await page.click('[data-testid="pg-save-btn"]');
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 5000 });
 
     // Create a new file
-    await page.click(".pg-new-file-btn");
-    const input = page.locator(".pg-new-file-input");
+    await page.click('[data-testid="pg-new-file-btn"]');
+    const input = page.locator('[data-testid="pg-new-file-input"]');
     await input.fill("c-droid/extra.c");
     await input.press("Enter");
 
     // Wait for auto-save (2s debounce + network)
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 6000 });
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 6000 });
 
     // Reload and verify auto-saved file is there
     await page.reload();
-    await expect(page.locator('.pg-file-item:has-text("c-droid/extra.c")')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="pg-file-item"]:has-text("c-droid/extra.c")')).toBeVisible({ timeout: 5000 });
   });
 
   test("reset button appears after save and resets to template", async ({ page }) => {
     // Save first
-    await page.click(".pg-save-btn");
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+    await page.click('[data-testid="pg-save-btn"]');
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 5000 });
 
     // Reset button should appear
-    await expect(page.locator(".pg-reset-btn")).toBeVisible();
-    await page.click(".pg-reset-btn");
+    await expect(page.locator('[data-testid="pg-reset-btn"]')).toBeVisible();
+    await page.click('[data-testid="pg-reset-btn"]');
 
     // Save button should go back to "Save" (not "Saved")
-    await expect(page.locator(".pg-save-btn")).toContainText("Save");
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Save");
   });
 
   test("edited file content persists after save and reload", async ({ page, request }) => {
@@ -302,8 +302,8 @@ test.describe("Playground — File Creation & Workspace", () => {
     await page.waitForTimeout(500);
 
     // Save manually
-    await page.click(".pg-save-btn");
-    await expect(page.locator(".pg-save-btn")).toContainText("Saved", { timeout: 5000 });
+    await page.click('[data-testid="pg-save-btn"]');
+    await expect(page.locator('[data-testid="pg-save-btn"]')).toContainText("Saved", { timeout: 5000 });
 
     // Verify content reached the server
     const loginRes = await request.post(`${API_BASE}/api/v1/login`, {
@@ -327,11 +327,11 @@ test.describe("Playground — File Creation & Workspace", () => {
 
   test("new file extension changes with language", async ({ page }) => {
     // Switch to Rust
-    await page.click('.pg-lang-btn:has-text("Rust")');
-    await expect(page.locator(".pg-file-item").first()).toBeVisible();
+    await page.click('[data-testid="pg-lang-btn"]:has-text("Rust")');
+    await expect(page.locator('[data-testid="pg-file-item"]').first()).toBeVisible();
 
-    await page.click(".pg-new-file-btn");
-    const value = await page.locator(".pg-new-file-input").inputValue();
+    await page.click('[data-testid="pg-new-file-btn"]');
+    const value = await page.locator('[data-testid="pg-new-file-input"]').inputValue();
     expect(value).toContain("rust-droid/");
   });
 });

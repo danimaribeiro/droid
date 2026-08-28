@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import Sidebar from "./components/Sidebar";
-import { AuthProvider } from "./components/AuthContext";
-import "./globals.css";
+import Sidebar from "../components/Sidebar";
+import { AuthProvider } from "../components/AuthContext";
+import "../tailwind-variants.css";
 
 export default function RootLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

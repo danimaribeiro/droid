@@ -1,4 +1,4 @@
-import MultiFilePlayground from "@/app/components/MultiFilePlayground";
+import Playground from "@/app/components/Playground";
 import { getAllSlugs } from "@/lib/stages";
 
 export async function generateStaticParams() {
@@ -19,9 +19,5 @@ export default async function PlaygroundPage({ params }) {
   const { slug } = await params;
   const stageSlug = slug.join("/");
 
-  return (
-    <div className="playground-page">
-      <MultiFilePlayground stageSlug={stageSlug} />
-    </div>
-  );
+  return <Playground stageSlug={stageSlug} />;
 }

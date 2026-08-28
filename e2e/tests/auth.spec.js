@@ -6,13 +6,13 @@ test.describe("Login Flow", () => {
   });
 
   test("shows auth modal when clicking Run Tests while logged out", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
     await expect(page.locator(".auth-modal")).toBeVisible();
     await expect(page.locator(".auth-modal-title")).toContainText("Welcome Back");
   });
 
   test("logs in with valid credentials", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
     await expect(page.locator(".auth-modal")).toBeVisible();
 
     await page.fill("#auth-email", "admin@droid.dev");
@@ -20,11 +20,11 @@ test.describe("Login Flow", () => {
     await page.click(".auth-submit-btn");
 
     await expect(page.locator(".auth-modal")).not.toBeVisible();
-    await expect(page.locator(".pg-user-name")).toContainText("Admin");
+    await expect(page.locator('[data-testid="pg-user-name"]')).toContainText("Admin");
   });
 
   test("shows error with invalid credentials", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
     await expect(page.locator(".auth-modal")).toBeVisible();
 
     await page.fill("#auth-email", "admin@droid.dev");
@@ -36,7 +36,7 @@ test.describe("Login Flow", () => {
   });
 
   test("can switch to signup tab", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
     await expect(page.locator(".auth-modal")).toBeVisible();
 
     await page.click('.auth-tab:has-text("Sign Up")');
@@ -45,7 +45,7 @@ test.describe("Login Flow", () => {
   });
 
   test("closes auth modal with X button", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
     await expect(page.locator(".auth-modal")).toBeVisible();
 
     await page.click(".auth-modal-close");
@@ -53,7 +53,7 @@ test.describe("Login Flow", () => {
   });
 
   test("closes auth modal by clicking overlay", async ({ page }) => {
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
     await expect(page.locator(".auth-modal")).toBeVisible();
 
     await page.click(".auth-modal-overlay", { position: { x: 10, y: 10 } });
@@ -62,15 +62,15 @@ test.describe("Login Flow", () => {
 
   test("persists login across navigation", async ({ page }) => {
     // Log in
-    await page.click(".pg-submit-btn");
+    await page.click('[data-testid="pg-submit-btn"]');
     await page.fill("#auth-email", "admin@droid.dev");
     await page.fill("#auth-password", "admin");
     await page.click(".auth-submit-btn");
-    await expect(page.locator(".pg-user-name")).toContainText("Admin");
+    await expect(page.locator('[data-testid="pg-user-name"]')).toContainText("Admin");
 
     // Navigate away and back
     await page.goto("/");
     await page.goto("/playground/database/repl");
-    await expect(page.locator(".pg-user-name")).toContainText("Admin");
+    await expect(page.locator('[data-testid="pg-user-name"]')).toContainText("Admin");
   });
 });
