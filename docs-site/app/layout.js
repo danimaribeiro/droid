@@ -3,14 +3,15 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./components/Sidebar";
+import { AuthProvider } from "./components/AuthContext";
 import "./globals.css";
 
 export default function RootLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-  
-  // A página inicial (/) é pura Landing Page, não exibe barra lateral do tutorial
+
   const isHome = pathname === "/";
+  const isProfile = pathname === "/profile";
 
   return (
     <html lang="en" data-scroll-behavior="smooth">
@@ -20,25 +21,27 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body>
-        {isHome ? (
-          <main className="landing-layout-root">
-            {children}
-          </main>
-        ) : (
-          <>
-            <button
-              className="menu-toggle"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              aria-label="Toggle menu"
-            >
-              ☰
-            </button>
-            <div className="site-layout">
-              <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-              <main className="main-content">{children}</main>
-            </div>
-          </>
-        )}
+        <AuthProvider>
+          {isHome || isProfile ? (
+            <main className="landing-layout-root">
+              {children}
+            </main>
+          ) : (
+            <>
+              <button
+                className="menu-toggle"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                aria-label="Toggle menu"
+              >
+                ☰
+              </button>
+              <div className="site-layout">
+                <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                <main className="main-content">{children}</main>
+              </div>
+            </>
+          )}
+        </AuthProvider>
       </body>
     </html>
   );

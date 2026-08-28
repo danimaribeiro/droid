@@ -38,7 +38,9 @@ class TestExecutionJob < ApplicationJob
       )
     end
 
-    if result[:status] == :build_failed
+    if result[:status] == :no_test_output
+      submission.errored!
+    elsif result[:status] == :build_failed
       submission.failed!
     elsif result[:passed]
       submission.passed!

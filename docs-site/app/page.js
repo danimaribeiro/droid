@@ -1,57 +1,19 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { getPartInfo } from "@/lib/stages";
+import { useAuth } from "./components/AuthContext";
+import AuthModal from "./components/AuthModal";
 import TerminalPreview from "./components/TerminalPreview";
 
-const PART_META = {
-  1: {
-    icon: "⚙️",
-    tag: "CORE ENGINE",
-    stages: "Stages 1–12",
-    slug: "database/repl",
-    ready: true,
-    statusText: "🟢 STAGES 1–12 READY"
-  },
-  2: {
-    icon: "⚡",
-    tag: "STORAGE & WAL",
-    stages: "Stages 1–8",
-    slug: "advanced-storage/wal",
-    ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION"
-  },
-  3: {
-    icon: "🧠",
-    tag: "COMPLETE SQL",
-    stages: "Stages 1–4",
-    slug: "complete-sql/advanced-where",
-    ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION"
-  },
-  4: {
-    icon: "🔍",
-    tag: "OPTIMIZATION",
-    stages: "Stages 1–3",
-    slug: "advanced-indexing/secondary-indexes",
-    ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION"
-  },
-  5: {
-    icon: "🔗",
-    tag: "RELATIONSHIPS",
-    stages: "Stages 1–4",
-    slug: "multi-table/joins-nested-loop",
-    ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION"
-  },
-  6: {
-    icon: "🛡️",
-    tag: "CONCURRENCY",
-    stages: "Stages 1–3",
-    slug: "concurrency/lock-manager",
-    ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION"
-  },
-};
+const PARTS = [
+  { num: 1, name: "Fixed-Layout Database", description: "Build a working database from scratch with REPL, SQL parser, fixed-size rows, B-tree storage, Volcano planner, and DELETE/UPDATE.", icon: "⚙️", tag: "CORE ENGINE", stages: "Stages 1–12", slug: "database/repl", ready: true, statusText: "🟢 STAGES 1–12 READY" },
+  { num: 2, name: "Advanced Storage & Transactions", description: "Implement full transaction support with WAL, CREATE TABLE with schema catalog, and variable-length storage with slotted pages.", icon: "⚡", tag: "STORAGE & WAL", stages: "Stages 1–8", slug: "advanced-storage/wal", ready: false, statusText: "🚧 UNDER CONSTRUCTION" },
+  { num: 3, name: "Complete SQL", description: "Implement advanced WHERE expressions, ORDER BY, LIMIT/OFFSET, aggregate functions, GROUP BY, NULL handling, and additional DDL.", icon: "🧠", tag: "COMPLETE SQL", stages: "Stages 1–4", slug: "complete-sql/advanced-where", ready: false, statusText: "🚧 UNDER CONSTRUCTION" },
+  { num: 4, name: "Advanced Indexing", description: "Add secondary indexes, a cost-based query optimizer, and VACUUM for space reclamation.", icon: "🔍", tag: "OPTIMIZATION", stages: "Stages 1–3", slug: "advanced-indexing/secondary-indexes", ready: false, statusText: "🚧 UNDER CONSTRUCTION" },
+  { num: 5, name: "Multi-Table & Relational", description: "Implement JOINs (nested loop and hash), foreign key constraints, and subqueries.", icon: "🔗", tag: "RELATIONSHIPS", stages: "Stages 1–4", slug: "multi-table/joins-nested-loop", ready: false, statusText: "🚧 UNDER CONSTRUCTION" },
+  { num: 6, name: "Concurrency", description: "Add a lock manager, Multi-Version Concurrency Control (MVCC), and deadlock detection.", icon: "🛡️", tag: "CONCURRENCY", stages: "Stages 1–3", slug: "concurrency/lock-manager", ready: false, statusText: "🚧 UNDER CONSTRUCTION" },
+];
 
 const FEATURES = [
   { icon: "📜", title: "Custom Lexer & Parser", description: "Write a character scanner and recursive descent AST builder from scratch without Yacc/Bison." },
@@ -63,7 +25,9 @@ const FEATURES = [
 ];
 
 export default function HomePage() {
-  const parts = getPartInfo();
+  const { user, logout } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authTab, setAuthTab] = useState("login");
 
   return (
     <div className="landing-wrapper">
@@ -73,8 +37,20 @@ export default function HomePage() {
           <span>🗄️ Database Curriculum</span>
         </Link>
         <div className="nav-auth">
-          <button className="btn-login-ghost">Log In</button>
-          <button className="btn-signup-solid">Sign Up</button>
+          {user ? (
+            <>
+              <Link href="/profile" className="nav-user-link">
+                <span className="nav-user-avatar">{user.name?.charAt(0).toUpperCase()}</span>
+                <span className="nav-user-name">{user.name}</span>
+              </Link>
+              <button className="btn-login-ghost" onClick={logout}>Log Out</button>
+            </>
+          ) : (
+            <>
+              <button className="btn-login-ghost" onClick={() => { setAuthTab("login"); setShowAuthModal(true); }}>Log In</button>
+              <button className="btn-signup-solid" onClick={() => { setAuthTab("signup"); setShowAuthModal(true); }}>Sign Up</button>
+            </>
+          )}
         </div>
       </header>
 
@@ -214,55 +190,52 @@ export default function HomePage() {
         </div>
 
         <div className="roadmap-grid">
-          {parts.map((part) => {
-            const meta = PART_META[part.num] || PART_META[1];
-            return (
-              <Link key={part.num} href={`/stages/${meta.slug}`} className="roadmap-card">
-                <div className="roadmap-card-top">
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <span className="roadmap-part-num">Part {part.num}</span>
-                    <span className={meta.ready ? "badge-ready" : "badge-construction"}>
-                      {meta.statusText}
-                    </span>
-                  </div>
-                  <span className="roadmap-tag">{meta.tag}</span>
+          {PARTS.map((part) => (
+            <Link key={part.num} href={`/stages/${part.slug}`} className="roadmap-card">
+              <div className="roadmap-card-top">
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <span className="roadmap-part-num">Part {part.num}</span>
+                  <span className={part.ready ? "badge-ready" : "badge-construction"}>
+                    {part.statusText}
+                  </span>
                 </div>
-                
-                <div className="roadmap-title-row">
-                  <span className="roadmap-icon">{meta.icon}</span>
-                  <h3 className="roadmap-title">{part.name}</h3>
-                </div>
+                <span className="roadmap-tag">{part.tag}</span>
+              </div>
 
-                <p className="roadmap-desc">{part.description}</p>
+              <div className="roadmap-title-row">
+                <span className="roadmap-icon">{part.icon}</span>
+                <h3 className="roadmap-title">{part.name}</h3>
+              </div>
 
-                <div className="roadmap-footer">
-                  <span className="roadmap-stages-badge">{meta.stages}</span>
-                  <span className="roadmap-cta">Explore Stage →</span>
-                </div>
-              </Link>
-            );
-          })}
+              <p className="roadmap-desc">{part.description}</p>
+
+              <div className="roadmap-footer">
+                <span className="roadmap-stages-badge">{part.stages}</span>
+                <span className="roadmap-cta">Explore Stage →</span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
       {/* Signup UI Component Card for Saving Progress */}
-      <div className="signup-section-card">
-        <div>
-          <span className="section-badge">MEMBERSHIP & SAVE STATE</span>
-          <h2 className="signup-card-title">Save Your Tutorial Progress</h2>
-          <p className="signup-card-desc">
-            Create a free developer account to record completed stages, track test executions across machines, and earn completion certificates as you build each database layer.
-          </p>
+      {!user && (
+        <div className="signup-section-card">
+          <div>
+            <span className="section-badge">MEMBERSHIP & SAVE STATE</span>
+            <h2 className="signup-card-title">Save Your Tutorial Progress</h2>
+            <p className="signup-card-desc">
+              Create a free developer account to record completed stages, track test executions across machines, and earn completion certificates as you build each database layer.
+            </p>
+          </div>
+          <div className="signup-form-ui">
+            <button className="btn-glow-primary" style={{ width: "100%" }} onClick={() => { setAuthTab("signup"); setShowAuthModal(true); }}>
+              <span>Create Free Account</span>
+              <span>→</span>
+            </button>
+          </div>
         </div>
-        <div className="signup-form-ui">
-          <input type="text" placeholder="Developer Handle (e.g. torvalds)" className="signup-input" readOnly />
-          <input type="email" placeholder="you@domain.com" className="signup-input" readOnly />
-          <button className="btn-glow-primary" style={{ width: "100%" }}>
-            <span>Create Free Account</span>
-            <span>→</span>
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Footer / Final Call to Action */}
       <footer className="landing-footer">
@@ -275,6 +248,13 @@ export default function HomePage() {
           </Link>
         </div>
       </footer>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => setShowAuthModal(false)}
+        initialTab={authTab}
+      />
     </div>
   );
 }

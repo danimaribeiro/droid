@@ -1,9 +1,15 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
-      resources :submissions, only: [:create, :show]
+      resources :submissions, only: [:index, :create, :show]
+
+      resources :workspaces, only: [:index]
+      get "workspaces/:stage_slug/:language_slug", to: "workspaces#show", constraints: { stage_slug: %r{[^/]+/[^/]+} }
+      put "workspaces/:stage_slug/:language_slug", to: "workspaces#upsert", constraints: { stage_slug: %r{[^/]+/[^/]+} }
+      delete "workspaces/:stage_slug/:language_slug", to: "workspaces#destroy", constraints: { stage_slug: %r{[^/]+/[^/]+} }
 
       post "login", to: "sessions#create"
+      post "signup", to: "registrations#create"
       get "me", to: "sessions#me"
 
       get "stages/:part/:stage/template", to: "stages#template"

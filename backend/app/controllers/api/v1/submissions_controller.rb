@@ -3,10 +3,34 @@ module Api
     class SubmissionsController < ::ApplicationController
       before_action :authenticate_user!
 
+      def index
+        submissions = current_user.submissions.order(created_at: :desc)
+
+        render json: submissions.map { |s|
+          test_run = s.test_run
+          {
+            id: s.id,
+            stage_slug: s.stage_slug,
+            language_slug: s.language_slug,
+            status: s.status,
+            created_at: s.created_at,
+            test_run: test_run ? {
+              total_passed: test_run.total_passed,
+              total_failed: test_run.total_failed
+            } : nil
+          }
+        }
+      end
+
       def create
         submission = current_user.submissions.new(submission_params)
 
         if submission.save
+          current_user.workspaces.find_or_initialize_by(
+            stage_slug: submission.stage_slug,
+            language_slug: submission.language_slug
+          ).update(code_files: submission.code_files)
+
           render json: {
             id: submission.id,
             status: submission.status,
@@ -15,7 +39,7 @@ module Api
             created_at: submission.created_at
           }, status: :accepted
         else
-          render json: { errors: submission.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: submission.errors.full_messages }, status: :unprocessable_content
         end
       end
 

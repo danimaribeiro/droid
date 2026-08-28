@@ -52,7 +52,7 @@ RSpec.describe "Api::V1::Submissions" do
       invalid_params = valid_params.deep_merge(submission: { language_slug: "python" })
       post "/api/v1/submissions", params: invalid_params, headers: auth_headers, as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body["errors"]).to include(a_string_matching(/language/i))
     end
 

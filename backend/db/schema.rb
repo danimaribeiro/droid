@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_06_000008) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_28_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -200,6 +200,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_06_000008) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  create_table "workspaces", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "stage_slug", null: false
+    t.string "language_slug", null: false
+    t.jsonb "code_files", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "stage_slug", "language_slug"], name: "idx_workspaces_user_stage_lang", unique: true
+    t.index ["user_id"], name: "index_workspaces_on_user_id"
+  end
+
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -209,4 +220,5 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_06_000008) do
   add_foreign_key "submissions", "users"
   add_foreign_key "test_case_results", "test_runs"
   add_foreign_key "test_runs", "submissions"
+  add_foreign_key "workspaces", "users"
 end

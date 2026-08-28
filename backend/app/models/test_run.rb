@@ -6,6 +6,7 @@ class TestRun < ApplicationRecord
     completed: 0,
     build_failed: 1,
     system_error: 2,
-    timeout: 3
+    timeout: 3,
+    no_test_output: 4
   }, default: :completed
 end
