@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Api::V1::Stages" do
   before do
+    Stage.destroy_all
     Stage.create!(slug: "database/repl", part: "database", stage_number: 1, title: "User REPL", description: "Build a REPL.")
     Stage.create!(slug: "database/lexer", part: "database", stage_number: 2, title: "SQL Lexer", description: "Tokenize SQL.")
   end

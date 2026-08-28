@@ -44,7 +44,7 @@ RSpec.describe "Api::V1::Submissions" do
     it "associates the submission with the current user" do
       post "/api/v1/submissions", params: valid_params, headers: auth_headers, as: :json
 
-      submission = Submission.last
+      submission = Submission.find(response.parsed_body["id"])
       expect(submission.user).to eq(user)
     end
 
