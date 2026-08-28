@@ -20,7 +20,7 @@ RSpec.describe "POST /api/v1/signup", type: :request do
     post "/api/v1/signup", params: valid_params
     body = response.parsed_body
     expect(body.keys).to match_array(%w[token user])
-    expect(body["user"].keys).to match_array(%w[id email name admin])
+    expect(body["user"].keys).to match_array(%w[id email name admin avatar_url])
   end
 
   it "returns 422 when email is already taken" do

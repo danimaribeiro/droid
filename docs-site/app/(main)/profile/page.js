@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "../../components/AuthContext";
 import { useTheme } from "../../components/ThemeContext";
 import AuthModal from "../../components/AuthModal";
 import GlassShell from "../../components/GlassShell";
 import ThemeSwitcher from "../../components/ThemeSwitcher";
-import { Bot } from "lucide-react";
+import { Bot, Pencil, Camera, Check, X, Eye, EyeOff } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
@@ -82,13 +82,107 @@ function StatusBadge({ status, isGlass }) {
 }
 
 export default function ProfilePage() {
-  const { user, token, loading, logout } = useAuth();
+  const { user, token, loading, logout, updateUser } = useAuth();
   const { isGlass } = useTheme();
   const [submissions, setSubmissions] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [testDetails, setTestDetails] = useState({});
+
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState("");
+  const [nameSaving, setNameSaving] = useState(false);
+
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const saveProfile = async (data) => {
+    const res = await fetch(`${API_BASE}/api/v1/me`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || err.errors?.join(", ") || "Update failed");
+    }
+    const updated = await res.json();
+    updateUser(updated);
+    return updated;
+  };
+
+  const handleSaveName = async () => {
+    if (!nameValue.trim() || nameValue.trim() === user.name) {
+      setEditingName(false);
+      return;
+    }
+    setNameSaving(true);
+    try {
+      await saveProfile({ name: nameValue.trim() });
+      setEditingName(false);
+    } catch {}
+    setNameSaving(false);
+  };
+
+  const handleSavePassword = async () => {
+    setPasswordError("");
+    if (newPassword.length < 6) {
+      setPasswordError("New password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+    setPasswordSaving(true);
+    try {
+      await saveProfile({ current_password: currentPassword, password: newPassword });
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => { setPasswordSuccess(false); setShowPasswordForm(false); }, 1500);
+    } catch (e) {
+      setPasswordError(e.message);
+    }
+    setPasswordSaving(false);
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarSaving(true);
+    try {
+      const dataUrl = await new Promise((resolve) => {
+        const canvas = document.createElement("canvas");
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = 128;
+          canvas.height = 128;
+          const ctx = canvas.getContext("2d");
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 128, 128);
+          resolve(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.src = URL.createObjectURL(file);
+      });
+      await saveProfile({ avatar_url: dataUrl });
+    } catch {}
+    setAvatarSaving(false);
+  };
 
   useEffect(() => {
     if (loading || !user || !token) {
@@ -205,17 +299,84 @@ export default function ProfilePage() {
         {/* Profile header card */}
         <div className={`${cardCls} p-6`}>
           <div className="flex items-center gap-5">
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold ${
-              isGlass
-                ? "bg-gradient-to-br from-purple-500/40 to-pink-500/40 text-white"
-                : "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-            }`}>
-              {user.name?.charAt(0).toUpperCase()}
+            {/* Avatar */}
+            <div className="relative group">
+              {user.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt={user.name}
+                  className="w-16 h-16 rounded-2xl object-cover"
+                />
+              ) : (
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold ${
+                  isGlass
+                    ? "bg-gradient-to-br from-purple-500/40 to-pink-500/40 text-white"
+                    : "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+                }`}>
+                  {user.name?.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={avatarSaving}
+                className={`absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${
+                  isGlass ? "bg-black/50" : "bg-black/40"
+                }`}
+              >
+                <Camera className="w-5 h-5 text-white" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+              {avatarSaving && (
+                <div className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                </div>
+              )}
             </div>
+
+            {/* Name / Email */}
             <div className="flex-1 min-w-0">
-              <h1 className={`text-xl font-bold ${textPrimary}`}>{user.name}</h1>
+              {editingName ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={nameValue}
+                    onChange={(e) => setNameValue(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setEditingName(false); }}
+                    className={`text-xl font-bold px-2 py-1 rounded-lg w-full outline-none ${
+                      isGlass
+                        ? "bg-white/[0.1] text-white border border-white/20 focus:border-purple-400"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:border-blue-500"
+                    }`}
+                  />
+                  <button onClick={handleSaveName} disabled={nameSaving} className={`p-1.5 rounded-lg ${isGlass ? "text-green-400 hover:bg-white/[0.08]" : "text-green-600 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>
+                    <Check className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => setEditingName(false)} className={`p-1.5 rounded-lg ${isGlass ? "text-gray-400 hover:bg-white/[0.08]" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <h1 className={`text-xl font-bold ${textPrimary}`}>{user.name}</h1>
+                  <button
+                    onClick={() => { setNameValue(user.name); setEditingName(true); }}
+                    className={`p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity ${
+                      isGlass ? "text-gray-400 hover:text-white hover:bg-white/[0.08]" : "text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
               <p className={`text-sm ${textMuted}`}>{user.email}</p>
             </div>
+
             <div className="text-center">
               <div className={`text-3xl font-bold ${isGlass ? "text-purple-300" : "text-blue-600 dark:text-blue-400"}`}>
                 {totalPassed}
@@ -244,6 +405,95 @@ export default function ProfilePage() {
                 style={{ width: `${progressPct}%` }}
               />
             </div>
+          </div>
+
+          {/* Account settings */}
+          <div className={`mt-5 pt-5 border-t ${border}`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-medium ${textPrimary}`}>Password</span>
+              {showPasswordForm ? null : (
+                <button
+                  onClick={() => setShowPasswordForm(true)}
+                  className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                    isGlass
+                      ? "text-gray-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.10]"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                  }`}
+                >
+                  Change Password
+                </button>
+              )}
+            </div>
+            {showPasswordForm && (
+              <div className="mt-3 space-y-3 max-w-sm">
+                <div className="relative">
+                  <input
+                    type={showCurrent ? "text" : "password"}
+                    placeholder="Current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className={`w-full text-sm px-3 py-2 pr-9 rounded-lg outline-none ${
+                      isGlass
+                        ? "bg-white/[0.08] text-white border border-white/[0.15] focus:border-purple-400 placeholder-gray-500"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:border-blue-500 placeholder-gray-400"
+                    }`}
+                  />
+                  <button type="button" onClick={() => setShowCurrent(!showCurrent)} className={`absolute right-2.5 top-2.5 ${textMuted}`}>
+                    {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showNew ? "text" : "password"}
+                    placeholder="New password (min 6 chars)"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className={`w-full text-sm px-3 py-2 pr-9 rounded-lg outline-none ${
+                      isGlass
+                        ? "bg-white/[0.08] text-white border border-white/[0.15] focus:border-purple-400 placeholder-gray-500"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:border-blue-500 placeholder-gray-400"
+                    }`}
+                  />
+                  <button type="button" onClick={() => setShowNew(!showNew)} className={`absolute right-2.5 top-2.5 ${textMuted}`}>
+                    {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <input
+                  type={showNew ? "text" : "password"}
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={`w-full text-sm px-3 py-2 rounded-lg outline-none ${
+                    isGlass
+                      ? "bg-white/[0.08] text-white border border-white/[0.15] focus:border-purple-400 placeholder-gray-500"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:border-blue-500 placeholder-gray-400"
+                  }`}
+                />
+                {passwordError && <p className="text-xs text-red-500">{passwordError}</p>}
+                {passwordSuccess && <p className={`text-xs ${isGlass ? "text-green-400" : "text-green-600"}`}>Password updated!</p>}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleSavePassword}
+                    disabled={passwordSaving}
+                    className={`text-xs px-4 py-2 rounded-lg font-medium transition-colors ${
+                      isGlass
+                        ? "bg-purple-500 hover:bg-purple-600 text-white"
+                        : "bg-blue-600 hover:bg-blue-700 text-white"
+                    }`}
+                  >
+                    {passwordSaving ? "Saving..." : "Update Password"}
+                  </button>
+                  <button
+                    onClick={() => { setShowPasswordForm(false); setPasswordError(""); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}
+                    className={`text-xs px-3 py-2 rounded-lg transition-colors ${
+                      isGlass ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-700 dark:hover:text-white"
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

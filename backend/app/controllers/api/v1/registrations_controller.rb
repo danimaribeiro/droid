@@ -11,7 +11,7 @@ module Api
         if user.save
           render json: {
             token: user.authentication_token,
-            user: { id: user.id, email: user.email, name: user.name, admin: user.admin }
+            user: { id: user.id, email: user.email, name: user.name, admin: user.admin, avatar_url: user.avatar_url }
           }, status: :created
         else
           render json: { errors: user.errors.full_messages }, status: :unprocessable_content

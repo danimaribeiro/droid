@@ -165,7 +165,11 @@ export default function Playground({ stageSlug }) {
 
           {user ? (
             <Link href="/profile" className="flex items-center gap-1.5 py-1 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold">{user.name?.[0]?.toUpperCase() || "U"}</span>
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" />
+              ) : (
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold">{user.name?.[0]?.toUpperCase() || "U"}</span>
+              )}
               <span data-testid="pg-user-name" className={`text-xs hidden sm:inline ${isGlass ? "text-white" : "text-gray-700 dark:text-gray-300"}`}>{user.name}</span>
             </Link>
           ) : (

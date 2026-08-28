@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       post "login", to: "sessions#create"
       post "signup", to: "registrations#create"
       get "me", to: "sessions#me"
+      put "me", to: "profiles#update"
 
       get "stages/:part/:stage/template", to: "stages#template"
       get "stages/:part/:stage", to: "stages#show"
