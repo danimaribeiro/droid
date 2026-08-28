@@ -1,4 +1,4 @@
-.PHONY: all build-c build-cpp build-rust build-zig run-c run-cpp run-rust run-zig run-all test test-smoke check-bins check-templates test-stage1 test-stage2 test-stage3 test-stage4 test-stage5 test-stage6 test-stage7 test-stage8 test-stage9 test-stage10 test-stage11 test-stage12 test-stage13 test-stage14 test-stage15 test-stage16 test-stage17 test-stage18 test-all-stages test-c-stage1 test-cpp-stage1 test-rust-stage1 test-zig-stage1 clean
+.PHONY: all build-c build-cpp build-rust build-zig run-c run-cpp run-rust run-zig run-all test test-smoke check-bins check-templates test-stage1 test-stage2 test-stage3 test-stage4 test-stage5 test-stage6 test-stage7 test-stage8 test-stage9 test-stage10 test-stage11 test-stage12 test-stage13 test-stage14 test-stage15 test-stage16 test-stage17 test-stage18 test-all-stages test-c-stage1 test-cpp-stage1 test-rust-stage1 test-zig-stage1 clean test-rails test-e2e e2e-ui
 
 CC := gcc
 CXX := g++
@@ -348,6 +348,15 @@ test-case:
 	@BIN_PATH=$$(cd . && pwd)/$(BIN); \
 	if [ ! -x "$$BIN_PATH" ]; then echo "Missing binary: $$BIN_PATH"; exit 1; fi; \
 	cd tests/integration/python && python3 test_single_case.py "$(CASE)" "$$BIN_PATH"
+
+test-rails:
+	docker compose exec api bundle exec rspec
+
+test-e2e:
+	cd e2e && npx playwright test
+
+e2e-ui:
+	cd e2e && npx playwright test --ui
 
 clean:
 	rm -rf $(BIN_DIR)

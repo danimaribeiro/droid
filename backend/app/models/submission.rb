@@ -1,4 +1,5 @@
 class Submission < ApplicationRecord
+  belongs_to :user
   has_one :test_run, dependent: :destroy
 
   enum :status, {

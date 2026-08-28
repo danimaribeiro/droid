@@ -34,3 +34,12 @@ stages.each do |stage_attrs|
 end
 
 puts "Seeded #{Stage.count} tutorial stages across parts."
+
+admin = User.find_or_create_by!(email: "admin@droid.dev") do |u|
+  u.name = "Admin"
+  u.password = "admin"
+  u.password_confirmation = "admin"
+  u.admin = true
+end
+
+puts "Admin user: #{admin.email} / admin"

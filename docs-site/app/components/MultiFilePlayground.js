@@ -1,11 +1,155 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(() => import("@monaco-editor/react").then((mod) => mod.default), {
+  ssr: false,
+  loading: () => (
+    <div style={{ padding: 32, color: "#8888a8", fontFamily: "var(--font-mono)", fontSize: 13 }}>
+      Loading editor...
+    </div>
+  ),
+});
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export default function MultiFilePlayground({ stageSlug = "database/repl" }) {
+const SLUG_TO_API_SLUG = {
+  "stage1-repl": "database/repl",
+  "stage2-lexer": "database/lexer",
+  "stage3-parser": "database/parser",
+  "stage4-serialization": "database/row-serialization",
+  "stage5-pager": "database/pager",
+  "stage6-btree-leaf": "database/btree-leaf",
+  "stage7-btree-search": "database/btree-search",
+  "stage8-btree-split": "database/btree-split",
+  "stage9-btree-internal-split": "database/persistence",
+  "stage10-persistence": "database/planner",
+  "stage11-planner": "database/index-scan",
+  "stage12-delete-update": "database/delete-update",
+};
+
+const PROGRESS_PHASES = [
+  { key: "submitting", label: "Submitting" },
+  { key: "compiling", label: "Compiling" },
+  { key: "testing", label: "Running Tests" },
+  { key: "done", label: "Done" },
+];
+
+function getMonacoLanguage(filename) {
+  if (filename.endsWith(".c") || filename.endsWith(".h")) return "c";
+  if (filename.endsWith(".cpp") || filename.endsWith(".hpp")) return "cpp";
+  if (filename.endsWith(".rs")) return "rust";
+  if (filename.endsWith(".zig")) return "c";
+  if (filename.endsWith(".toml")) return "toml";
+  return "plaintext";
+}
+
+function getFileIcon(filename) {
+  if (filename.endsWith(".c") || filename.endsWith(".cpp")) return "\u{1F4C4}";
+  if (filename.endsWith(".h") || filename.endsWith(".hpp")) return "\u{1F4D1}";
+  if (filename.endsWith(".rs")) return "\u{1F980}";
+  return "⚡";
+}
+
+function handleEditorWillMount(monaco) {
+  monaco.editor.defineTheme("droid-dark", {
+    base: "vs-dark",
+    inherit: true,
+    rules: [
+      { token: "comment", foreground: "5a5a72", fontStyle: "italic" },
+      { token: "keyword", foreground: "8b5cf6" },
+      { token: "keyword.control", foreground: "8b5cf6" },
+      { token: "keyword.operator", foreground: "a78bfa" },
+      { token: "string", foreground: "10b981" },
+      { token: "string.escape", foreground: "34d399" },
+      { token: "number", foreground: "f59e0b" },
+      { token: "type", foreground: "06b6d4" },
+      { token: "type.identifier", foreground: "06b6d4" },
+      { token: "function", foreground: "818cf8" },
+      { token: "variable", foreground: "e8e8f0" },
+      { token: "constant", foreground: "f59e0b" },
+      { token: "operator", foreground: "a78bfa" },
+      { token: "delimiter", foreground: "8888a8" },
+      { token: "delimiter.bracket", foreground: "8888a8" },
+      { token: "tag", foreground: "ef4444" },
+      { token: "attribute.name", foreground: "06b6d4" },
+      { token: "attribute.value", foreground: "10b981" },
+      { token: "meta.preprocessor", foreground: "ef4444" },
+      { token: "annotation", foreground: "f59e0b" },
+    ],
+    colors: {
+      "editor.background": "#0d0d14",
+      "editor.foreground": "#e8e8f0",
+      "editor.lineHighlightBackground": "#16161f",
+      "editor.selectionBackground": "#6366f126",
+      "editor.inactiveSelectionBackground": "#6366f115",
+      "editorCursor.foreground": "#6366f1",
+      "editorLineNumber.foreground": "#5a5a72",
+      "editorLineNumber.activeForeground": "#8888a8",
+      "editorIndentGuide.background": "#1e1e2e",
+      "editorIndentGuide.activeBackground": "#2e2e42",
+      "editorBracketMatch.background": "#6366f120",
+      "editorBracketMatch.border": "#6366f150",
+      "editor.wordHighlightBackground": "#6366f115",
+      "editorWhitespace.foreground": "#1e1e2e",
+      "editorWidget.background": "#12121a",
+      "editorWidget.border": "#1e1e2e",
+      "editorSuggestWidget.background": "#12121a",
+      "editorSuggestWidget.border": "#1e1e2e",
+      "editorSuggestWidget.selectedBackground": "#6366f126",
+      "editorHoverWidget.background": "#12121a",
+      "editorHoverWidget.border": "#1e1e2e",
+      "scrollbar.shadow": "#00000000",
+      "scrollbarSlider.background": "#5a5a7230",
+      "scrollbarSlider.hoverBackground": "#5a5a7250",
+      "scrollbarSlider.activeBackground": "#6366f150",
+      "minimap.background": "#0d0d14",
+    },
+  });
+}
+
+function ProgressSteps({ phase }) {
+  const currentIdx = PROGRESS_PHASES.findIndex((p) => p.key === phase);
+  return (
+    <div className="progress-steps">
+      <div className="progress-steps-track">
+        {PROGRESS_PHASES.map((p, i) => (
+          <div key={p.key} className="progress-step-item">
+            <div
+              className={`progress-dot ${
+                i < currentIdx ? "completed" : i === currentIdx ? "active" : ""
+              }`}
+            >
+              {i < currentIdx ? (
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M2 5L4 7L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <span>{i + 1}</span>
+              )}
+            </div>
+            <span className={`progress-label ${i <= currentIdx ? "active" : ""}`}>
+              {p.label}
+            </span>
+            {i < PROGRESS_PHASES.length - 1 && (
+              <div className={`progress-connector ${i < currentIdx ? "completed" : ""}`} />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="progress-bar-track">
+        <div
+          className="progress-bar-fill"
+          style={{ width: `${((currentIdx + 1) / PROGRESS_PHASES.length) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default function MultiFilePlayground({ stageSlug }) {
   const [activeLang, setActiveLang] = useState("c");
   const [filesMap, setFilesMap] = useState({});
   const [activeFile, setActiveFile] = useState("");
@@ -14,20 +158,23 @@ export default function MultiFilePlayground({ stageSlug = "database/repl" }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [expandedCase, setExpandedCase] = useState(null);
-  const [apiStatusNote, setApiStatusNote] = useState("");
+  const [progressPhase, setProgressPhase] = useState(null);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showResultsPanel, setShowResultsPanel] = useState(false);
+  const pollRef = useRef(null);
 
-  const normalizedSlug = stageSlug === "stage1" ? "database/repl" : stageSlug;
+  const apiSlug = SLUG_TO_API_SLUG[stageSlug] || stageSlug;
+  const stageLabel = stageSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // Load starter files strictly from backend API
   useEffect(() => {
     setIsLoadingTemplate(true);
     setTemplateError(null);
     setFilesMap({});
     setActiveFile("");
     setTestResults(null);
-    setApiStatusNote(`Fetching starter template from ${API_BASE}...`);
+    setShowResultsPanel(false);
 
-    fetch(`${API_BASE}/api/v1/stages/${normalizedSlug}/template?language=${activeLang}`)
+    fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`)
       .then(async (res) => {
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
@@ -39,7 +186,6 @@ export default function MultiFilePlayground({ stageSlug = "database/repl" }) {
         if (data && data.files && Object.keys(data.files).length > 0) {
           setFilesMap(data.files);
           setActiveFile(Object.keys(data.files)[0]);
-          setApiStatusNote(`Loaded ${Object.keys(data.files).length} starter files from Rails API.`);
         } else {
           throw new Error("No files returned in starter template response.");
         }
@@ -47,23 +193,24 @@ export default function MultiFilePlayground({ stageSlug = "database/repl" }) {
       })
       .catch((err) => {
         console.error("Failed to load starter template from API:", err);
-        setTemplateError(err.message || "Failed to connect to Rails backend API.");
+        setTemplateError(err.message || "Failed to connect to backend API.");
         setIsLoadingTemplate(false);
-        setApiStatusNote(`Error loading template from API.`);
       });
-  }, [normalizedSlug, activeLang]);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [apiSlug, activeLang]);
 
   const handleFileContentChange = (newContent) => {
-    setFilesMap((prev) => ({
-      ...prev,
-      [activeFile]: newContent
-    }));
+    setFilesMap((prev) => ({ ...prev, [activeFile]: newContent }));
   };
 
   const submitCode = async () => {
     setIsSubmitting(true);
     setTestResults(null);
-    setApiStatusNote("Connecting to Rails Backend & Piston Execution Engine...");
+    setShowResultsPanel(false);
+    setProgressPhase("submitting");
 
     try {
       const response = await fetch(`${API_BASE}/api/v1/submissions`, {
@@ -71,254 +218,293 @@ export default function MultiFilePlayground({ stageSlug = "database/repl" }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           submission: {
-            stage_slug: normalizedSlug,
+            stage_slug: apiSlug,
             language_slug: activeLang,
-            code_files: filesMap
-          }
-        })
+            code_files: filesMap,
+          },
+        }),
       });
 
       if (!response.ok) {
         const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.errors ? errJson.errors.join(", ") : `HTTP ${response.status} Submission failed`);
+        throw new Error(errJson.errors ? errJson.errors.join(", ") : `HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      setApiStatusNote(`Submission ${data.id} queued. Polling test results...`);
+      setProgressPhase("compiling");
 
-      // Poll for test run results
       let attempts = 0;
-      const pollInterval = setInterval(async () => {
+      pollRef.current = setInterval(async () => {
         attempts++;
         try {
           const res = await fetch(`${API_BASE}/api/v1/submissions/${data.id}`);
           if (res.ok) {
             const subData = await res.json();
-            if (subData.status === "passed" || subData.status === "failed" || subData.status === "errored") {
-              clearInterval(pollInterval);
+
+            if (subData.status === "running") {
+              setProgressPhase("testing");
+            }
+
+            if (["passed", "failed", "errored"].includes(subData.status)) {
+              clearInterval(pollRef.current);
+              pollRef.current = null;
+              setProgressPhase("done");
               setIsSubmitting(false);
               setTestResults(subData.test_run);
-              setApiStatusNote(`Test execution complete (Status: ${subData.status}).`);
+              setShowResultsPanel(true);
               return;
             }
           }
         } catch (pollErr) {
-          console.error("Error polling submission status:", pollErr);
+          console.error("Polling error:", pollErr);
         }
 
-        if (attempts > 20) {
-          clearInterval(pollInterval);
+        if (attempts > 30) {
+          clearInterval(pollRef.current);
+          pollRef.current = null;
           setIsSubmitting(false);
-          setApiStatusNote("Execution request timed out while polling status.");
+          setProgressPhase(null);
         }
-      }, 1000);
+      }, 1500);
     } catch (err) {
       console.error("Submission error:", err);
       setIsSubmitting(false);
-      setApiStatusNote(`Submission failed: ${err.message}`);
+      setProgressPhase(null);
     }
   };
 
   const fileList = Object.keys(filesMap);
 
   return (
-    <div className="multi-playground-container">
-      {/* Top Description Header */}
-      <div className="playground-header">
-        <div className="playground-breadcrumb">
-          <Link href="/">Home</Link> › <Link href="/stages/stage1-repl">Stage 1</Link> › <span>Interactive Workspace</span>
-        </div>
-        <h1 className="playground-title">🛠️ Multi-File Code Editor & Test Runner</h1>
-        <p className="playground-description">
-          Edit starter code files for stage <strong>{normalizedSlug}</strong>.
-          Submit your implementation to compile and run integration tests against the Piston container sandbox via the Rails API.
-        </p>
-      </div>
-
-      {/* Language Selector Bar */}
-      <div className="playground-lang-bar">
-        {[
-          { id: "c", label: "⚙️ C (c-droid)" },
-          { id: "cpp", label: "🚀 C++ (cpp-droid)" },
-          { id: "rust", label: "🛡️ Rust (rust-droid)" },
-          { id: "zig", label: "⚡ Zig (zig-droid)" }
-        ].map((lang) => (
+    <div className="pg-root">
+      {/* Top bar */}
+      <div className="pg-topbar">
+        <div className="pg-topbar-left">
           <button
-            key={lang.id}
-            onClick={() => setActiveLang(lang.id)}
-            className={`lang-tab ${activeLang === lang.id ? "active" : ""}`}
+            className="pg-mobile-files-btn"
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            title="Toggle file explorer"
           >
-            {lang.label}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M1 3h14v1.5H1V3zm0 4.25h14v1.5H1v-1.5zm0 4.25h14V13H1v-1.5z" />
+            </svg>
           </button>
-        ))}
+          <Link href="/" className="pg-topbar-brand">droid</Link>
+          <span className="pg-topbar-sep">/</span>
+          <Link href={`/stages/${stageSlug}`} className="pg-topbar-stage">{stageLabel}</Link>
+          <span className="pg-topbar-sep">/</span>
+          <span className="pg-topbar-current">Editor</span>
+        </div>
+        <div className="pg-topbar-right">
+          <div className="pg-lang-switcher">
+            {[
+              { id: "c", label: "C" },
+              { id: "cpp", label: "C++" },
+              { id: "rust", label: "Rust" },
+              { id: "zig", label: "Zig" },
+            ].map((lang) => (
+              <button
+                key={lang.id}
+                onClick={() => setActiveLang(lang.id)}
+                className={`pg-lang-btn ${activeLang === lang.id ? "active" : ""}`}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={submitCode}
+            disabled={isSubmitting || isLoadingTemplate || !!templateError}
+            className="pg-submit-btn"
+          >
+            {isSubmitting && <span className="pg-btn-spinner" />}
+            {isSubmitting ? "Running..." : "Run Tests"}
+          </button>
+        </div>
       </div>
 
-      {/* Main Workspace Split (Sidebar Tree + Editor) */}
-      <div className="workspace-editor-card">
-        {/* Left File Tree Sidebar */}
-        <div className="workspace-sidebar">
-          <div className="sidebar-header">
-            <span>📁 WORKSPACE TREE</span>
-            <span className="file-count">{fileList.length} Files</span>
+      {/* Progress bar */}
+      {isSubmitting && progressPhase && <ProgressSteps phase={progressPhase} />}
+
+      {/* Main workspace */}
+      <div className={`pg-workspace ${showResultsPanel ? "has-results" : ""}`}>
+        {/* File sidebar */}
+        <div className={`pg-sidebar ${showMobileSidebar ? "mobile-open" : ""}`}>
+          <div className="pg-sidebar-header">
+            <span>EXPLORER</span>
+            <span className="pg-file-count">{fileList.length}</span>
           </div>
-          <div className="file-tree-list">
+          <div className="pg-file-list">
             {isLoadingTemplate && (
-              <div style={{ padding: 16, fontSize: 12, color: "#8888a8" }}>
-                Loading files...
-              </div>
+              <div style={{ padding: 16, fontSize: 12, color: "#8888a8" }}>Loading...</div>
             )}
             {templateError && (
               <div style={{ padding: 12, fontSize: 11, color: "#ef4444" }}>
-                Failed to load files from API
+                Failed to load files
               </div>
             )}
-            {!isLoadingTemplate && fileList.map((filename) => {
-              const isSelected = activeFile === filename;
-              return (
+            {!isLoadingTemplate &&
+              fileList.map((filename) => (
+                <button
+                  key={filename}
+                  onClick={() => {
+                    setActiveFile(filename);
+                    setShowMobileSidebar(false);
+                  }}
+                  className={`pg-file-item ${activeFile === filename ? "active" : ""}`}
+                >
+                  <span className="pg-file-icon">{getFileIcon(filename)}</span>
+                  <span className="pg-file-name">{filename}</span>
+                </button>
+              ))}
+          </div>
+        </div>
+
+        {/* Editor pane */}
+        <div className="pg-editor-pane">
+          {/* File tabs */}
+          <div className="pg-tabs">
+            <div className="pg-tabs-scroll">
+              {fileList.map((filename) => (
                 <button
                   key={filename}
                   onClick={() => setActiveFile(filename)}
-                  className={`file-tree-item ${isSelected ? "active" : ""}`}
+                  className={`pg-tab ${activeFile === filename ? "active" : ""}`}
                 >
-                  <span className="file-icon">
-                    {filename.endsWith(".c") || filename.endsWith(".cpp") ? "📄" : filename.endsWith(".h") || filename.endsWith(".hpp") ? "📑" : filename.endsWith(".rs") ? "🦀" : "⚡"}
-                  </span>
-                  <span className="file-name">{filename}</span>
+                  <span className="pg-tab-icon">{getFileIcon(filename)}</span>
+                  <span>{filename}</span>
                 </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Code Editor View */}
-        <div className="workspace-editor-main">
-          <div className="editor-tab-bar">
-            <span className="active-tab-title">{activeFile ? `📄 ${activeFile}` : "No file selected"}</span>
-            <span className="editor-lang-tag">{activeLang.toUpperCase()}</span>
+              ))}
+            </div>
+            <span className="pg-tab-lang">{activeLang.toUpperCase()}</span>
           </div>
 
-          {isLoadingTemplate ? (
-            <div style={{ padding: 32, color: "#8888a8", fontFamily: "var(--font-mono)", fontSize: 13 }}>
-              Loading starter code template from Rails API...
-            </div>
-          ) : templateError ? (
-            <div style={{ padding: 24, color: "#ef4444", background: "rgba(239, 68, 68, 0.1)", margin: 16, borderRadius: 8 }}>
-              <strong>API Error:</strong> {templateError}
-              <p style={{ marginTop: 8, fontSize: 12, color: "#cbd5e1" }}>
-                Make sure the Rails API server is running at <code>{API_BASE}</code> (run <code>bin/rails server</code> inside <code>backend/</code> or <code>docker compose up</code>).
-              </p>
-            </div>
-          ) : (
-            <textarea
-              value={filesMap[activeFile] || ""}
-              onChange={(e) => handleFileContentChange(e.target.value)}
-              className="code-textarea"
-              rows={18}
-              spellCheck={false}
-            />
-          )}
-
-          <div className="editor-footer">
-            <span className="status-note">{apiStatusNote}</span>
-            <button
-              onClick={submitCode}
-              disabled={isSubmitting || isLoadingTemplate || !!templateError}
-              className="btn-submit-code"
-            >
-              {isSubmitting ? "⌛ Running Tests in Sandbox..." : "▶ Submit Code & Run Tests"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Test Execution Results Area */}
-      {isSubmitting && (
-        <div className="test-spinner-box">
-          <div className="test-spinner" />
-          <span>Dispatching payload to Piston Container Sandbox via Rails API...</span>
-        </div>
-      )}
-
-      {testResults && (
-        <div className="test-results-container fade-in">
-          <div className="results-header">
-            <div className="results-summary">
-              <h3>Test Harness Execution Summary</h3>
-              <span className="suite-info">Duration: <code>{testResults.duration_ms}ms</code> | Target: <code>{activeLang}-droid</code></span>
-            </div>
-            {testResults.total_failed === 0 ? (
-              <span className="badge-pass-all">🎉 ALL {testResults.total_passed} TESTS PASSED</span>
+          {/* Editor */}
+          <div className="pg-editor-area">
+            {isLoadingTemplate ? (
+              <div className="pg-editor-placeholder">Loading starter code...</div>
+            ) : templateError ? (
+              <div className="pg-editor-error">
+                <strong>API Error:</strong> {templateError}
+                <p>
+                  Make sure the backend is running at <code>{API_BASE}</code> (<code>docker compose up</code>).
+                </p>
+              </div>
             ) : (
-              <span className="badge-fail-suite">❌ SUITE FAILED ({testResults.total_passed}/{testResults.total_passed + testResults.total_failed} Pass)</span>
+              <Editor
+                height="100%"
+                language={getMonacoLanguage(activeFile)}
+                value={filesMap[activeFile] || ""}
+                onChange={(value) => handleFileContentChange(value || "")}
+                theme="droid-dark"
+                beforeMount={handleEditorWillMount}
+                options={{
+                  fontSize: 14,
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  padding: { top: 12 },
+                  lineNumbers: "on",
+                  renderLineHighlight: "line",
+                  tabSize: 4,
+                  insertSpaces: true,
+                  automaticLayout: true,
+                  smoothScrolling: true,
+                  cursorBlinking: "smooth",
+                  cursorSmoothCaretAnimation: "on",
+                  bracketPairColorization: { enabled: true },
+                }}
+              />
             )}
           </div>
+        </div>
 
-          {testResults.compile_logs && (
-            <div className="compile-logs-box">
-              <label>COMPILATION & BUILD LOGS</label>
-              <pre>{testResults.compile_logs}</pre>
+        {/* Results panel (side-by-side) */}
+        {showResultsPanel && testResults && (
+          <div className="pg-results-panel">
+            <div className="pg-results-header">
+              <h3>Test Results</h3>
+              {testResults.total_failed === 0 ? (
+                <span className="pg-badge-pass">
+                  {testResults.total_passed}/{testResults.total_passed} PASS
+                </span>
+              ) : (
+                <span className="pg-badge-fail">
+                  {testResults.total_passed}/{testResults.total_passed + testResults.total_failed} PASS
+                </span>
+              )}
             </div>
-          )}
 
-          <div className="results-list">
-            {(testResults.test_cases || []).map((tc, idx) => {
-              const isOpen = expandedCase === idx || !tc.passed;
+            <div className="pg-results-meta">
+              <span>Duration: {testResults.duration_ms}ms</span>
+              <span>Target: {activeLang}-droid</span>
+            </div>
 
-              return (
-                <div key={idx} className={`test-card-item ${!tc.passed ? "fail-border" : "pass-border"}`}>
+            {testResults.compile_logs && (
+              <div className="pg-build-logs">
+                <label>BUILD OUTPUT</label>
+                <pre>{testResults.compile_logs}</pre>
+              </div>
+            )}
+
+            <div className="pg-test-list">
+              {(testResults.test_cases || []).map((tc, idx) => {
+                const isOpen = expandedCase === idx || !tc.passed;
+                return (
                   <div
-                    className="test-card-header"
-                    onClick={() => setExpandedCase(isOpen ? null : idx)}
+                    key={idx}
+                    className={`pg-test-item ${!tc.passed ? "fail" : "pass"}`}
                   >
-                    <div className="test-card-title-col">
-                      <span className={!tc.passed ? "icon-fail" : "icon-pass"}>
+                    <div
+                      className="pg-test-row"
+                      onClick={() => setExpandedCase(isOpen && tc.passed ? null : idx)}
+                    >
+                      <span className={`pg-test-icon ${!tc.passed ? "fail" : "pass"}`}>
                         {!tc.passed ? "✕" : "✓"}
                       </span>
-                      <span className="test-bin-prefix">[{activeLang}-droid]</span>
-                      <strong className="test-id-name">{tc.name}</strong>
+                      <span className="pg-test-name">{tc.name}</span>
+                      <span className={`pg-test-badge ${!tc.passed ? "fail" : "pass"}`}>
+                        {!tc.passed ? "FAIL" : "PASS"}
+                      </span>
                     </div>
-                    <div className="test-status-badge">
-                      {!tc.passed ? (
-                        <span className="status-badge-fail">FAIL</span>
-                      ) : (
-                        <span className="status-badge-pass">PASS</span>
-                      )}
-                    </div>
-                  </div>
 
-                  {isOpen && (
-                    <div className="test-diagnostic-block">
-                      {tc.reason && (
-                        <div className="diagnostic-reason-box">
-                          <strong>Reason:</strong> {tc.reason}
+                    {isOpen && (
+                      <div className="pg-test-detail">
+                        {tc.reason && (
+                          <div className="pg-test-reason">{tc.reason}</div>
+                        )}
+                        <div className="pg-test-diff">
+                          <div>
+                            <label>INPUT</label>
+                            <pre>{tc.input}</pre>
+                          </div>
+                          <div>
+                            <label>EXPECTED</label>
+                            <pre>{tc.expected}</pre>
+                          </div>
+                          <div>
+                            <label>ACTUAL</label>
+                            <pre className={!tc.passed ? "fail" : "pass"}>
+                              {tc.actual}
+                            </pre>
+                          </div>
                         </div>
-                      )}
-                      <div className="diagnostic-grid">
-                        <div>
-                          <label>INPUT STREAM</label>
-                          <pre className="diag-pre">{tc.input}</pre>
-                        </div>
-                        <div>
-                          <label>EXPECTED OUTPUT</label>
-                          <pre className="diag-pre">{tc.expected}</pre>
-                        </div>
-                        <div>
-                          <label>ACTUAL OUTPUT</label>
-                          <pre className={`diag-pre ${!tc.passed ? "actual-fail-text" : "actual-pass-text"}`}>
-                            {tc.actual}
-                          </pre>
+                        <div className="pg-test-exit">
+                          Exit Code: <code>{tc.exit_code}</code>
                         </div>
                       </div>
-                      <div className="diag-footer-line">
-                        <span>Exit Code: <code>{tc.exit_code}</code></span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {showMobileSidebar && (
+        <div className="pg-sidebar-overlay" onClick={() => setShowMobileSidebar(false)} />
       )}
     </div>
   );

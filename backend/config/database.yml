@@ -2,10 +2,14 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  url: <%= ENV.fetch("DATABASE_URL") { "postgres://postgres:password@localhost:5432/droid_backend_development" } %>
+  host: <%= ENV.fetch("DB_HOST") { "localhost" } %>
+  username: <%= ENV.fetch("DB_USER") { "postgres" } %>
+  password: <%= ENV.fetch("DB_PASSWORD") { "password" } %>
+  port: <%= ENV.fetch("DB_PORT") { 5432 } %>
 
 development:
   <<: *default
+  database: droid_backend_development
 
 test:
   <<: *default
@@ -13,3 +17,4 @@ test:
 
 production:
   <<: *default
+  url: <%= ENV["DATABASE_URL"] %>

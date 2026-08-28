@@ -25,6 +25,8 @@ class PistonExecutionService
       build: "mkdir -p bin && cd zig-droid && zig build-exe main.zig -femit-bin=../bin/zig-db",
       binary: "./bin/zig-db"
     }
+  }.freeze
+
   def self.execute(submission)
     new(submission).execute
   end

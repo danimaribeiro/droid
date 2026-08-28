@@ -11,3 +11,13 @@ __pycache__/
 
 # Rust common build dir (future)
 target/
+
+# Node
+node_modules/
+
+# Test artifacts
+e2e/test-results/
+
+# Backend
+backend/log/
+backend/tmp/

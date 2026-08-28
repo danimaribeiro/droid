@@ -1,8 +1,10 @@
 module Api
   module V1
     class SubmissionsController < ::ApplicationController
+      before_action :authenticate_user!
+
       def create
-        submission = Submission.new(submission_params)
+        submission = current_user.submissions.new(submission_params)
 
         if submission.save
           render json: {
@@ -18,7 +20,7 @@ module Api
       end
 
       def show
-        submission = Submission.find(params[:id])
+        submission = current_user.submissions.find(params[:id])
         test_run = submission.test_run
 
         render json: {

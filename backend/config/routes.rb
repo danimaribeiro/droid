@@ -3,6 +3,9 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :submissions, only: [:create, :show]
 
+      post "login", to: "sessions#create"
+      get "me", to: "sessions#me"
+
       get "stages/:part/:stage/template", to: "stages#template"
       get "stages/:part/:stage", to: "stages#show"
       get "stages/*id/template", to: "stages#template"

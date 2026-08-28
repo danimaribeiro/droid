@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from collections import defaultdict
@@ -105,6 +106,12 @@ def parse_args() -> argparse.Namespace:
         default="database/repl",
         help="Choose which stage to run (default: database/repl)",
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        dest="json_output",
+        help="Output results as JSON for programmatic consumption",
+    )
     return parser.parse_args()
 
 
@@ -129,8 +136,31 @@ def main() -> int:
         results.extend(stage_results)
 
     if not results:
+        if args.json_output:
+            print(json.dumps({"results": [], "summary": {"passed": 0, "failed": 0, "total": 0}}))
+            return 0
         print("No tests executed.")
         return 0
+
+    if args.json_output:
+        json_results = []
+        for result in results:
+            json_results.append({
+                "name": result.case_name,
+                "passed": result.passed,
+                "input": result.test_input,
+                "expected": result.expected,
+                "actual": result.actual_output,
+                "exit_code": result.exit_code,
+                "reason": result.reason,
+            })
+        passed_count = sum(1 for r in json_results if r["passed"])
+        failed_count = len(json_results) - passed_count
+        print(json.dumps({
+            "results": json_results,
+            "summary": {"passed": passed_count, "failed": failed_count, "total": len(json_results)},
+        }))
+        return 1 if failed_count else 0
 
     failed = 0
     case_outcomes: dict[str, list[bool]] = defaultdict(list)
