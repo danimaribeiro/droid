@@ -40,30 +40,22 @@ services:
       retries: 5
 
   piston:
-    image: ghcr.io/engineer-man/piston:latest
+    build:
+      context: ./piston
+      dockerfile: Dockerfile
     restart: always
     privileged: true
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - PISTON_RUN_TIMEOUT=30000
       - PISTON_COMPILE_TIMEOUT=30000
+      - PISTON_RUN_CPU_TIME=25000
+      - PISTON_COMPILE_CPU_TIME=25000
       - PISTON_OUTPUT_MAX_SIZE=65536
     expose:
       - "2000"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - piston_data:/piston
-
-  piston-setup:
-    image: curlimages/curl:latest
-    depends_on:
-      - piston
-    volumes:
-      - ./piston/setup.sh:/setup.sh:ro
-    entrypoint: ["sh", "/setup.sh"]
-    environment:
-      - PISTON_URL=http://piston:2000
-    restart: "no"
 
 volumes:
   postgres_data:

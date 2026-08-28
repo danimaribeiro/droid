@@ -38,12 +38,20 @@ class PistonExecutionService
       binary: "./bin/cpp-db"
     },
     "rust" => {
-      build: "cd rust-droid && cargo build --release",
+      build: "cargo build --release --manifest-path rust-droid/Cargo.toml",
       binary: "./rust-droid/target/release/rust-db"
     },
     "zig" => {
-      build: "mkdir -p bin && cd zig-droid && zig build-exe main.zig -femit-bin=../bin/zig-db",
+      build: "mkdir -p bin && zig build-exe zig-droid/main.zig -femit-bin=bin/zig-db",
       binary: "./bin/zig-db"
+    },
+    "python" => {
+      build: "mkdir -p bin && printf '#!/bin/bash\\npython3 python-droid/main.py \"$@\"\\n' > bin/python-db && chmod +x bin/python-db",
+      binary: "./bin/python-db"
+    },
+    "ruby" => {
+      build: "mkdir -p bin && printf '#!/bin/bash\\nruby ruby-droid/main.rb \"$@\"\\n' > bin/ruby-db && chmod +x bin/ruby-db",
+      binary: "./bin/ruby-db"
     }
   }.freeze
 
@@ -76,14 +84,23 @@ class PistonExecutionService
 
   private
 
+  EXTRA_TOOL_PATHS = %w[
+    /piston/packages/rust/1.68.2/rust-1.68.2-x86_64-unknown-linux-gnu/cargo/bin
+    /piston/packages/rust/1.68.2/rust-1.68.2-x86_64-unknown-linux-gnu/rustc/bin
+    /piston/packages/zig/0.10.1/bin
+    /piston/packages/ruby/3.0.1/bin
+  ].freeze
+
   def build_payload
     files = []
 
+    build_step = @config[:build] ? "#{@config[:build]}\n" : ""
     runner_script = <<~SHELL
       #!/bin/bash
       set -e
-      #{@config[:build]}
-      python3 run_stage.py --bin #{@config[:binary]} --json
+      export PATH=#{EXTRA_TOOL_PATHS.join(":")}:$PATH
+      export RUST_INSTALL_LOC=/piston/packages/rust/1.68.2/rust-1.68.2-x86_64-unknown-linux-gnu
+      #{build_step}python3 run_stage.py --bin #{@config[:binary]} --json
     SHELL
 
     files << { name: "run.sh", content: runner_script }
@@ -104,7 +121,8 @@ class PistonExecutionService
       version: "*",
       files: files,
       run_timeout: 25_000,
-      compile_timeout: 10_000
+      compile_timeout: 10_000,
+      run_cpu_time: 25_000
     }
   end
 

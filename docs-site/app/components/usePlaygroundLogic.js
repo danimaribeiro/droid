@@ -15,8 +15,8 @@ export const Editor = dynamic(() => import("@monaco-editor/react").then((mod) =>
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export const LANG_EXT = { c: ".c", cpp: ".cpp", rust: ".rs", zig: ".zig" };
-export const LANG_PREFIX = { c: "c-droid", cpp: "cpp-droid", rust: "rust-droid", zig: "zig-droid" };
+export const LANG_EXT = { c: ".c", cpp: ".cpp", rust: ".rs", zig: ".zig", python: ".py", ruby: ".rb" };
+export const LANG_PREFIX = { c: "c-droid", cpp: "cpp-droid", rust: "rust-droid", zig: "zig-droid", python: "python-droid", ruby: "ruby-droid" };
 
 export const PROGRESS_PHASES = [
   { key: "submitting", label: "Submitting" },
@@ -30,6 +30,8 @@ export const LANGS = [
   { id: "cpp", label: "C++" },
   { id: "rust", label: "Rust" },
   { id: "zig", label: "Zig" },
+  { id: "python", label: "Python" },
+  { id: "ruby", label: "Ruby" },
 ];
 
 export const TUTORIAL_STAGES = [
@@ -59,6 +61,8 @@ export function getMonacoLanguage(filename) {
   if (filename.endsWith(".rs")) return "rust";
   if (filename.endsWith(".zig")) return "c";
   if (filename.endsWith(".toml")) return "toml";
+  if (filename.endsWith(".py")) return "python";
+  if (filename.endsWith(".rb")) return "ruby";
   return "plaintext";
 }
 
@@ -80,6 +84,8 @@ export function getFileIcon(filename) {
   if (filename.endsWith(".rs")) return <FileIconBadge letter="R" bg="#ce422b" />;
   if (filename.endsWith(".toml")) return <FileIconBadge letter="T" bg="#6b7280" />;
   if (filename.endsWith(".zig")) return <FileIconBadge letter="Z" bg="#f7a41d" fg="#000" />;
+  if (filename.endsWith(".py")) return <FileIconBadge letter="Py" bg="#3776ab" />;
+  if (filename.endsWith(".rb")) return <FileIconBadge letter="Rb" bg="#cc342d" />;
   return <FileIconBadge letter="F" bg="#6b7280" />;
 }
 

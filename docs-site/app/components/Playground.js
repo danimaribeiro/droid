@@ -416,7 +416,7 @@ export default function Playground({ stageSlug }) {
           const isBuildFail = testResults.status === "build_failed";
           const isError = testResults.total_passed === 0 && testResults.total_failed === 0 && !isBuildFail;
           return (
-            <div data-testid="pg-results-panel" className={`w-80 lg:w-96 flex flex-col overflow-y-auto shrink-0 ${isGlass ? "bg-white/[0.12] backdrop-blur-xl rounded-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" : `bg-white dark:bg-gray-800 border-l ${border}`}`}>
+            <div data-testid="pg-results-panel" className={`w-80 lg:w-96 flex flex-col min-h-0 shrink-0 ${isGlass ? "bg-white/[0.12] backdrop-blur-xl rounded-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" : `bg-white dark:bg-gray-800 border-l ${border}`}`}>
               {/* Banner */}
               <div data-testid="pg-results-banner" className={`flex items-center gap-3 p-4 border-b
                 ${isBuildFail ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" : ""}
@@ -484,7 +484,7 @@ export default function Playground({ stageSlug }) {
               )}
 
               {/* Test cases */}
-              <div className="flex-1 p-3 space-y-2">
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 {(testResults.test_cases || []).map((tc, idx) => {
                   const isOpen = expandedCase === idx || !tc.passed;
                   return (

@@ -15,7 +15,7 @@ class Submission < ApplicationRecord
   validates :language_slug, presence: true
   validates :code_files, presence: true
 
-  SUPPORTED_LANGUAGES = %w[c cpp rust zig].freeze
+  SUPPORTED_LANGUAGES = %w[c cpp rust zig python ruby].freeze
 
   validates :language_slug, inclusion: { in: SUPPORTED_LANGUAGES }
 

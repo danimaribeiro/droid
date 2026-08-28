@@ -7,7 +7,9 @@ class StageTemplateService
     "c" => "c-droid",
     "cpp" => "cpp-droid",
     "rust" => "rust-droid",
-    "zig" => "zig-droid"
+    "zig" => "zig-droid",
+    "python" => "python-droid",
+    "ruby" => "ruby-droid"
   }.freeze
 
   def self.fetch(stage_slug, language = "c")
