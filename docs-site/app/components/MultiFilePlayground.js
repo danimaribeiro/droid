@@ -15,21 +15,6 @@ const Editor = dynamic(() => import("@monaco-editor/react").then((mod) => mod.de
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-const SLUG_TO_API_SLUG = {
-  "stage1-repl": "database/repl",
-  "stage2-lexer": "database/lexer",
-  "stage3-parser": "database/parser",
-  "stage4-serialization": "database/row-serialization",
-  "stage5-pager": "database/pager",
-  "stage6-btree-leaf": "database/btree-leaf",
-  "stage7-btree-search": "database/btree-search",
-  "stage8-btree-split": "database/btree-split",
-  "stage9-btree-internal-split": "database/persistence",
-  "stage10-persistence": "database/planner",
-  "stage11-planner": "database/index-scan",
-  "stage12-delete-update": "database/delete-update",
-};
-
 const PROGRESS_PHASES = [
   { key: "submitting", label: "Submitting" },
   { key: "compiling", label: "Compiling" },
@@ -163,7 +148,7 @@ export default function MultiFilePlayground({ stageSlug }) {
   const [showResultsPanel, setShowResultsPanel] = useState(false);
   const pollRef = useRef(null);
 
-  const apiSlug = SLUG_TO_API_SLUG[stageSlug] || stageSlug;
+  const apiSlug = stageSlug;
   const stageLabel = stageSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   useEffect(() => {

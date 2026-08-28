@@ -3,53 +3,53 @@ import { getPartInfo } from "@/lib/stages";
 import TerminalPreview from "./components/TerminalPreview";
 
 const PART_META = {
-  1: { 
-    icon: "⚙️", 
-    tag: "CORE ENGINE", 
-    stages: "Stages 1–12", 
-    slug: "stage1-repl",
+  1: {
+    icon: "⚙️",
+    tag: "CORE ENGINE",
+    stages: "Stages 1–12",
+    slug: "database/repl",
     ready: true,
-    statusText: "🟢 STAGES 1–12 READY" 
+    statusText: "🟢 STAGES 1–12 READY"
   },
-  2: { 
-    icon: "⚡", 
-    tag: "STORAGE & WAL", 
-    stages: "Stages 1–8", 
-    slug: "part2-stage1-wal",
+  2: {
+    icon: "⚡",
+    tag: "STORAGE & WAL",
+    stages: "Stages 1–8",
+    slug: "advanced-storage/wal",
     ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION" 
+    statusText: "🚧 UNDER CONSTRUCTION"
   },
-  3: { 
-    icon: "🧠", 
-    tag: "COMPLETE SQL", 
-    stages: "Stages 1–4", 
-    slug: "part3-stage1-advanced-where",
+  3: {
+    icon: "🧠",
+    tag: "COMPLETE SQL",
+    stages: "Stages 1–4",
+    slug: "complete-sql/advanced-where",
     ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION" 
+    statusText: "🚧 UNDER CONSTRUCTION"
   },
-  4: { 
-    icon: "🔍", 
-    tag: "OPTIMIZATION", 
-    stages: "Stages 1–3", 
-    slug: "part4-stage1-secondary-indexes",
+  4: {
+    icon: "🔍",
+    tag: "OPTIMIZATION",
+    stages: "Stages 1–3",
+    slug: "advanced-indexing/secondary-indexes",
     ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION" 
+    statusText: "🚧 UNDER CONSTRUCTION"
   },
-  5: { 
-    icon: "🔗", 
-    tag: "RELATIONSHIPS", 
-    stages: "Stages 1–4", 
-    slug: "part5-stage1-joins-nested-loop",
+  5: {
+    icon: "🔗",
+    tag: "RELATIONSHIPS",
+    stages: "Stages 1–4",
+    slug: "multi-table/joins-nested-loop",
     ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION" 
+    statusText: "🚧 UNDER CONSTRUCTION"
   },
-  6: { 
-    icon: "🛡️", 
-    tag: "CONCURRENCY", 
-    stages: "Stages 1–3", 
-    slug: "part6-stage1-lock-manager",
+  6: {
+    icon: "🛡️",
+    tag: "CONCURRENCY",
+    stages: "Stages 1–3",
+    slug: "concurrency/lock-manager",
     ready: false,
-    statusText: "🚧 UNDER CONSTRUCTION" 
+    statusText: "🚧 UNDER CONSTRUCTION"
   },
 };
 
@@ -104,7 +104,7 @@ export default function HomePage() {
             </p>
 
             <div className="hero-actions">
-              <Link href="/stages/stage1-repl" className="btn-glow-primary">
+              <Link href="/stages/database/repl" className="btn-glow-primary">
                 <span>Start Part 1 Tutorial</span>
                 <span className="btn-arrow">→</span>
               </Link>
@@ -269,7 +269,7 @@ export default function HomePage() {
         <div className="footer-box">
           <h2 className="footer-heading">Ready to dive into systems engineering?</h2>
           <p className="footer-text">Pick up your favorite terminal and start with Stage 1.</p>
-          <Link href="/stages/stage1-repl" className="btn-glow-primary">
+          <Link href="/stages/database/repl" className="btn-glow-primary">
             <span>Begin Stage 1: The REPL</span>
             <span>→</span>
           </Link>

@@ -5,76 +5,76 @@ import matter from "gray-matter";
 const CONTENT_DIR = path.join(process.cwd(), "content");
 const STAGES_DIR = path.join(process.cwd(), "..", "tests", "docs");
 
-// Tutorial content slugs (with frontmatter)
+// Tutorial content slugs — matches API slug format
 const TUTORIAL_SLUGS = [
-  "stage1-repl",
-  "stage2-lexer",
-  "stage3-parser",
-  "stage4-serialization",
-  "stage5-pager",
-  "stage6-btree-leaf",
-  "stage7-btree-search",
-  "stage8-btree-split",
-  "stage9-btree-internal-split",
-  "stage10-persistence",
-  "stage11-planner",
-  "stage12-delete-update",
+  "database/repl",
+  "database/lexer",
+  "database/parser",
+  "database/row-serialization",
+  "database/pager",
+  "database/btree-leaf",
+  "database/btree-search",
+  "database/btree-split",
+  "database/persistence",
+  "database/planner",
+  "database/index-scan",
+  "database/delete-update",
 ];
 
 const STAGE_ORDER = [
-  { file: "STAGE1_REPL_TEST_PLAN.md", num: 1, part: 1 },
-  { file: "STAGE2_LEXER_TEST_PLAN.md", num: 2, part: 1 },
-  { file: "STAGE3_PARSER_TEST_PLAN.md", num: 3, part: 1 },
-  { file: "STAGE4_SERIALIZATION_TEST_PLAN.md", num: 4, part: 1 },
-  { file: "STAGE5_PAGER_TEST_PLAN.md", num: 5, part: 1 },
-  { file: "STAGE6_BTREE_LEAF_TEST_PLAN.md", num: 6, part: 1 },
-  { file: "STAGE7_BTREE_SEARCH_TEST_PLAN.md", num: 7, part: 1 },
-  { file: "STAGE8_BTREE_SPLIT_TEST_PLAN.md", num: 8, part: 1 },
-  { file: "STAGE9_BTREE_INTERNAL_SPLIT_TEST_PLAN.md", num: 9, part: 1 },
-  { file: "STAGE10_PERSISTENCE_TEST_PLAN.md", num: 10, part: 1 },
-  { file: "STAGE11_PLANNER_TEST_PLAN.md", num: 11, part: 1 },
-  { file: "STAGE12_DELETE_UPDATE_TEST_PLAN.md", num: 12, part: 1 },
-  { file: "STAGE1_WAL_TEST_PLAN.md", num: 1, part: 2 },
-  { file: "STAGE2_TRANSACTION_COMMIT_TEST_PLAN.md", num: 2, part: 2 },
-  { file: "STAGE3_TRANSACTION_ROLLBACK_TEST_PLAN.md", num: 3, part: 2 },
-  { file: "STAGE4_CREATE_TABLE_TEST_PLAN.md", num: 4, part: 2 },
-  { file: "STAGE5_SCHEMA_VALIDATION_TEST_PLAN.md", num: 5, part: 2 },
-  { file: "STAGE6_VARLEN_SERIALIZATION_TEST_PLAN.md", num: 6, part: 2 },
-  { file: "STAGE7_SLOTTED_PAGE_TEST_PLAN.md", num: 7, part: 2 },
-  { file: "STAGE8_VARLEN_BTREE_TEST_PLAN.md", num: 8, part: 2 },
-  { file: "STAGE1_ADVANCED_WHERE_TEST_PLAN.md", num: 1, part: 3 },
-  { file: "STAGE2_ORDER_BY_TEST_PLAN.md", num: 2, part: 3 },
-  { file: "STAGE3_LIMIT_OFFSET_TEST_PLAN.md", num: 3, part: 3 },
-  { file: "STAGE4_AGGREGATIONS_TEST_PLAN.md", num: 4, part: 3 },
-  { file: "STAGE5_GROUP_BY_HAVING_TEST_PLAN.md", num: 5, part: 3 },
-  { file: "STAGE6_NULL_HANDLING_TEST_PLAN.md", num: 6, part: 3 },
-  { file: "STAGE7_ADDITIONAL_DDL_TEST_PLAN.md", num: 7, part: 3 },
-  { file: "STAGE1_SECONDARY_INDEXES_TEST_PLAN.md", num: 1, part: 4 },
-  { file: "STAGE2_COST_OPTIMIZER_TEST_PLAN.md", num: 2, part: 4 },
-  { file: "STAGE3_VACUUM_TEST_PLAN.md", num: 3, part: 4 },
-  { file: "STAGE1_JOINS_NESTED_LOOP_TEST_PLAN.md", num: 1, part: 5 },
-  { file: "STAGE2_HASH_JOIN_TEST_PLAN.md", num: 2, part: 5 },
-  { file: "STAGE3_FOREIGN_KEYS_TEST_PLAN.md", num: 3, part: 5 },
-  { file: "STAGE4_SUBQUERIES_TEST_PLAN.md", num: 4, part: 5 },
-  { file: "STAGE1_LOCK_MANAGER_TEST_PLAN.md", num: 1, part: 6 },
-  { file: "STAGE2_MVCC_TEST_PLAN.md", num: 2, part: 6 },
-  { file: "STAGE3_DEADLOCK_DETECTION_TEST_PLAN.md", num: 3, part: 6 },
+  { file: "STAGE1_REPL_TEST_PLAN.md", num: 1, part: 1, apiSlug: "database/repl" },
+  { file: "STAGE2_LEXER_TEST_PLAN.md", num: 2, part: 1, apiSlug: "database/lexer" },
+  { file: "STAGE3_PARSER_TEST_PLAN.md", num: 3, part: 1, apiSlug: "database/parser" },
+  { file: "STAGE4_SERIALIZATION_TEST_PLAN.md", num: 4, part: 1, apiSlug: "database/row-serialization" },
+  { file: "STAGE5_PAGER_TEST_PLAN.md", num: 5, part: 1, apiSlug: "database/pager" },
+  { file: "STAGE6_BTREE_LEAF_TEST_PLAN.md", num: 6, part: 1, apiSlug: "database/btree-leaf" },
+  { file: "STAGE7_BTREE_SEARCH_TEST_PLAN.md", num: 7, part: 1, apiSlug: "database/btree-search" },
+  { file: "STAGE8_BTREE_SPLIT_TEST_PLAN.md", num: 8, part: 1, apiSlug: "database/btree-split" },
+  { file: "STAGE9_BTREE_INTERNAL_SPLIT_TEST_PLAN.md", num: 9, part: 1, apiSlug: "database/persistence" },
+  { file: "STAGE10_PERSISTENCE_TEST_PLAN.md", num: 10, part: 1, apiSlug: "database/planner" },
+  { file: "STAGE11_PLANNER_TEST_PLAN.md", num: 11, part: 1, apiSlug: "database/index-scan" },
+  { file: "STAGE12_DELETE_UPDATE_TEST_PLAN.md", num: 12, part: 1, apiSlug: "database/delete-update" },
+  { file: "STAGE1_WAL_TEST_PLAN.md", num: 1, part: 2, apiSlug: "advanced-storage/wal" },
+  { file: "STAGE2_TRANSACTION_COMMIT_TEST_PLAN.md", num: 2, part: 2, apiSlug: "advanced-storage/commit" },
+  { file: "STAGE3_TRANSACTION_ROLLBACK_TEST_PLAN.md", num: 3, part: 2, apiSlug: "advanced-storage/rollback" },
+  { file: "STAGE4_CREATE_TABLE_TEST_PLAN.md", num: 4, part: 2, apiSlug: "advanced-storage/create-table" },
+  { file: "STAGE5_SCHEMA_VALIDATION_TEST_PLAN.md", num: 5, part: 2, apiSlug: "advanced-storage/schema-validation" },
+  { file: "STAGE6_VARLEN_SERIALIZATION_TEST_PLAN.md", num: 6, part: 2, apiSlug: "advanced-storage/varlen-serialization" },
+  { file: "STAGE7_SLOTTED_PAGE_TEST_PLAN.md", num: 7, part: 2, apiSlug: "advanced-storage/slotted-page" },
+  { file: "STAGE8_VARLEN_BTREE_TEST_PLAN.md", num: 8, part: 2, apiSlug: "advanced-storage/varlen-btree" },
+  { file: "STAGE1_ADVANCED_WHERE_TEST_PLAN.md", num: 1, part: 3, apiSlug: "complete-sql/advanced-where" },
+  { file: "STAGE2_ORDER_BY_TEST_PLAN.md", num: 2, part: 3, apiSlug: "complete-sql/order-by" },
+  { file: "STAGE3_LIMIT_OFFSET_TEST_PLAN.md", num: 3, part: 3, apiSlug: "complete-sql/limit-offset" },
+  { file: "STAGE4_AGGREGATIONS_TEST_PLAN.md", num: 4, part: 3, apiSlug: "complete-sql/aggregations" },
+  { file: "STAGE5_GROUP_BY_HAVING_TEST_PLAN.md", num: 5, part: 3, apiSlug: "complete-sql/group-by-having" },
+  { file: "STAGE6_NULL_HANDLING_TEST_PLAN.md", num: 6, part: 3, apiSlug: "complete-sql/null-handling" },
+  { file: "STAGE7_ADDITIONAL_DDL_TEST_PLAN.md", num: 7, part: 3, apiSlug: "complete-sql/additional-ddl" },
+  { file: "STAGE1_SECONDARY_INDEXES_TEST_PLAN.md", num: 1, part: 4, apiSlug: "advanced-indexing/secondary-indexes" },
+  { file: "STAGE2_COST_OPTIMIZER_TEST_PLAN.md", num: 2, part: 4, apiSlug: "advanced-indexing/cost-optimizer" },
+  { file: "STAGE3_VACUUM_TEST_PLAN.md", num: 3, part: 4, apiSlug: "advanced-indexing/vacuum" },
+  { file: "STAGE1_JOINS_NESTED_LOOP_TEST_PLAN.md", num: 1, part: 5, apiSlug: "multi-table/joins-nested-loop" },
+  { file: "STAGE2_HASH_JOIN_TEST_PLAN.md", num: 2, part: 5, apiSlug: "multi-table/hash-join" },
+  { file: "STAGE3_FOREIGN_KEYS_TEST_PLAN.md", num: 3, part: 5, apiSlug: "multi-table/foreign-keys" },
+  { file: "STAGE4_SUBQUERIES_TEST_PLAN.md", num: 4, part: 5, apiSlug: "multi-table/subqueries" },
+  { file: "STAGE1_LOCK_MANAGER_TEST_PLAN.md", num: 1, part: 6, apiSlug: "concurrency/lock-manager" },
+  { file: "STAGE2_MVCC_TEST_PLAN.md", num: 2, part: 6, apiSlug: "concurrency/mvcc" },
+  { file: "STAGE3_DEADLOCK_DETECTION_TEST_PLAN.md", num: 3, part: 6, apiSlug: "concurrency/deadlock-detection" },
 ];
 
 const EXTRAS_ORDER = [
-  "EXTRA_RESULT_SET_TEST_PLAN.md",
-  "EXTRA_ERROR_HANDLING_TEST_PLAN.md",
-  "EXTRA_WIRE_PROTOCOL_TEST_PLAN.md",
-  "EXTRA_TYPE_SYSTEM_TEST_PLAN.md",
-  "EXTRA_BUILTIN_FUNCTIONS_TEST_PLAN.md",
-  "EXTRA_VIEWS_TEST_PLAN.md",
-  "EXTRA_PREPARED_STATEMENTS_TEST_PLAN.md",
-  "EXTRA_ALTER_TABLE_TEST_PLAN.md",
-  "EXTRA_DROP_TRUNCATE_TEST_PLAN.md",
-  "EXTRA_DISTINCT_SET_OPS_TEST_PLAN.md",
-  "EXTRA_LSM_TREE_TEST_PLAN.md",
-  "EXTRA_PAGE_COMPRESSION_TEST_PLAN.md",
-  "EXTRA_EXPLAIN_ANALYZE_TEST_PLAN.md",
+  { file: "EXTRA_RESULT_SET_TEST_PLAN.md", apiSlug: "extras/result-set" },
+  { file: "EXTRA_ERROR_HANDLING_TEST_PLAN.md", apiSlug: "extras/error-handling" },
+  { file: "EXTRA_WIRE_PROTOCOL_TEST_PLAN.md", apiSlug: "extras/wire-protocol" },
+  { file: "EXTRA_TYPE_SYSTEM_TEST_PLAN.md", apiSlug: "extras/type-system" },
+  { file: "EXTRA_BUILTIN_FUNCTIONS_TEST_PLAN.md", apiSlug: "extras/builtin-functions" },
+  { file: "EXTRA_VIEWS_TEST_PLAN.md", apiSlug: "extras/views" },
+  { file: "EXTRA_PREPARED_STATEMENTS_TEST_PLAN.md", apiSlug: "extras/prepared-statements" },
+  { file: "EXTRA_ALTER_TABLE_TEST_PLAN.md", apiSlug: "extras/alter-table" },
+  { file: "EXTRA_DROP_TRUNCATE_TEST_PLAN.md", apiSlug: "extras/drop-truncate" },
+  { file: "EXTRA_DISTINCT_SET_OPS_TEST_PLAN.md", apiSlug: "extras/distinct-set-ops" },
+  { file: "EXTRA_LSM_TREE_TEST_PLAN.md", apiSlug: "extras/lsm-tree" },
+  { file: "EXTRA_PAGE_COMPRESSION_TEST_PLAN.md", apiSlug: "extras/page-compression" },
+  { file: "EXTRA_EXPLAIN_ANALYZE_TEST_PLAN.md", apiSlug: "extras/explain-analyze" },
 ];
 
 const PART_NAMES = {
@@ -100,13 +100,6 @@ function extractTitle(content) {
   return match ? match[1].replace(/^Stage \d+:\s*/, "").replace(/^Extra Stage:\s*/, "") : "Untitled";
 }
 
-function extractSlug(filename) {
-  return filename
-    .replace("_TEST_PLAN.md", "")
-    .toLowerCase()
-    .replace(/_/g, "-");
-}
-
 function extractFirstSection(content) {
   const lines = content.split("\n");
   let collecting = false;
@@ -124,7 +117,7 @@ function extractFirstSection(content) {
 
 /**
  * Load tutorial content from content/ directory (with frontmatter).
- * Returns null if the file doesn't exist.
+ * Supports nested paths like "database/repl" → content/database/repl.md
  */
 export function getTutorialContent(slug) {
   const filePath = path.join(CONTENT_DIR, `${slug}.md`);
@@ -141,7 +134,6 @@ function findStageFile(filename, partNum = null) {
     let partPath = path.join(STAGES_DIR, `part${partNum}`, filename);
     if (fs.existsSync(partPath)) return partPath;
   }
-  // Fallback search in all part folders
   for (let p = 1; p <= 6; p++) {
     let pPath = path.join(STAGES_DIR, `part${p}`, filename);
     if (fs.existsSync(pPath)) return pPath;
@@ -156,27 +148,25 @@ export function getStages() {
     const filePath = findStageFile(entry.file, entry.part);
     if (!filePath) return null;
     const content = fs.readFileSync(filePath, "utf-8");
-    const baseSlug = extractSlug(entry.file);
-    const slug = entry.part > 1 ? `part${entry.part}-${baseSlug}` : baseSlug;
     return {
-      slug,
+      slug: entry.apiSlug,
       num: entry.num,
       part: entry.part,
       title: extractTitle(content),
       summary: extractFirstSection(content),
       content,
-      hasTutorial: TUTORIAL_SLUGS.includes(slug),
+      hasTutorial: TUTORIAL_SLUGS.includes(entry.apiSlug),
     };
   }).filter(Boolean);
 }
 
 export function getExtras() {
-  return EXTRAS_ORDER.map((file) => {
-    const filePath = findStageFile(file);
+  return EXTRAS_ORDER.map((entry) => {
+    const filePath = findStageFile(entry.file);
     if (!filePath) return null;
     const content = fs.readFileSync(filePath, "utf-8");
     return {
-      slug: extractSlug(file),
+      slug: entry.apiSlug,
       title: extractTitle(content),
       summary: extractFirstSection(content),
       content,

@@ -29,6 +29,6 @@ test.describe("Homepage", () => {
     await page.goto("/");
 
     await page.click('a:has-text("Start Part 1 Tutorial")');
-    await expect(page).toHaveURL(/stages\/stage1-repl/);
+    await expect(page).toHaveURL(/stages\/database\/repl/);
   });
 });

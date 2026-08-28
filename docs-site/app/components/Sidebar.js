@@ -11,43 +11,43 @@ const ALL_PARTS = [
       {
         title: "Command Loop & The REPL",
         stages: [
-          { num: 1, slug: "stage1-repl", title: "Building the CLI Interface" },
+          { num: 1, slug: "database/repl", title: "Building the CLI Interface" },
         ],
       },
       {
         title: "SQL Statement Compiler",
         stages: [
-          { num: 2, slug: "stage2-lexer", title: "Lexical Analysis (Tokenizer)" },
-          { num: 3, slug: "stage3-parser", title: "SQL Parser (Recursive Descent)" },
+          { num: 2, slug: "database/lexer", title: "Lexical Analysis (Tokenizer)" },
+          { num: 3, slug: "database/parser", title: "SQL Parser (Recursive Descent)" },
         ],
       },
       {
         title: "Data Row Serialization",
         stages: [
-          { num: 4, slug: "stage4-serialization", title: "Compact Row Memory Packing" },
+          { num: 4, slug: "database/row-serialization", title: "Compact Row Memory Packing" },
         ],
       },
       {
         title: "The Pager & Buffer Pool",
         stages: [
-          { num: 5, slug: "stage5-pager", title: "Memory Caching & File Paging" },
+          { num: 5, slug: "database/pager", title: "Memory Caching & File Paging" },
         ],
       },
       {
         title: "The B+Tree Storage Engine",
         stages: [
-          { num: 6, slug: "stage6-btree-leaf", title: "B+Tree Leaf Node Byte Layout" },
-          { num: 7, slug: "stage7-btree-search", title: "Logarithmic Search & Sorted Insertion" },
-          { num: 8, slug: "stage8-btree-split", title: "Leaf Overflow Splits & Internal Nodes" },
-          { num: 9, slug: "stage9-btree-internal-split", title: "B+Tree Internal Node Splits" },
+          { num: 6, slug: "database/btree-leaf", title: "B+Tree Leaf Node Byte Layout" },
+          { num: 7, slug: "database/btree-search", title: "Logarithmic Search & Sorted Insertion" },
+          { num: 8, slug: "database/btree-split", title: "Leaf Overflow Splits & Internal Nodes" },
+          { num: 9, slug: "database/persistence", title: "B+Tree Internal Node Splits" },
         ],
       },
       {
         title: "Persistence & Query Execution",
         stages: [
-          { num: 10, slug: "stage10-persistence", title: "Persistence & WHERE Clause" },
-          { num: 11, slug: "stage11-planner", title: "Query Planner & Executor (Volcano)" },
-          { num: 12, slug: "stage12-delete-update", title: "DELETE & UPDATE Execution" },
+          { num: 10, slug: "database/planner", title: "Persistence & WHERE Clause" },
+          { num: 11, slug: "database/index-scan", title: "Query Planner & Executor (Volcano)" },
+          { num: 12, slug: "database/delete-update", title: "DELETE & UPDATE Execution" },
         ],
       },
     ],
@@ -59,24 +59,24 @@ const ALL_PARTS = [
       {
         title: "Transactions & Durability",
         stages: [
-          { num: 1, slug: "part2-stage1-wal", title: "Write-Ahead Logging (WAL)" },
-          { num: 2, slug: "part2-stage2-transaction-commit", title: "Transaction COMMIT" },
-          { num: 3, slug: "part2-stage3-transaction-rollback", title: "Transaction ROLLBACK" },
+          { num: 1, slug: "advanced-storage/wal", title: "Write-Ahead Logging (WAL)" },
+          { num: 2, slug: "advanced-storage/commit", title: "Transaction COMMIT" },
+          { num: 3, slug: "advanced-storage/rollback", title: "Transaction ROLLBACK" },
         ],
       },
       {
         title: "Schema & Catalog",
         stages: [
-          { num: 4, slug: "part2-stage4-create-table", title: "CREATE TABLE & Schema Catalog" },
-          { num: 5, slug: "part2-stage5-schema-validation", title: "Schema Validation" },
+          { num: 4, slug: "advanced-storage/create-table", title: "CREATE TABLE & Schema Catalog" },
+          { num: 5, slug: "advanced-storage/schema-validation", title: "Schema Validation" },
         ],
       },
       {
         title: "Variable-Length Storage",
         stages: [
-          { num: 6, slug: "part2-stage6-varlen-serialization", title: "Variable-Length Row Serialization" },
-          { num: 7, slug: "part2-stage7-slotted-page", title: "Slotted Page Layout" },
-          { num: 8, slug: "part2-stage8-varlen-btree", title: "Variable-Length B-Tree" },
+          { num: 6, slug: "advanced-storage/varlen-serialization", title: "Variable-Length Row Serialization" },
+          { num: 7, slug: "advanced-storage/slotted-page", title: "Slotted Page Layout" },
+          { num: 8, slug: "advanced-storage/varlen-btree", title: "Variable-Length B-Tree" },
         ],
       },
     ],
@@ -88,18 +88,18 @@ const ALL_PARTS = [
       {
         title: "Query Enhancements",
         stages: [
-          { num: 1, slug: "part3-stage1-advanced-where", title: "Advanced WHERE Expressions" },
+          { num: 1, slug: "complete-sql/advanced-where", title: "Advanced WHERE Expressions" },
         ],
       },
       {
         title: "Result Processing",
         stages: [
-          { num: 2, slug: "part3-stage2-order-by", title: "ORDER BY" },
-          { num: 3, slug: "part3-stage3-limit-offset", title: "LIMIT & OFFSET" },
-          { num: 4, slug: "part3-stage4-aggregations", title: "Aggregate Functions" },
-          { num: 5, slug: "part3-stage5-group-by-having", title: "GROUP BY & HAVING" },
-          { num: 6, slug: "part3-stage6-null-handling", title: "NULL Handling" },
-          { num: 7, slug: "part3-stage7-additional-ddl", title: "Additional DDL (ALTER/DROP)" },
+          { num: 2, slug: "complete-sql/order-by", title: "ORDER BY" },
+          { num: 3, slug: "complete-sql/limit-offset", title: "LIMIT & OFFSET" },
+          { num: 4, slug: "complete-sql/aggregations", title: "Aggregate Functions" },
+          { num: 5, slug: "complete-sql/group-by-having", title: "GROUP BY & HAVING" },
+          { num: 6, slug: "complete-sql/null-handling", title: "NULL Handling" },
+          { num: 7, slug: "complete-sql/additional-ddl", title: "Additional DDL (ALTER/DROP)" },
         ],
       },
     ],
@@ -111,9 +111,9 @@ const ALL_PARTS = [
       {
         title: "Indexes & Optimization",
         stages: [
-          { num: 1, slug: "part4-stage1-secondary-indexes", title: "Secondary Indexes" },
-          { num: 2, slug: "part4-stage2-cost-optimizer", title: "Cost-Based Query Optimizer" },
-          { num: 3, slug: "part4-stage3-vacuum", title: "VACUUM & Space Reclamation" },
+          { num: 1, slug: "advanced-indexing/secondary-indexes", title: "Secondary Indexes" },
+          { num: 2, slug: "advanced-indexing/cost-optimizer", title: "Cost-Based Query Optimizer" },
+          { num: 3, slug: "advanced-indexing/vacuum", title: "VACUUM & Space Reclamation" },
         ],
       },
     ],
@@ -125,10 +125,10 @@ const ALL_PARTS = [
       {
         title: "Joins & Relations",
         stages: [
-          { num: 1, slug: "part5-stage1-joins-nested-loop", title: "Nested Loop JOIN" },
-          { num: 2, slug: "part5-stage2-hash-join", title: "Hash JOIN" },
-          { num: 3, slug: "part5-stage3-foreign-keys", title: "Foreign Key Constraints" },
-          { num: 4, slug: "part5-stage4-subqueries", title: "Subqueries" },
+          { num: 1, slug: "multi-table/joins-nested-loop", title: "Nested Loop JOIN" },
+          { num: 2, slug: "multi-table/hash-join", title: "Hash JOIN" },
+          { num: 3, slug: "multi-table/foreign-keys", title: "Foreign Key Constraints" },
+          { num: 4, slug: "multi-table/subqueries", title: "Subqueries" },
         ],
       },
     ],
@@ -140,9 +140,9 @@ const ALL_PARTS = [
       {
         title: "Concurrent Access",
         stages: [
-          { num: 1, slug: "part6-stage1-lock-manager", title: "Lock Manager" },
-          { num: 2, slug: "part6-stage2-mvcc", title: "MVCC & Snapshot Isolation" },
-          { num: 3, slug: "part6-stage3-deadlock-detection", title: "Deadlock Detection" },
+          { num: 1, slug: "concurrency/lock-manager", title: "Lock Manager" },
+          { num: 2, slug: "concurrency/mvcc", title: "MVCC & Snapshot Isolation" },
+          { num: 3, slug: "concurrency/deadlock-detection", title: "Deadlock Detection" },
         ],
       },
     ],
@@ -167,10 +167,10 @@ function findPartForSlug(slug) {
 }
 
 /**
- * Get the slug from a pathname like /stages/stage2-lexer
+ * Get the slug from a pathname like /stages/database/repl or /playground/database/repl
  */
 function getSlugFromPathname(pathname) {
-  const match = pathname.match(/\/stages\/(.+)/);
+  const match = pathname.match(/\/(?:stages|playground)\/(.+)/);
   return match ? match[1] : null;
 }
 
@@ -202,7 +202,7 @@ export default function Sidebar({ isOpen, onClose }) {
               {section.title.toUpperCase()}
             </div>
             {section.stages.map((stage) => {
-              const isActive = pathname === `/stages/${stage.slug}`;
+              const isActive = pathname === `/stages/${stage.slug}` || pathname === `/playground/${stage.slug}`;
               const isImplemented = currentPart.part === 1;
               return (
                 <Link

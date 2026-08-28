@@ -8,13 +8,14 @@ import BTreeVisualizer from "@/app/components/BTreeVisualizer";
 
 export async function generateStaticParams() {
   const slugs = getAllSlugs();
-  return slugs.map((slug) => ({ slug }));
+  return slugs.map((slug) => ({ slug: slug.split("/") }));
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const tutorial = getTutorialContent(slug);
-  const stage = getStageBySlug(slug);
+  const joined = slug.join("/");
+  const tutorial = getTutorialContent(joined);
+  const stage = getStageBySlug(joined);
   const title = tutorial?.title || stage?.title || "Not Found";
   const description = tutorial?.objective || stage?.summary?.slice(0, 160);
   return { title: `${title} — droid Tutorial`, description };
@@ -22,14 +23,15 @@ export async function generateMetadata({ params }) {
 
 export default async function StagePage({ params }) {
   const { slug } = await params;
-  const stage = getStageBySlug(slug);
+  const joined = slug.join("/");
+  const stage = getStageBySlug(joined);
   if (!stage) notFound();
 
-  const tutorial = getTutorialContent(slug);
+  const tutorial = getTutorialContent(joined);
 
   // Build prev/next navigation
   const allStages = [...getStages(), ...getExtras()];
-  const currentIdx = allStages.findIndex((s) => s.slug === slug);
+  const currentIdx = allStages.findIndex((s) => s.slug === joined);
   const prev = currentIdx > 0 ? allStages[currentIdx - 1] : null;
   const next = currentIdx < allStages.length - 1 ? allStages[currentIdx + 1] : null;
 
@@ -82,7 +84,7 @@ export default async function StagePage({ params }) {
           )}
 
           {/* Interactive B+Tree Architecture Lab */}
-          <BTreeVisualizer slug={slug} />
+          <BTreeVisualizer slug={joined} />
 
           {/* Body content (markdown comes before conceptual execution!) */}
           {tutorial.bodyContent && (
@@ -124,7 +126,7 @@ export default async function StagePage({ params }) {
 
           {/* Launch Code Editor */}
           <div style={{ marginTop: 32, marginBottom: 32, textAlign: "center" }}>
-            <Link href={`/playground/${slug}`} className="btn-glow-primary" style={{ display: "inline-block", padding: "16px 32px", fontSize: 16 }}>
+            <Link href={`/playground/${joined}`} className="btn-glow-primary" style={{ display: "inline-block", padding: "16px 32px", fontSize: 16 }}>
               Launch Code Editor
             </Link>
           </div>
@@ -159,7 +161,7 @@ export default async function StagePage({ params }) {
   }
 
   // Fallback: old layout for stages without tutorial content
-  const isExtra = slug.startsWith("extra-");
+  const isExtra = joined.startsWith("extra-");
   const partClass = isExtra ? "extra" : stage.part ? `part-${stage.part}` : "";
 
   return (
