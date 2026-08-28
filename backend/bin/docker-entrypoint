@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+echo "Setting up database..."
+bin/rails db:create 2>/dev/null || true
+bin/rails db:migrate
+
+echo "Seeding database..."
+bin/rails db:seed
+
+exec "$@"

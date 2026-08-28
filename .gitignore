@@ -1,5 +1,6 @@
 # Build artifacts
 bin/
+!backend/bin/
 
 # Python cache
 __pycache__/
