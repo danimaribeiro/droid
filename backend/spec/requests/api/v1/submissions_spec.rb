@@ -49,7 +49,7 @@ RSpec.describe "Api::V1::Submissions" do
     end
 
     it "returns 422 with invalid language" do
-      invalid_params = valid_params.deep_merge(submission: { language_slug: "python" })
+      invalid_params = valid_params.deep_merge(submission: { language_slug: "java" })
       post "/api/v1/submissions", params: invalid_params, headers: auth_headers, as: :json
 
       expect(response).to have_http_status(:unprocessable_content)
