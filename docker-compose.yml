@@ -13,11 +13,17 @@ services:
       - DB_PASSWORD=password
       - PISTON_URL=http://piston:2000
       - SOLID_QUEUE_IN_PUMA=1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/v1/stages || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
       piston:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./backend:/rails
       - ./tests:/rails/tests:ro
@@ -52,6 +58,12 @@ services:
       - PISTON_RUN_CPU_TIME=25000
       - PISTON_COMPILE_CPU_TIME=25000
       - PISTON_OUTPUT_MAX_SIZE=65536
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const h=require('http');h.get('http://localhost:2000/api/v2/runtimes',r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>{const a=JSON.parse(d);process.exit(a.length>=6?0:1)})}).on('error',()=>process.exit(1))\""]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 30s
     expose:
       - "2000"
     volumes:
