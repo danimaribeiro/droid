@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "./ThemeContext";
-import { Bot } from "lucide-react";
+import { useAuth } from "./AuthContext";
+import { Bot, Check } from "lucide-react";
 
 const ALL_PARTS = [
   {
@@ -169,9 +171,30 @@ function getSlugFromPathname(pathname) {
   return match ? match[1] : null;
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
+
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
   const { isGlass } = useTheme();
+  const { token } = useAuth();
+  const [passedSlugs, setPassedSlugs] = useState(new Set());
+
+  useEffect(() => {
+    if (!token) { setPassedSlugs(new Set()); return; }
+    fetch(`${API_BASE}/api/v1/submissions`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.ok ? r.json() : [])
+      .then((subs) => {
+        const passed = new Set();
+        for (const s of subs) {
+          if (s.status === "pass") passed.add(s.stage_slug);
+        }
+        setPassedSlugs(passed);
+      })
+      .catch(() => {});
+  }, [token]);
+
   const currentSlug = getSlugFromPathname(pathname);
   const currentPart = currentSlug ? findPartForSlug(currentSlug) : ALL_PARTS[0];
 
@@ -229,7 +252,8 @@ export default function Sidebar({ isOpen, onClose }) {
             <div className="space-y-0.5">
               {section.stages.map((stage) => {
                 const isActive = pathname === `/stages/${stage.slug}` || pathname === `/playground/${stage.slug}`;
-                const isImplemented = currentPart.part === 1;
+                const isPassed = passedSlugs.has(stage.slug);
+                const isAvailable = IMPLEMENTED_STAGES.includes(stage.num);
                 return (
                   <Link
                     key={stage.slug}
@@ -240,26 +264,36 @@ export default function Sidebar({ isOpen, onClose }) {
                         ? isGlass
                           ? "bg-white/[0.12] text-white"
                           : "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                        : isGlass
-                          ? "text-gray-200 hover:bg-white/[0.06] hover:text-white"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    } ${!isImplemented ? "opacity-60" : ""}`}
+                        : isPassed
+                          ? isGlass
+                            ? "bg-green-500/[0.08] text-green-200 hover:bg-green-500/[0.14]"
+                            : "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30"
+                          : isGlass
+                            ? "text-gray-200 hover:bg-white/[0.06] hover:text-white"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    } ${!isAvailable ? "opacity-60" : ""}`}
                   >
-                    <span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 ${
-                      isImplemented
-                        ? isGlass
+                    {isPassed ? (
+                      <span className={`flex items-center justify-center w-5 h-5 rounded-full shrink-0 ${
+                        isGlass
                           ? "bg-green-500/20 text-green-300"
                           : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                        : isGlass
+                      }`}>
+                        <Check className="w-3 h-3" />
+                      </span>
+                    ) : (
+                      <span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 ${
+                        isGlass
                           ? "border border-white/[0.15] text-gray-400"
                           : "border border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
-                    }`}>
-                      {isImplemented ? "✓" : "○"}
-                    </span>
+                      }`}>
+                        {stage.num}
+                      </span>
+                    )}
                     <div className="min-w-0">
                       <div className="truncate text-[13px] leading-tight">
                         {stage.title}
-                        {!isImplemented && (
+                        {!isAvailable && (
                           <span className="ml-1.5 text-[9px] font-medium text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
                             SOON
                           </span>
