@@ -38,6 +38,16 @@ module Api
           language_slug: params[:language_slug]
         )
 
+        if workspace.new_record?
+          stage = Stage.find_by(slug: params[:stage_slug])
+          if stage && stage.stage_number > 1
+            prev = Stage.find_by(part: stage.part, stage_number: stage.stage_number - 1)
+            if prev && !current_user.submissions.where(stage_slug: prev.slug, language_slug: params[:language_slug], status: :passed).exists?
+              return render json: { errors: ["Complete #{prev.title} first"] }, status: :forbidden
+            end
+          end
+        end
+
         workspace.code_files = params.require(:workspace).permit(code_files: {})[:code_files] || {}
 
         if workspace.save

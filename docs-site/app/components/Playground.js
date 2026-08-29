@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import AuthModal from "./AuthModal";
 import { Bot } from "lucide-react";
@@ -10,6 +10,7 @@ import {
   handleEditorWillMount,
   getMonacoLanguage,
   getFileIcon,
+  getPreviousStage,
   PROGRESS_PHASES,
   LANGS,
   LANG_EXT,
@@ -85,6 +86,10 @@ export default function Playground({ stageSlug }) {
     user,
     stageLabel,
     fileList,
+    stageBlocked,
+    passedSlugs,
+    stageJustCompleted,
+    setStageJustCompleted,
     saveWorkspace,
     resetToTemplate,
     handleFileContentChange,
@@ -105,6 +110,161 @@ export default function Playground({ stageSlug }) {
       window.HSStaticMethods?.autoInit();
     });
   }, [theme]);
+
+  const stageIconRefs = useRef({});
+  const bannerRef = useRef(null);
+  const [unlockingSlug, setUnlockingSlug] = useState(null);
+  const [completionInfo, setCompletionInfo] = useState(null);
+
+  const setStageIconRef = useCallback((slug, el) => {
+    if (el) stageIconRefs.current[slug] = el;
+  }, []);
+
+  useEffect(() => {
+    if (!stageJustCompleted) return;
+
+    const ALL_STAGES = TUTORIAL_STAGES.flatMap((s) => s.stages);
+    const ALL_SLUGS = ALL_STAGES.map((st) => st.slug);
+    const idx = ALL_SLUGS.indexOf(stageJustCompleted);
+    const completedStage = idx >= 0 ? ALL_STAGES[idx] : null;
+    const nextSlug = idx >= 0 && idx < ALL_SLUGS.length - 1 ? ALL_SLUGS[idx + 1] : null;
+    const nextStage = nextSlug ? ALL_STAGES[idx + 1] : null;
+
+    if (completedStage) {
+      setCompletionInfo({ completed: completedStage, next: nextStage });
+    }
+
+    // Canvas confetti — full-screen falling rectangles
+    const canvas = document.createElement("canvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    Object.assign(canvas.style, {
+      position: "fixed", top: "0", left: "0",
+      pointerEvents: "none", zIndex: "10000",
+    });
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const confettiColors = ["#22c55e", "#3b82f6", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#ec4899", "#14b8a6"];
+    const pieces = [];
+    for (let i = 0; i < 100; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: -20 - Math.random() * canvas.height * 0.5,
+        w: 8 + Math.random() * 6,
+        h: 14 + Math.random() * 8,
+        color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+        vx: (Math.random() - 0.5) * 3,
+        vy: 2 + Math.random() * 4,
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 0.15,
+        opacity: 1,
+      });
+    }
+    let confettiStart = performance.now();
+    const CONFETTI_DURATION = 3500;
+    let confettiRaf;
+    const drawConfetti = (now) => {
+      const elapsed = now - confettiStart;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const fadeStart = CONFETTI_DURATION * 0.6;
+      for (const p of pieces) {
+        p.x += p.vx;
+        p.vy += 0.06;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.vx *= 0.99;
+        if (elapsed > fadeStart) {
+          p.opacity = Math.max(0, 1 - (elapsed - fadeStart) / (CONFETTI_DURATION - fadeStart));
+        }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = p.opacity;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+      if (elapsed < CONFETTI_DURATION) {
+        confettiRaf = requestAnimationFrame(drawConfetti);
+      } else {
+        canvas.remove();
+      }
+    };
+    confettiRaf = requestAnimationFrame(drawConfetti);
+
+    if (!bannerRef.current || !nextSlug) {
+      setStageJustCompleted(null);
+      return () => { cancelAnimationFrame(confettiRaf); canvas.remove(); };
+    }
+
+    const bannerRect = bannerRef.current.getBoundingClientRect();
+    const targetEl = stageIconRefs.current[nextSlug];
+    if (!targetEl) {
+      setStageJustCompleted(null);
+      return () => { cancelAnimationFrame(confettiRaf); canvas.remove(); };
+    }
+    const targetRect = targetEl.getBoundingClientRect();
+
+    const startX = bannerRect.left + bannerRect.width / 2;
+    const startY = bannerRect.top + bannerRect.height / 2;
+    const endX = targetRect.left + targetRect.width / 2;
+    const endY = targetRect.top + targetRect.height / 2;
+
+    // Flying star — large with strong glow
+    const star = document.createElement("div");
+    star.innerHTML = `<svg width="44" height="44" viewBox="0 0 24 24" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"><polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9"/></svg>`;
+    Object.assign(star.style, {
+      position: "fixed", left: `${startX}px`, top: `${startY}px`,
+      pointerEvents: "none", zIndex: "10001",
+      transform: "translate(-50%, -50%) scale(0)",
+      transition: "transform 0.6s cubic-bezier(.3,1.4,.5,1), filter 0.6s ease",
+      filter: "drop-shadow(0 0 16px rgba(251,191,36,0.9)) drop-shadow(0 0 30px rgba(251,191,36,0.5))",
+    });
+    document.body.appendChild(star);
+
+    // Phase 1: star appears at 500ms, pulses for 1.2s
+    setTimeout(() => {
+      star.style.transform = "translate(-50%, -50%) scale(1.4)";
+
+      setTimeout(() => {
+        star.style.transition = "transform 0.4s ease-in-out, filter 0.4s ease";
+        star.style.transform = "translate(-50%, -50%) scale(1.0)";
+        star.style.filter = "drop-shadow(0 0 24px rgba(251,191,36,1)) drop-shadow(0 0 48px rgba(251,191,36,0.6))";
+      }, 500);
+
+      setTimeout(() => {
+        star.style.transform = "translate(-50%, -50%) scale(1.2)";
+      }, 900);
+
+      // Phase 2: star flies to target after 1.2s hover
+      setTimeout(() => {
+        star.style.transition = "left 2.5s cubic-bezier(.25,.1,.25,1), top 2.5s cubic-bezier(.25,.1,.25,1), transform 2.5s cubic-bezier(.25,.1,.25,1), filter 2.5s ease";
+        star.style.left = `${endX}px`;
+        star.style.top = `${endY}px`;
+        star.style.transform = "translate(-50%, -50%) scale(0.8)";
+
+        // Phase 3: unlock on arrival
+        setTimeout(() => {
+          star.style.transition = "transform 0.5s ease-out, opacity 0.6s ease-out";
+          star.style.transform = "translate(-50%, -50%) scale(3)";
+          star.style.opacity = "0";
+          setUnlockingSlug(nextSlug);
+
+          setTimeout(() => {
+            star.remove();
+            setUnlockingSlug(null);
+            setStageJustCompleted(null);
+          }, 1000);
+        }, 2500);
+      }, 1200);
+    }, 500);
+
+    return () => {
+      cancelAnimationFrame(confettiRaf);
+      canvas.remove();
+      try { star.remove(); } catch(e) {}
+    };
+  }, [stageJustCompleted]);
 
   const isGlass = theme === "glass";
   const isDark = theme === "dark" || isGlass || (theme === "system" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -215,7 +375,7 @@ export default function Playground({ stageSlug }) {
           <button
             data-testid="pg-submit-btn"
             onClick={submitCode}
-            disabled={isSubmitting || isLoadingTemplate || !!templateError}
+            disabled={isSubmitting || isLoadingTemplate || !!templateError || !!stageBlocked}
             className="py-1.5 px-4 inline-flex items-center gap-x-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting && (
@@ -246,24 +406,49 @@ export default function Playground({ stageSlug }) {
             {TUTORIAL_STAGES.map((group) => (
               <div key={group.section} className="mb-1">
                 <div className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${isGlass ? "text-gray-400" : "text-gray-400 dark:text-gray-500"}`}>{group.section}</div>
-                {group.stages.map((s) => (
+                {group.stages.map((s) => {
+                  const isPassed = passedSlugs.has(s.slug);
+                  const prev = getPreviousStage(s.slug);
+                  const isLocked = prev && !passedSlugs.has(prev.slug) && stageSlug !== s.slug;
+                  const isCurrent = stageSlug === s.slug;
+                  return (
                   <a
                     key={s.slug}
-                    href={`/playground/${s.slug}`}
+                    href={isLocked ? undefined : `/playground/${s.slug}`}
+                    onClick={isLocked ? (e) => e.preventDefault() : undefined}
                     className={`flex items-center gap-2 px-3 py-1.5 text-xs transition-colors ${
-                      stageSlug === s.slug
+                      isCurrent
                         ? isGlass ? "bg-white/[0.1] text-blue-300 font-medium border-r-2 border-blue-400" : "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium border-r-2 border-blue-600"
+                        : isLocked
+                        ? isGlass ? "text-gray-500 cursor-not-allowed" : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
                         : isGlass ? "text-gray-200 hover:bg-white/[0.06] hover:text-white" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >
-                    <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold ${
-                      stageSlug === s.slug
+                    <span
+                      ref={(el) => setStageIconRef(s.slug, el)}
+                      className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold transition-all duration-300 ${
+                      unlockingSlug === s.slug
+                        ? "bg-green-500 text-white scale-125 ring-2 ring-green-400/50"
+                        : isPassed
+                        ? "bg-green-600 text-white"
+                        : isCurrent
                         ? "bg-blue-600 text-white"
+                        : isLocked
+                        ? isGlass ? "bg-white/[0.04] text-gray-500" : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600"
                         : isGlass ? "bg-white/[0.08] text-gray-300" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                    }`}>{s.num}</span>
+                    }`}>
+                      {unlockingSlug === s.slug ? (
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="animate-[spin_0.4s_ease-out]"><path d="M2 5L4 7L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      ) : isPassed ? (
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      ) : isLocked ? (
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M18 10h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v4H6c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 10V6c0-1.66 1.34-3 3-3s3 1.34 3 3v4H9z"/></svg>
+                      ) : s.num}
+                    </span>
                     {s.title}
                   </a>
-                ))}
+                  );
+                })}
               </div>
             ))}
           </nav>
@@ -385,8 +570,77 @@ export default function Playground({ stageSlug }) {
           </div>
 
           {/* Editor area */}
-          <div className="flex-1 min-h-0">
-            {isLoadingTemplate ? (
+          <div className="flex-1 min-h-0 relative">
+            {completionInfo && (
+              <div data-testid="pg-completion-modal" className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+                <div className={`flex flex-col items-center gap-5 p-8 rounded-2xl max-w-sm mx-4 shadow-2xl border ${isGlass ? "bg-gray-900/90 border-white/[0.15]" : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"}`}>
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center ${isGlass ? "bg-green-500/20" : "bg-green-100 dark:bg-green-900/30"}`}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <h3 className={`text-xl font-bold mb-2 ${isGlass ? "text-white" : "text-gray-900 dark:text-gray-100"}`}>
+                      Well done!
+                    </h3>
+                    <p className={`text-sm ${isGlass ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}`}>
+                      You completed <strong className={isGlass ? "text-green-400" : "text-green-600 dark:text-green-400"}>{completionInfo.completed.title}</strong>
+                    </p>
+                  </div>
+                  {completionInfo.next ? (
+                    <a
+                      href={`/playground/${completionInfo.next.slug}`}
+                      className="w-full py-2.5 px-5 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-center transition-colors"
+                    >
+                      Next challenge {"→"} {completionInfo.next.title}
+                    </a>
+                  ) : (
+                    <p className={`text-sm font-medium ${isGlass ? "text-green-400" : "text-green-600 dark:text-green-400"}`}>
+                      You completed all stages!
+                    </p>
+                  )}
+                  <button
+                    onClick={() => setCompletionInfo(null)}
+                    className={`text-xs ${isGlass ? "text-gray-400 hover:text-gray-200" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
+                  >
+                    Stay here
+                  </button>
+                </div>
+              </div>
+            )}
+            {stageBlocked ? (
+              <div data-testid="pg-stage-locked" className="flex flex-col items-center justify-center h-full gap-4 px-8">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${isGlass ? "bg-white/[0.08]" : "bg-gray-100 dark:bg-gray-800"}`}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={isGlass ? "text-gray-400" : "text-gray-400 dark:text-gray-500"}>
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <h3 className={`text-lg font-semibold mb-1 ${isGlass ? "text-white" : "text-gray-800 dark:text-gray-200"}`}>Stage Locked</h3>
+                  <p className={`text-sm ${isGlass ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}`}>
+                    {stageBlocked.needsLogin
+                      ? "Log in and complete the previous stage to unlock this one."
+                      : <>Complete <strong>{stageBlocked.title}</strong> first to unlock this stage.</>
+                    }
+                  </p>
+                </div>
+                {stageBlocked.needsLogin ? (
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="py-2 px-5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Log In
+                  </button>
+                ) : (
+                  <a
+                    href={`/playground/${stageBlocked.slug}`}
+                    className="py-2 px-5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 inline-block"
+                  >
+                    Go to {stageBlocked.title}
+                  </a>
+                )}
+              </div>
+            ) : isLoadingTemplate ? (
               <div className="flex items-center justify-center h-full text-sm text-gray-400 dark:text-gray-500">Loading starter code...</div>
             ) : templateError ? (
               <div className="p-6 text-sm text-red-500">
@@ -431,7 +685,7 @@ export default function Playground({ stageSlug }) {
           return (
             <div data-testid="pg-results-panel" className={`w-80 lg:w-96 h-full flex flex-col shrink-0 overflow-hidden ${isGlass ? "bg-white/[0.12] backdrop-blur-xl rounded-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" : `bg-white dark:bg-gray-800 border-l ${border}`}`}>
               {/* Banner */}
-              <div data-testid="pg-results-banner" className={`shrink-0 flex items-center gap-3 p-4 border-b
+              <div ref={bannerRef} data-testid="pg-results-banner" className={`shrink-0 flex items-center gap-3 p-4 border-b
                 ${isBuildFail ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" : ""}
                 ${allPassed ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" : ""}
                 ${isError ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800" : ""}
@@ -569,6 +823,7 @@ export default function Playground({ stageSlug }) {
         onClose={() => setShowAuthModal(false)}
         onSuccess={() => setShowAuthModal(false)}
       />
+
     </div>
   );
 

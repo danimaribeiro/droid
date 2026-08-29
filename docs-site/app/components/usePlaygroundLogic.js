@@ -55,6 +55,14 @@ export const TUTORIAL_STAGES = [
   ]},
 ];
 
+export const ALL_STAGE_SLUGS = TUTORIAL_STAGES.flatMap((s) => s.stages.map((st) => st.slug));
+const ALL_STAGES_FLAT = TUTORIAL_STAGES.flatMap((s) => s.stages);
+
+export function getPreviousStage(slug) {
+  const idx = ALL_STAGE_SLUGS.indexOf(slug);
+  return idx > 0 ? ALL_STAGES_FLAT[idx - 1] : null;
+}
+
 export function getMonacoLanguage(filename) {
   if (filename.endsWith(".c") || filename.endsWith(".h")) return "c";
   if (filename.endsWith(".cpp") || filename.endsWith(".hpp")) return "cpp";
@@ -213,7 +221,15 @@ function writeStorage(key, value) {
 export function usePlaygroundLogic(stageSlug) {
   const storageKey = (suffix) => `droid_pg_${stageSlug}_${suffix}`;
 
-  const [activeLang, setActiveLang] = useState(() => readStorage(`droid_pg_${stageSlug}_lang`, "c"));
+  const [activeLang, setActiveLang] = useState("c");
+  const langHydrated = useRef(false);
+  useEffect(() => {
+    if (!langHydrated.current) {
+      langHydrated.current = true;
+      const stored = readStorage(`droid_pg_${stageSlug}_lang`, "c");
+      if (stored !== "c") setActiveLang(stored);
+    }
+  }, [stageSlug]);
   const [filesMap, setFilesMap] = useState({});
   const [activeFile, setActiveFile] = useState("");
   const [openTabs, setOpenTabs] = useState([]);
@@ -232,6 +248,9 @@ export function usePlaygroundLogic(stageSlug) {
   const [saveStatus, setSaveStatus] = useState(null);
   const [hasWorkspace, setHasWorkspace] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(null);
+  const [stageBlocked, setStageBlocked] = useState(null);
+  const [passedSlugs, setPassedSlugs] = useState(new Set());
+  const [stageJustCompleted, setStageJustCompleted] = useState(null);
   const pollRef = useRef(null);
   const progressTimerRef = useRef(null);
   const autoSaveRef = useRef(null);
@@ -244,9 +263,11 @@ export function usePlaygroundLogic(stageSlug) {
 
   filesMapRef.current = filesMap;
 
+  const langStorageKey = (suffix) => `droid_pg_${stageSlug}_${activeLang}_${suffix}`;
+
   useEffect(() => { writeStorage(storageKey("lang"), activeLang); }, [activeLang]);
-  useEffect(() => { if (activeFile) writeStorage(storageKey("file"), activeFile); }, [activeFile]);
-  useEffect(() => { if (openTabs.length) writeStorage(storageKey("tabs"), JSON.stringify(openTabs)); }, [openTabs]);
+  useEffect(() => { if (activeFile) writeStorage(langStorageKey("file"), activeFile); }, [activeFile, activeLang]);
+  useEffect(() => { if (openTabs.length) writeStorage(langStorageKey("tabs"), JSON.stringify(openTabs)); }, [openTabs, activeLang]);
 
   const openTab = useCallback((filename) => {
     setOpenTabs((prev) => prev.includes(filename) ? prev : [...prev, filename]);
@@ -290,13 +311,50 @@ export function usePlaygroundLogic(stageSlug) {
     setHasWorkspace(false);
     setSaveStatus(null);
     setIsLoadingTemplate(true);
-    const res = await fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`);
-    const data = await res.json();
-    if (data?.files && Object.keys(data.files).length > 0) {
-      const keys = Object.keys(data.files);
-      setFilesMap(data.files);
-      setOpenTabs(keys);
-      setActiveFile(keys[0]);
+
+    const prevStage = getPreviousStage(apiSlug);
+
+    if (prevStage) {
+      // Progressive stage: re-merge previous workspace + additive template
+      let prevFiles = {};
+      try {
+        const prevWsRes = await fetch(`${API_BASE}/api/v1/workspaces/${prevStage.slug}/${activeLang}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (prevWsRes.ok) {
+          const prevWsData = await prevWsRes.json();
+          prevFiles = prevWsData.code_files || {};
+        }
+      } catch {}
+
+      let additiveFiles = {};
+      try {
+        const tmplRes = await fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`);
+        if (tmplRes.ok) {
+          const tmplData = await tmplRes.json();
+          additiveFiles = tmplData.files || {};
+        }
+      } catch {}
+
+      const mergedFiles = { ...prevFiles, ...additiveFiles };
+      if (Object.keys(mergedFiles).length > 0) {
+        const keys = Object.keys(mergedFiles);
+        setFilesMap(mergedFiles);
+        setOpenTabs(keys);
+        setActiveFile(keys[0]);
+      }
+    } else {
+      // First stage: load template directly
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`);
+        const data = await res.json();
+        if (data?.files && Object.keys(data.files).length > 0) {
+          const keys = Object.keys(data.files);
+          setFilesMap(data.files);
+          setOpenTabs(keys);
+          setActiveFile(keys[0]);
+        }
+      } catch {}
     }
     setIsLoadingTemplate(false);
   }, [token, apiSlug, activeLang]);
@@ -312,11 +370,13 @@ export function usePlaygroundLogic(stageSlug) {
     setHasWorkspace(false);
     setSaveStatus(null);
     setIsCreatingFile(false);
+    setStageBlocked(null);
 
     const restoreTabState = (fileKeys) => {
-      const savedFile = readStorage(storageKey("file"), "");
+      const lsKey = (suffix) => `droid_pg_${stageSlug}_${activeLang}_${suffix}`;
+      const savedFile = readStorage(lsKey("file"), "");
       const savedTabs = (() => {
-        try { const v = localStorage.getItem(storageKey("tabs")); return v ? JSON.parse(v) : null; }
+        try { const v = localStorage.getItem(lsKey("tabs")); return v ? JSON.parse(v) : null; }
         catch { return null; }
       })();
       const tabs = savedTabs ? savedTabs.filter((t) => fileKeys.includes(t)) : fileKeys;
@@ -325,47 +385,139 @@ export function usePlaygroundLogic(stageSlug) {
       setActiveFile(restoredFile);
     };
 
-    fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`)
-      .then(async (res) => {
+    const prevStage = getPreviousStage(apiSlug);
+    const isFirstStage = !prevStage;
+
+    const loadStage = async () => {
+      // 1. If logged in, try existing workspace first
+      if (token) {
+        try {
+          const wsRes = await fetch(`${API_BASE}/api/v1/workspaces/${apiSlug}/${activeLang}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (wsRes.ok) {
+            const wsData = await wsRes.json();
+            if (wsData.code_files && Object.keys(wsData.code_files).length > 0) {
+              const keys = Object.keys(wsData.code_files);
+              setFilesMap(wsData.code_files);
+              restoreTabState(keys);
+              setHasWorkspace(true);
+              setSaveStatus("saved");
+              // Also fetch progress for sidebar indicators
+              try {
+                const pRes = await fetch(`${API_BASE}/api/v1/me/progress?language=${activeLang}`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (pRes.ok) {
+                  const pData = await pRes.json();
+                  setPassedSlugs(new Set(pData.passed || []));
+                }
+              } catch {}
+              setIsLoadingTemplate(false);
+              return;
+            }
+          }
+        } catch {}
+      }
+
+      // 2. No workspace — for stages 2+, check progression
+      if (!isFirstStage) {
+        if (!token) {
+          setStageBlocked({ slug: prevStage.slug, title: prevStage.title, needsLogin: true });
+          setIsLoadingTemplate(false);
+          return;
+        }
+
+        // Fetch progress
+        let passed = new Set();
+        try {
+          const pRes = await fetch(`${API_BASE}/api/v1/me/progress?language=${activeLang}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (pRes.ok) {
+            const pData = await pRes.json();
+            passed = new Set(pData.passed || []);
+            setPassedSlugs(passed);
+          }
+        } catch {}
+
+        if (!passed.has(prevStage.slug)) {
+          setStageBlocked({ slug: prevStage.slug, title: prevStage.title });
+          setIsLoadingTemplate(false);
+          return;
+        }
+
+        // Previous stage passed — merge previous workspace + additive template
+        try {
+          let prevFiles = {};
+          const prevWsRes = await fetch(`${API_BASE}/api/v1/workspaces/${prevStage.slug}/${activeLang}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (prevWsRes.ok) {
+            const prevWsData = await prevWsRes.json();
+            prevFiles = prevWsData.code_files || {};
+          }
+
+          let additiveFiles = {};
+          try {
+            const tmplRes = await fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`);
+            if (tmplRes.ok) {
+              const tmplData = await tmplRes.json();
+              additiveFiles = tmplData.files || {};
+            }
+          } catch {}
+
+          const mergedFiles = { ...prevFiles, ...additiveFiles };
+
+          if (Object.keys(mergedFiles).length === 0) {
+            throw new Error("No code files available. Complete the previous stage first.");
+          }
+
+          const keys = Object.keys(mergedFiles);
+          setFilesMap(mergedFiles);
+          restoreTabState(keys);
+
+          // Save merged workspace
+          await fetch(`${API_BASE}/api/v1/workspaces/${apiSlug}/${activeLang}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ workspace: { code_files: mergedFiles } }),
+          });
+          setHasWorkspace(true);
+          setSaveStatus("saved");
+          setIsLoadingTemplate(false);
+          return;
+        } catch (err) {
+          console.error("Failed to set up stage from previous:", err);
+          setTemplateError(err.message);
+          setIsLoadingTemplate(false);
+          return;
+        }
+      }
+
+      // 3. First stage — load template directly
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`);
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || `HTTP ${res.status} ${res.statusText}`);
         }
-        return res.json();
-      })
-      .then(async (data) => {
+        const data = await res.json();
         if (!data?.files || Object.keys(data.files).length === 0) {
           throw new Error("No files returned in starter template response.");
-        }
-        if (token) {
-          try {
-            const wsRes = await fetch(`${API_BASE}/api/v1/workspaces/${apiSlug}/${activeLang}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            if (wsRes.ok) {
-              const wsData = await wsRes.json();
-              if (wsData.code_files && Object.keys(wsData.code_files).length > 0) {
-                const keys = Object.keys(wsData.code_files);
-                setFilesMap(wsData.code_files);
-                restoreTabState(keys);
-                setHasWorkspace(true);
-                setSaveStatus("saved");
-                setIsLoadingTemplate(false);
-                return;
-              }
-            }
-          } catch {}
         }
         const keys = Object.keys(data.files);
         setFilesMap(data.files);
         restoreTabState(keys);
         setIsLoadingTemplate(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load starter template from API:", err);
+      } catch (err) {
+        console.error("Failed to load starter template:", err);
         setTemplateError(err.message || "Failed to connect to backend API.");
         setIsLoadingTemplate(false);
-      });
+      }
+    };
+
+    loadStage();
 
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -513,6 +665,10 @@ export function usePlaygroundLogic(stageSlug) {
               setIsSubmitting(false);
               setTestResults(subData.test_run);
               setShowResultsPanel(true);
+              if (subData.status === "passed") {
+                setPassedSlugs((prev) => new Set([...prev, apiSlug]));
+                setStageJustCompleted(apiSlug);
+              }
               if (progressTimerRef.current) clearTimeout(progressTimerRef.current);
               progressTimerRef.current = setTimeout(() => {
                 setProgressFading(true);
@@ -584,6 +740,10 @@ export function usePlaygroundLogic(stageSlug) {
     apiSlug,
     stageLabel,
     fileList,
+    stageBlocked,
+    passedSlugs,
+    stageJustCompleted,
+    setStageJustCompleted,
     saveWorkspace,
     resetToTemplate,
     handleFileContentChange,

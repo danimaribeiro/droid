@@ -52,6 +52,7 @@ module Api
           status: submission.status,
           stage_slug: submission.stage_slug,
           language_slug: submission.language_slug,
+          code_files: submission.code_files,
           created_at: submission.created_at,
           test_run: test_run ? {
             id: test_run.id,

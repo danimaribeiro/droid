@@ -13,7 +13,14 @@ module.exports = {
   },
   darkMode: "class",
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        fadeIn: { from: { opacity: "0" }, to: { opacity: "1" } },
+      },
+      animation: {
+        "fade-in": "fadeIn 0.4s ease-out",
+      },
+    },
   },
   plugins: [
     require("@tailwindcss/typography"),

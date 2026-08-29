@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       get "me", to: "sessions#me"
       put "me", to: "profiles#update"
       delete "me/progress", to: "profiles#reset_progress"
+      get "me/progress", to: "profiles#progress"
 
       get "stages/:part/:stage/template", to: "stages#template"
       get "stages/:part/:stage", to: "stages#show"

@@ -3,6 +3,13 @@ module Api
     class ProfilesController < ::ApplicationController
       before_action :authenticate_user!
 
+      def progress
+        scope = current_user.submissions.where(status: :passed)
+        scope = scope.where(language_slug: params[:language]) if params[:language].present?
+        passed_slugs = scope.select(:stage_slug).distinct.pluck(:stage_slug)
+        render json: { passed: passed_slugs }
+      end
+
       def reset_progress
         scope = current_user.submissions
         scope = scope.where(stage_slug: params[:stage_slug]) if params[:stage_slug].present?
