@@ -41,8 +41,8 @@ CASES: list[TestCase] = [
         cli_args=[],
         test_input=".foo\n.exit\n",
         expected=(
-            "exit code == 0, output includes an error code for prior command, "
-            f"and output matches prompt regex: {PROMPT_REGEX}"
+            "exit code == 0, output includes an error code (e.g. [ERROR:001]) "
+            "for the unknown command, and shows a prompt (e.g. 'db > ')"
         ),
         mode="exit_after_command_with_prompt",
     ),
@@ -52,7 +52,7 @@ CASES: list[TestCase] = [
         description="Checks .foo is rejected with an error code.",
         cli_args=[],
         test_input=".foo\n.exit\n",
-        expected=f"output matches regex: {ERR_CODE_REGEX}",
+        expected="output contains an error code, e.g. [ERROR:001] or ERR_UNKNOWN:E0001",
         mode="regex_error",
     ),
     TestCase(
@@ -62,8 +62,7 @@ CASES: list[TestCase] = [
         cli_args=[],
         test_input="\n.exit\n",
         expected=(
-            "must not crash with segfault (exit code 139) and output matches prompt "
-            f"regex: {PROMPT_REGEX}"
+            "must not crash (no segfault) and output shows a prompt (e.g. 'db > ')"
         ),
         mode="prompt_and_no_segfault",
     ),
@@ -82,7 +81,7 @@ CASES: list[TestCase] = [
         description="Checks select 1; currently returns error with code.",
         cli_args=[],
         test_input="select 1;\n.exit\n",
-        expected=f"output matches regex: {ERR_CODE_REGEX}",
+        expected="output contains an error code, e.g. [ERROR:002] or ERR_UNIMPLEMENTED:E0002",
         mode="regex_error",
     ),
     TestCase(
@@ -91,7 +90,7 @@ CASES: list[TestCase] = [
         description="Runs invalid, SQL, and exit commands in sequence.",
         cli_args=[],
         test_input=".foo\nselect 1;\n.exit\n",
-        expected=f"output contains at least one error code matching: {ERR_CODE_REGEX}",
+        expected="output contains at least one error code, e.g. [ERROR:001]",
         mode="regex_error",
     ),
     TestCase(
@@ -100,10 +99,7 @@ CASES: list[TestCase] = [
         description="Ensures end-of-input does not crash and prompt is visible.",
         cli_args=[],
         test_input="",
-        expected=(
-            "must not crash with segfault (exit code 139) and output matches prompt "
-            f"regex: {PROMPT_REGEX}"
-        ),
+        expected="must not crash (no segfault) and output shows a prompt (e.g. 'db > ')",
         mode="prompt_and_no_segfault",
     ),
     TestCase(
@@ -112,10 +108,7 @@ CASES: list[TestCase] = [
         description="Stress test ensures no crash and prompt visibility after long input.",
         cli_args=[],
         test_input=("x" * 4096) + "\n.exit\n",
-        expected=(
-            "must not crash with segfault (exit code 139) and output matches prompt "
-            f"regex: {PROMPT_REGEX}"
-        ),
+        expected="must not crash (no segfault) and output shows a prompt (e.g. 'db > ')",
         mode="prompt_and_no_segfault",
     ),
     TestCase(
@@ -124,7 +117,7 @@ CASES: list[TestCase] = [
         description="Checks -c accepts SQL and returns coded error while SQL is not implemented.",
         cli_args=["-c", "select 1;"],
         test_input="",
-        expected=f"output matches regex: {ERR_CODE_REGEX}",
+        expected="output contains an error code, e.g. [ERROR:002] or ERR_UNIMPLEMENTED:E0002",
         mode="regex_error",
     ),
     TestCase(
