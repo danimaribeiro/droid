@@ -76,7 +76,7 @@ jobs:
         run: |
           cd docs-site
           npm ci
-          npm run build
+          GITHUB_ACTIONS= npm run build
 
       - name: Serve static site
         run: npx serve docs-site/out -l 3001 &
