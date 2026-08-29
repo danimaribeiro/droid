@@ -65,6 +65,7 @@ export default function Playground({ stageSlug }) {
     activeLang, setActiveLang,
     filesMap,
     activeFile, setActiveFile,
+    openTabs, openTab, closeTab,
     isLoadingTemplate,
     templateError,
     isSubmitting,
@@ -299,7 +300,7 @@ export default function Playground({ stageSlug }) {
               <div
                 key={filename}
                 data-testid="pg-file-item"
-                onClick={() => { setActiveFile(filename); setShowMobileSidebar(false); }}
+                onClick={() => { openTab(filename); setShowMobileSidebar(false); }}
                 className={`group flex items-center gap-2 px-3 py-1.5 cursor-pointer text-xs
                   ${activeFile === filename
                     ? isGlass ? "bg-white/[0.1] text-white font-medium" : "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium"
@@ -352,13 +353,13 @@ export default function Playground({ stageSlug }) {
           {/* File tabs */}
           <div className={`flex items-center border-b ${isGlass ? "border-white/[0.10] bg-white/[0.12] backdrop-blur-xl" : `${border} bg-gray-100 dark:bg-gray-900`}`}>
             <div className="flex-1 flex overflow-x-auto">
-              {fileList.map((filename) => (
-                <button
+              {openTabs.map((filename) => (
+                <div
                   key={filename}
                   data-testid="pg-tab"
                   data-active={activeFile === filename ? "true" : undefined}
                   onClick={() => setActiveFile(filename)}
-                  className={`flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap border-r ${isGlass ? "border-white/[0.08]" : border}
+                  className={`group/tab flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap border-r cursor-pointer ${isGlass ? "border-white/[0.08]" : border}
                     ${activeFile === filename
                       ? isGlass ? "bg-white/[0.08] text-white font-medium" : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-medium"
                       : isGlass ? "text-gray-300 hover:bg-white/[0.06] hover:text-white" : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -366,7 +367,18 @@ export default function Playground({ stageSlug }) {
                 >
                   {getFileIcon(filename)}
                   {filename}
-                </button>
+                  {openTabs.length > 1 && (
+                    <button
+                      data-testid="pg-tab-close"
+                      onClick={(e) => { e.stopPropagation(); closeTab(filename); }}
+                      className={`ml-1 p-0.5 rounded ${activeFile === filename ? "opacity-60 hover:opacity-100" : "opacity-0 group-hover/tab:opacity-60 hover:!opacity-100"} ${isGlass ? "hover:bg-white/[0.15]" : "hover:bg-gray-200 dark:hover:bg-gray-600"}`}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
             <span className={`px-3 text-[10px] font-semibold tracking-wider uppercase ${isGlass ? "text-gray-400" : "text-gray-400 dark:text-gray-500"}`}>{activeLang}</span>

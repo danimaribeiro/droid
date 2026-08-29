@@ -201,10 +201,22 @@ export function handleEditorWillMount(monaco) {
   });
 }
 
+function readStorage(key, fallback) {
+  try { const v = localStorage.getItem(key); return v !== null ? v : fallback; }
+  catch { return fallback; }
+}
+
+function writeStorage(key, value) {
+  try { localStorage.setItem(key, value); } catch {}
+}
+
 export function usePlaygroundLogic(stageSlug) {
-  const [activeLang, setActiveLang] = useState("c");
+  const storageKey = (suffix) => `droid_pg_${stageSlug}_${suffix}`;
+
+  const [activeLang, setActiveLang] = useState(() => readStorage(`droid_pg_${stageSlug}_lang`, "c"));
   const [filesMap, setFilesMap] = useState({});
   const [activeFile, setActiveFile] = useState("");
+  const [openTabs, setOpenTabs] = useState([]);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(true);
   const [templateError, setTemplateError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -231,6 +243,27 @@ export function usePlaygroundLogic(stageSlug) {
   const stageLabel = stageSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   filesMapRef.current = filesMap;
+
+  useEffect(() => { writeStorage(storageKey("lang"), activeLang); }, [activeLang]);
+  useEffect(() => { if (activeFile) writeStorage(storageKey("file"), activeFile); }, [activeFile]);
+  useEffect(() => { if (openTabs.length) writeStorage(storageKey("tabs"), JSON.stringify(openTabs)); }, [openTabs]);
+
+  const openTab = useCallback((filename) => {
+    setOpenTabs((prev) => prev.includes(filename) ? prev : [...prev, filename]);
+    setActiveFile(filename);
+  }, []);
+
+  const closeTab = useCallback((filename) => {
+    setOpenTabs((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.filter((f) => f !== filename);
+      if (activeFile === filename) {
+        const idx = prev.indexOf(filename);
+        setActiveFile(next[Math.min(idx, next.length - 1)] || next[0]);
+      }
+      return next;
+    });
+  }, [activeFile]);
 
   const saveWorkspace = useCallback(async (files) => {
     if (!token) return;
@@ -260,8 +293,10 @@ export function usePlaygroundLogic(stageSlug) {
     const res = await fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`);
     const data = await res.json();
     if (data?.files && Object.keys(data.files).length > 0) {
+      const keys = Object.keys(data.files);
       setFilesMap(data.files);
-      setActiveFile(Object.keys(data.files)[0]);
+      setOpenTabs(keys);
+      setActiveFile(keys[0]);
     }
     setIsLoadingTemplate(false);
   }, [token, apiSlug, activeLang]);
@@ -271,11 +306,24 @@ export function usePlaygroundLogic(stageSlug) {
     setTemplateError(null);
     setFilesMap({});
     setActiveFile("");
+    setOpenTabs([]);
     setTestResults(null);
     setShowResultsPanel(false);
     setHasWorkspace(false);
     setSaveStatus(null);
     setIsCreatingFile(false);
+
+    const restoreTabState = (fileKeys) => {
+      const savedFile = readStorage(storageKey("file"), "");
+      const savedTabs = (() => {
+        try { const v = localStorage.getItem(storageKey("tabs")); return v ? JSON.parse(v) : null; }
+        catch { return null; }
+      })();
+      const tabs = savedTabs ? savedTabs.filter((t) => fileKeys.includes(t)) : fileKeys;
+      setOpenTabs(tabs.length > 0 ? tabs : fileKeys);
+      const restoredFile = tabs.includes(savedFile) ? savedFile : tabs[0] || fileKeys[0];
+      setActiveFile(restoredFile);
+    };
 
     fetch(`${API_BASE}/api/v1/stages/${apiSlug}/template?language=${activeLang}`)
       .then(async (res) => {
@@ -297,8 +345,9 @@ export function usePlaygroundLogic(stageSlug) {
             if (wsRes.ok) {
               const wsData = await wsRes.json();
               if (wsData.code_files && Object.keys(wsData.code_files).length > 0) {
+                const keys = Object.keys(wsData.code_files);
                 setFilesMap(wsData.code_files);
-                setActiveFile(Object.keys(wsData.code_files)[0]);
+                restoreTabState(keys);
                 setHasWorkspace(true);
                 setSaveStatus("saved");
                 setIsLoadingTemplate(false);
@@ -307,8 +356,9 @@ export function usePlaygroundLogic(stageSlug) {
             }
           } catch {}
         }
+        const keys = Object.keys(data.files);
         setFilesMap(data.files);
-        setActiveFile(Object.keys(data.files)[0]);
+        restoreTabState(keys);
         setIsLoadingTemplate(false);
       })
       .catch((err) => {
@@ -377,6 +427,7 @@ export function usePlaygroundLogic(stageSlug) {
     }
 
     setFilesMap((prev) => ({ ...prev, ...newFiles }));
+    setOpenTabs((prev) => [...prev, ...Object.keys(newFiles).filter((f) => !prev.includes(f))]);
     setActiveFile(name);
     setIsCreatingFile(false);
     setNewFileName("");
@@ -385,6 +436,7 @@ export function usePlaygroundLogic(stageSlug) {
 
   const handleDeleteFile = (filename) => {
     if (confirmingDelete === filename) {
+      setOpenTabs((prev) => prev.filter((f) => f !== filename));
       setFilesMap((prev) => {
         const next = { ...prev };
         delete next[filename];
@@ -511,6 +563,7 @@ export function usePlaygroundLogic(stageSlug) {
     activeLang, setActiveLang,
     filesMap, setFilesMap,
     activeFile, setActiveFile,
+    openTabs, openTab, closeTab,
     isLoadingTemplate,
     templateError,
     isSubmitting,
