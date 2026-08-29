@@ -20,7 +20,7 @@ import {
 function ProgressSteps({ phase }) {
   const currentIdx = PROGRESS_PHASES.findIndex((p) => p.key === phase);
   return (
-    <div data-testid="progress-steps" className="flex flex-col gap-2 px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div data-testid="progress-steps" className="flex flex-col items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div className="flex items-center gap-1">
         {PROGRESS_PHASES.map((p, i) => (
           <div key={p.key} className="flex items-center gap-1">
@@ -111,7 +111,7 @@ export default function Playground({ stageSlug }) {
   const border = isGlass ? "border-white/[0.10]" : "border-gray-200 dark:border-gray-700";
 
   const content = (
-    <div className={`flex flex-col ${isGlass ? "flex-1 gap-2" : "h-screen bg-gray-50 dark:bg-gray-950"}`}>
+    <div className={`flex flex-col overflow-hidden ${isGlass ? "flex-1 min-h-0 gap-2" : "h-screen bg-gray-50 dark:bg-gray-950"}`}>
       {/* Topbar */}
       <div data-testid="pg-topbar" className={`relative z-20 flex items-center justify-between px-4 h-14 shrink-0 ${isGlass ? "bg-white/[0.14] backdrop-blur-2xl rounded-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" : `bg-white dark:bg-gray-800 border-b ${border}`}`}>
         <div className="flex items-center gap-2 min-w-0">
@@ -233,7 +233,8 @@ export default function Playground({ stageSlug }) {
       )}
 
       {/* Main workspace */}
-      <div className={`flex flex-1 min-h-0 ${isGlass ? "gap-2" : "overflow-hidden"}`}>
+      <div className="relative flex-1 min-h-0">
+      <div className={`absolute inset-0 flex overflow-hidden ${isGlass ? "gap-2" : ""}`}>
         {/* Tutorial sidebar */}
         <div className={`hidden lg:flex flex-col w-52 shrink-0 overflow-y-auto ${isGlass ? "bg-white/[0.10] backdrop-blur-xl rounded-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" : `bg-white dark:bg-gray-900 border-r ${border}`}`}>
           <div className={`px-3 py-2 border-b ${isGlass ? "border-white/[0.08]" : border} flex items-center gap-2`}>
@@ -416,9 +417,9 @@ export default function Playground({ stageSlug }) {
           const isBuildFail = testResults.status === "build_failed";
           const isError = testResults.total_passed === 0 && testResults.total_failed === 0 && !isBuildFail;
           return (
-            <div data-testid="pg-results-panel" className={`w-80 lg:w-96 flex flex-col min-h-0 shrink-0 ${isGlass ? "bg-white/[0.12] backdrop-blur-xl rounded-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" : `bg-white dark:bg-gray-800 border-l ${border}`}`}>
+            <div data-testid="pg-results-panel" className={`w-80 lg:w-96 h-full flex flex-col shrink-0 overflow-hidden ${isGlass ? "bg-white/[0.12] backdrop-blur-xl rounded-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" : `bg-white dark:bg-gray-800 border-l ${border}`}`}>
               {/* Banner */}
-              <div data-testid="pg-results-banner" className={`flex items-center gap-3 p-4 border-b
+              <div data-testid="pg-results-banner" className={`shrink-0 flex items-center gap-3 p-4 border-b
                 ${isBuildFail ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" : ""}
                 ${allPassed ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" : ""}
                 ${isError ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800" : ""}
@@ -484,7 +485,7 @@ export default function Playground({ stageSlug }) {
               )}
 
               {/* Test cases */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
                 {(testResults.test_cases || []).map((tc, idx) => {
                   const isOpen = expandedCase === idx || !tc.passed;
                   return (
@@ -543,6 +544,7 @@ export default function Playground({ stageSlug }) {
             </div>
           );
         })()}
+      </div>
       </div>
 
       {/* Mobile sidebar overlay */}
