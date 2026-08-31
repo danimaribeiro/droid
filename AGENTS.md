@@ -1,5 +1,40 @@
 # AGENTS
 
+## Commands
+
+```bash
+make all                 # build every language implementation (c/cpp/rust/zig)
+make build-c             # build a single language (build-cpp, build-rust, build-zig)
+make run-c               # build + run a single language's REPL (run-cpp, run-rust, run-zig)
+
+make test                # default: Python Stage 1 suite (does NOT compile automatically)
+make test-stage9         # run a specific stage's tests across all languages
+make test-c-stage1       # run one language's tests for one stage
+make test-all-stages     # run everything (first checks binaries exist, prints build hints if not)
+```
+
+Other components live alongside the language playground (see Repository Layout) and have
+their own tooling:
+
+```bash
+cd backend && bin/rails test   # Rails 8 API (RSpec available too: bin/rspec)
+cd e2e && npm test              # Playwright end-to-end tests (npm run test:ui for UI mode)
+cd docs-site && npm run dev     # Next.js tutorial dashboard — has its own AGENTS.md/CLAUDE.md
+```
+
+## Repository Layout
+
+- `c-droid/`, `cpp-droid/`, `rust-droid/`, `zig-droid/` — the four per-language playground
+  implementations this file's curriculum content is about.
+- `tests/docs/part<N>/STAGE<M>_*_TEST_PLAN.md` — stage specs; `tests/integration/` — the
+  Python integration test suites that enforce them (see Testing Strategy below).
+- `backend/` — a Rails 8 API (Solid Queue/Cache/Cable, Postgres) — supports the "future
+  platform integration" objective (running submissions, presumably alongside `piston/`).
+- `piston/` — Docker setup for a Piston-style sandboxed code execution engine.
+- `e2e/` — Playwright end-to-end tests.
+- `docs-site/` — Next.js app rendering the tutorial dashboard (danimar.dev/droid); has its
+  own `AGENTS.md`/`CLAUDE.md` — read that when working inside it.
+
 ## Project Mission
 Build a multi-language database internals playground with one implementation per language:
 - c-droid
