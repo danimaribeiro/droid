@@ -1,15 +1,13 @@
 import { Composition } from "remotion";
 import { DroidShowcase } from "./DroidShowcase";
-
-const FPS = 30;
-const TOTAL_DURATION = 84;
+import { FPS, frames, totalDuration } from "./timeline";
 
 export const RemotionRoot = () => {
   return (
     <Composition
       id="DroidShowcase"
       component={DroidShowcase}
-      durationInFrames={TOTAL_DURATION * FPS}
+      durationInFrames={frames(totalDuration)}
       fps={FPS}
       width={1920}
       height={1080}

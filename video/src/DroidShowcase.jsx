@@ -10,6 +10,24 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import {
+  ApiScene,
+  FlowScene,
+  JobScene,
+  ModelScene,
+  PistonScene,
+  StackScene,
+  SubmissionScene,
+  TestsScene,
+  TransitionCard,
+} from "./BackendScenes";
+import {
+  clips,
+  clipsInScene,
+  frames,
+  playgroundPlaybackRate,
+  scenes,
+} from "./timeline";
 
 const FADE = 10;
 
@@ -116,8 +134,10 @@ function ScreenshotScene({ src, label }) {
       >
         <div
           style={{
-            width: "94%",
-            height: "84%",
+            // Stills are captured 16:9 at the composition's ratio, so the frame
+            // matches them exactly and nothing gets cropped.
+            height: 930,
+            aspectRatio: "16 / 9",
             borderRadius: 14,
             overflow: "hidden",
             boxShadow:
@@ -132,7 +152,6 @@ function ScreenshotScene({ src, label }) {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              objectPosition: "top left",
             }}
           />
         </div>
@@ -142,7 +161,7 @@ function ScreenshotScene({ src, label }) {
         <div
           style={{
             position: "absolute",
-            bottom: 38,
+            bottom: 24,
             left: 0,
             right: 0,
             display: "flex",
@@ -176,17 +195,12 @@ function ScreenshotScene({ src, label }) {
 function PlaygroundScene() {
   const frame = useCurrentFrame();
 
-  const captions = [
-    { start: 0, end: 6 * 30, text: "Code Editor" },
-    { start: 6 * 30, end: 11 * 30, text: "File Explorer" },
-    { start: 11 * 30, end: 16 * 30, text: "Sign In" },
-    { start: 16 * 30, end: 21 * 30, text: "Authenticated" },
-    { start: 21 * 30, end: 29 * 30, text: "Browsing Code" },
-    { start: 29 * 30, end: 36 * 30, text: "Running Tests" },
-    { start: 36 * 30, end: 44 * 30, text: "Test Results" },
-    { start: 44 * 30, end: 51 * 30, text: "Writing Code" },
-    { start: 51 * 30, end: 59 * 30, text: "Multi-Language" },
-  ];
+  // Captions track the narration: each badge is on screen for its clip.
+  const captions = clipsInScene("playground").map((clip) => ({
+    text: clip.caption,
+    start: frames(clip.sceneOffset),
+    end: frames(clip.sceneOffset + clip.duration),
+  }));
 
   const currentCaption = captions.find(
     (c) => frame >= c.start && frame < c.end
@@ -199,8 +213,9 @@ function PlaygroundScene() {
       >
         <div
           style={{
-            width: "96%",
-            height: "88%",
+            // 16:9, matching the recording, so the frame crops nothing.
+            height: 960,
+            aspectRatio: "16 / 9",
             borderRadius: 14,
             overflow: "hidden",
             boxShadow:
@@ -210,6 +225,7 @@ function PlaygroundScene() {
         >
           <OffthreadVideo
             src={staticFile("playground.mp4")}
+            playbackRate={playgroundPlaybackRate}
             style={{
               width: "100%",
               height: "100%",
@@ -224,17 +240,20 @@ function PlaygroundScene() {
           text={currentCaption.text}
           key={currentCaption.text}
           frame={frame - currentCaption.start}
+          durationInFrames={currentCaption.end - currentCaption.start}
         />
       )}
     </AbsoluteFill>
   );
 }
 
-function CaptionBadge({ text, frame }) {
-  const opacity = interpolate(frame, [0, FADE, 150, 150 + FADE], [0, 1, 1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+function CaptionBadge({ text, frame, durationInFrames }) {
+  const opacity = interpolate(
+    frame,
+    [0, FADE, durationInFrames - FADE, durationInFrames],
+    [0, 1, 1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
 
   return (
     <div
@@ -346,60 +365,36 @@ function FadeTransition({ durationInFrames, children }) {
   );
 }
 
+const BACKEND_SCENES = [
+  ["transition", TransitionCard],
+  ["stack", StackScene],
+  ["flow", FlowScene],
+  ["model", ModelScene],
+  ["submission", SubmissionScene],
+  ["job", JobScene],
+  ["api", ApiScene],
+  ["piston", PistonScene],
+  ["tests", TestsScene],
+];
+
 export const DroidShowcase = () => {
-  const { fps } = useVideoConfig();
-
-  // Timeline (seconds)
-  const introStart = 0;
-  const introDur = 7.5;
-
-  const homepageStart = introDur;
-  const homepageDur = 6.5;
-
-  const stageStart = homepageStart + homepageDur;
-  const stageDur = 6.5;
-
-  const playgroundStart = stageStart + stageDur;
-  const playgroundDur = 59;
-
-  const outroStart = playgroundStart + playgroundDur;
-  const outroDur = 5;
-
-  // Audio timeline — narration clips synced to scenes
-  const audioTimeline = [
-    { file: "01-intro.mp3", start: 0.3 },
-    { file: "02-homepage.mp3", start: homepageStart + 0.3 },
-    { file: "03-stage.mp3", start: stageStart + 0.3 },
-    { file: "04-editor-loads.mp3", start: playgroundStart + 0.3 },
-    { file: "05-browse-files.mp3", start: playgroundStart + 6.5 },
-    { file: "06-auth.mp3", start: playgroundStart + 11.5 },
-    { file: "07-login.mp3", start: playgroundStart + 16.5 },
-    { file: "08-browse-logged-in.mp3", start: playgroundStart + 21 },
-    { file: "09-submit.mp3", start: playgroundStart + 29.5 },
-    { file: "10-results.mp3", start: playgroundStart + 36.5 },
-    { file: "11-typing.mp3", start: playgroundStart + 45 },
-    { file: "12-languages.mp3", start: playgroundStart + 52 },
-    { file: "13-outro.mp3", start: outroStart + 0.3 },
-  ];
+  const scene = (id) => ({
+    from: frames(scenes[id].start),
+    durationInFrames: frames(scenes[id].duration),
+  });
 
   return (
     <AbsoluteFill style={{ background: "#0f0a1a" }}>
       {/* Intro title card */}
-      <Sequence
-        from={Math.round(introStart * fps)}
-        durationInFrames={Math.round(introDur * fps)}
-      >
-        <FadeTransition durationInFrames={Math.round(introDur * fps)}>
+      <Sequence {...scene("intro")}>
+        <FadeTransition durationInFrames={frames(scenes.intro.duration)}>
           <TitleCard />
         </FadeTransition>
       </Sequence>
 
       {/* Homepage screenshot */}
-      <Sequence
-        from={Math.round(homepageStart * fps)}
-        durationInFrames={Math.round(homepageDur * fps)}
-      >
-        <FadeTransition durationInFrames={Math.round(homepageDur * fps)}>
+      <Sequence {...scene("homepage")}>
+        <FadeTransition durationInFrames={frames(scenes.homepage.duration)}>
           <ScreenshotScene
             src="000-homepage-hero.png"
             label="12-Stage Curriculum"
@@ -408,46 +403,43 @@ export const DroidShowcase = () => {
       </Sequence>
 
       {/* Stage page screenshot */}
-      <Sequence
-        from={Math.round(stageStart * fps)}
-        durationInFrames={Math.round(stageDur * fps)}
-      >
-        <FadeTransition durationInFrames={Math.round(stageDur * fps)}>
-          <ScreenshotScene
-            src="001-stage-page.png"
-            label="Tutorial Lessons"
-          />
+      <Sequence {...scene("stage")}>
+        <FadeTransition durationInFrames={frames(scenes.stage.duration)}>
+          <ScreenshotScene src="001-stage-page.png" label="Tutorial Lessons" />
         </FadeTransition>
       </Sequence>
 
-      {/* Playground video — the main event (~59s, 80% of video) */}
-      <Sequence
-        from={Math.round(playgroundStart * fps)}
-        durationInFrames={Math.round(playgroundDur * fps)}
-      >
-        <FadeTransition durationInFrames={Math.round(playgroundDur * fps)}>
+      {/* Playground video — the main event */}
+      <Sequence {...scene("playground")}>
+        <FadeTransition durationInFrames={frames(scenes.playground.duration)}>
           <PlaygroundScene />
         </FadeTransition>
       </Sequence>
 
+      {/* "How it was built" — backend walkthrough */}
+      {BACKEND_SCENES.map(([id, Component]) => (
+        <Sequence key={id} {...scene(id)}>
+          <FadeTransition durationInFrames={frames(scenes[id].duration)}>
+            <Component />
+          </FadeTransition>
+        </Sequence>
+      ))}
+
       {/* Outro */}
-      <Sequence
-        from={Math.round(outroStart * fps)}
-        durationInFrames={Math.round(outroDur * fps)}
-      >
-        <FadeTransition durationInFrames={Math.round(outroDur * fps)}>
+      <Sequence {...scene("outro")}>
+        <FadeTransition durationInFrames={frames(scenes.outro.duration)}>
           <OutroCard />
         </FadeTransition>
       </Sequence>
 
-      {/* Narration audio */}
-      {audioTimeline.map((clip, i) => (
+      {/* Narration — each clip sized to its rendered audio */}
+      {clips.map((clip) => (
         <Sequence
-          key={i}
-          from={Math.round(clip.start * fps)}
-          durationInFrames={Math.round(10 * fps)}
+          key={clip.name}
+          from={frames(clip.start)}
+          durationInFrames={frames(clip.duration)}
         >
-          <Audio src={staticFile(`audio/${clip.file}`)} volume={0.9} />
+          <Audio src={staticFile(`audio/${clip.name}.wav`)} volume={0.9} />
         </Sequence>
       ))}
     </AbsoluteFill>

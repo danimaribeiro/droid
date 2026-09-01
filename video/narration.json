@@ -1,0 +1,141 @@
+{
+  "voice": "af_heart",
+  "speed": 1.0,
+  "clips": [
+    {
+      "name": "01-intro",
+      "scene": "intro",
+      "caption": null,
+      "text": "Welcome to droid. An interactive tutorial where you build a database engine from scratch."
+    },
+    {
+      "name": "02-homepage",
+      "scene": "homepage",
+      "caption": "12-Stage Curriculum",
+      "text": "Start on the landing page. Choose from twelve stages covering lexing, parsing, B-trees, and more."
+    },
+    {
+      "name": "03-stage",
+      "scene": "stage",
+      "caption": "Tutorial Lessons",
+      "text": "Every stage opens with a written lesson. The objective, the core concepts, and a button straight into the editor."
+    },
+    {
+      "name": "04-editor-loads",
+      "scene": "playground",
+      "caption": "Code Editor",
+      "text": "The playground opens with a Monaco editor and the stage's starter template already loaded.",
+      "anchor": "editor"
+    },
+    {
+      "name": "05-browse-files",
+      "scene": "playground",
+      "caption": "File Explorer",
+      "text": "The sidebar lists every file in the project, and each one opens in its own tab.",
+      "anchor": "files"
+    },
+    {
+      "name": "06-auth",
+      "scene": "playground",
+      "caption": "Sign In",
+      "text": "Running the tests needs an account, so the first submission asks you to sign in.",
+      "anchor": "auth"
+    },
+    {
+      "name": "07-login",
+      "scene": "playground",
+      "caption": "Authenticated",
+      "text": "Sign in once and the session sticks, so a reload leaves you exactly where you were.",
+      "anchor": "login"
+    },
+    {
+      "name": "08-browse-logged-in",
+      "scene": "playground",
+      "caption": "Browsing Code",
+      "text": "A stage is a real project, not a scratch buffer. A main file, an implementation, and a header.",
+      "anchor": "browse"
+    },
+    {
+      "name": "09-submit",
+      "scene": "playground",
+      "caption": "Running Tests",
+      "text": "Submitting hands the code off to a pipeline, and the bar follows it: submitting, compiling, running.",
+      "anchor": "submit"
+    },
+    {
+      "name": "10-results",
+      "scene": "playground",
+      "caption": "Test Results",
+      "text": "Every case reports on its own: the input it fed in, the output it expected, what it actually got, and the exit code.",
+      "anchor": "results"
+    },
+    {
+      "name": "11-typing",
+      "scene": "playground",
+      "caption": "Writing Code",
+      "text": "Editing feels like a local editor. Autocomplete, syntax highlighting, several files open at once.",
+      "anchor": "typing"
+    },
+    {
+      "name": "12-languages",
+      "scene": "playground",
+      "caption": "Multi-Language",
+      "text": "The same stage can be solved in C, C++, Rust, Zig, Python or Ruby. Switching reloads the whole project in that language.",
+      "anchor": "languages"
+    },
+    {
+      "name": "13-transition",
+      "scene": "transition",
+      "caption": null,
+      "text": "That's the product. Now, how it was built."
+    },
+    {
+      "name": "14-stack",
+      "scene": "stack",
+      "caption": null,
+      "text": "The backend is a Rails eight API on Ruby three point four and Postgres. It is API only. No views, no asset pipeline, just JSON. Jobs, cache, and websockets all run on the Solid trio, so there is no Redis anywhere in the stack."
+    },
+    {
+      "name": "15-flow",
+      "scene": "flow",
+      "caption": null,
+      "text": "Run Tests posts your files to the submissions endpoint. Rails saves the submission and returns 202 Accepted immediately. Nothing blocks on compilation. An after create commit hook enqueues the real work onto Solid Queue."
+    },
+    {
+      "name": "16-model",
+      "scene": "model",
+      "caption": null,
+      "text": "The domain is four tables with U-U-I-D keys. A user has many submissions. Each one stores its code as JSONB and has one test run, which has many case results: the input, the expected output, the actual output, and the exit code for every assertion."
+    },
+    {
+      "name": "17-submission",
+      "scene": "submission",
+      "caption": null,
+      "text": "A status enum tracks the lifecycle, from pending through compiling and running, to passed or failed. After create commit fires the job once the transaction has committed, so the worker can never read a row that isn't there yet."
+    },
+    {
+      "name": "18-job",
+      "scene": "job",
+      "caption": null,
+      "text": "The job drives that state machine. It times the run with a monotonic clock, writes the test run and every individual case result, and then broadcasts over Action Cable so the browser updates live."
+    },
+    {
+      "name": "19-api",
+      "scene": "api",
+      "caption": null,
+      "text": "Authentication is bcrypt plus a bearer token generated when the user is created. A workspaces resource persists your code per stage and per language, so nothing is lost between sessions. Recurring Solid Queue tasks prune old submissions every night, and RSpec request specs cover the whole API."
+    },
+    {
+      "name": "20-piston",
+      "scene": "piston",
+      "caption": null,
+      "text": "Execution runs inside Piston, sandboxed per job. Here is the trick. Submissions go in as bash, not as C or Rust. The script sets the toolchain paths, compiles the code, then runs the Python harness against the binary."
+    },
+    {
+      "name": "21-tests",
+      "scene": "tests",
+      "caption": null,
+      "text": "That harness is the same Python suite the repo runs locally. Twenty four files across twenty stages. It drives the compiled binary over standard in and out, so it does not care which language produced it."
+    }
+  ]
+}
