@@ -18,6 +18,26 @@ node_modules/
 
 # Test artifacts
 e2e/test-results/
+e2e/playwright-report/
+e2e/screenshots/
+e2e/video-frames/
+e2e/video-recordings/
+docs-site/test-results/
+
+# Generated video output
+video/out/
+video/public/
+
+# OS
+.DS_Store
+
+# Certificates
+backend/zscaler-ca.crt
+
+# Claude Code
+.claude/plans/
+.claude/settings.local.json
+docs-site/.claude/
 
 # Backend
 backend/log/
