@@ -42,3 +42,6 @@ docs-site/.claude/
 # Backend
 backend/log/
 backend/tmp/
+
+# Remotion agent skills are symlinks into .agents/
+video/.claude/

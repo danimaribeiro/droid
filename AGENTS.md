@@ -20,6 +20,7 @@ their own tooling:
 cd backend && bin/rails test   # Rails 8 API (RSpec available too: bin/rspec)
 cd e2e && npm test              # Playwright end-to-end tests (npm run test:ui for UI mode)
 cd docs-site && npm run dev     # Next.js tutorial dashboard — has its own AGENTS.md/CLAUDE.md
+cd video && npm run render      # showcase video — has its own README (prerequisites, asset order)
 ```
 
 ## Repository Layout
@@ -31,9 +32,13 @@ cd docs-site && npm run dev     # Next.js tutorial dashboard — has its own AGE
 - `backend/` — a Rails 8 API (Solid Queue/Cache/Cable, Postgres) — supports the "future
   platform integration" objective (running submissions, presumably alongside `piston/`).
 - `piston/` — Docker setup for a Piston-style sandboxed code execution engine.
-- `e2e/` — Playwright end-to-end tests.
+- `e2e/` — Playwright end-to-end tests, plus `record-showcase.js`, which drives the running
+  app to capture the stills and screencast the showcase video uses.
 - `docs-site/` — Next.js app rendering the tutorial dashboard (danimar.dev/droid); has its
   own `AGENTS.md`/`CLAUDE.md` — read that when working inside it.
+- `video/` — Remotion project for the showcase video (product walkthrough + a section on how
+  the backend works). Assets are generated, not committed; `video/README.md` covers the
+  prerequisites and the order the scripts run in — read that before touching it.
 
 ## Project Mission
 Build a multi-language database internals playground with one implementation per language:

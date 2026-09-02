@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "studio": "npx remotion studio src/index.jsx",
-    "render": "npx remotion render src/index.jsx DroidShowcase out/droid-showcase.mp4",
+    "render": "npx remotion render src/index.jsx DroidShowcase out/droid-showcase.mp4 --image-format=png --crf=16",
     "render:gif": "npx remotion render src/index.jsx DroidShowcase out/droid-showcase.gif --image-format png"
   },
   "dependencies": {
@@ -14,5 +14,8 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "remotion": "4.0.518"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
   }
 }
