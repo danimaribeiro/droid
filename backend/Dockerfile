@@ -8,8 +8,15 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
   ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
-COPY zscaler-ca.crt /usr/local/share/ca-certificates/zscaler-ca.crt
-RUN update-ca-certificates
+# Optional corporate CA. The cert is gitignored, so a bare `COPY` breaks the
+# build on any clone that lacks it; the glob makes it a no-op when absent.
+# It is only needed behind a TLS-intercepting proxy.
+COPY Gemfile zscaler-ca.crt* /tmp/ca/
+RUN if [ -f /tmp/ca/zscaler-ca.crt ]; then \
+      cp /tmp/ca/zscaler-ca.crt /usr/local/share/ca-certificates/ && \
+      update-ca-certificates; \
+    fi; \
+    rm -rf /tmp/ca
 
 WORKDIR /rails
 
